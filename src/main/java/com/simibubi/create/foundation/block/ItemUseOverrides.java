@@ -4,12 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllTags;
-import com.simibubi.create.foundation.utility.RegisteredObjects;
-import com.simibubi.create.foundation.utility.VecHelper;
 
+import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.utility.VecHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;

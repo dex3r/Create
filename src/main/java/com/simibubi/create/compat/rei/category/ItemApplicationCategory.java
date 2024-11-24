@@ -10,7 +10,6 @@ import com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipe;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import com.simibubi.create.foundation.utility.CreateLang;
-import com.simibubi.create.foundation.utility.Lang;
 
 import me.shedaniel.math.Point;
 import me.shedaniel.rei.api.client.gui.widgets.Slot;

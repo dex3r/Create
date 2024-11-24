@@ -6,20 +6,18 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllTags.AllItemTags;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.data.PackOutput;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.Tags.Items;
 
 public class ItemApplicationRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe BOUND_CARDBOARD_BLOCK = create("bound_cardboard_inworld",
 		b -> b.require(AllBlocks.CARDBOARD_BLOCK.asItem())
-			.require(Items.STRING)
+			.require(Tags.Items.STRING)
 			.output(AllBlocks.BOUND_CARDBOARD_BLOCK.asStack()));
 
 	GeneratedRecipe ANDESITE = woodCasing("andesite", I::andesiteAlloy, I::andesiteCasing);

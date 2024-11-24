@@ -1,5 +1,11 @@
 package com.simibubi.create.content.contraptions.mounted;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.tuple.MutablePair;
+
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllMovementBehaviours;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
@@ -11,8 +17,11 @@ import com.simibubi.create.content.contraptions.actors.psi.PortableStorageInterf
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.kinetics.deployer.DeployerFakePlayer;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
+import com.simibubi.create.foundation.utility.AdventureUtil;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
+
+import io.github.fabricators_of_create.porting_lib.util.MinecartAndRailUtil;
 import net.createmod.catnip.utility.NBTHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -40,10 +49,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.phys.EntityHitResult;
-import org.apache.commons.lang3.tuple.MutablePair;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class MinecartContraptionItem extends Item {
 
@@ -147,7 +152,7 @@ public class MinecartContraptionItem extends Item {
 		} else if (!canPlace()) {
 			Player player = context.getPlayer();
 			if (player != null) {
-				Component message = Lang.translateDirect("contraption.minecart_contraption_illegal_placement").withStyle(ChatFormatting.RED);
+				Component message = CreateLang.translateDirect("contraption.minecart_contraption_illegal_placement").withStyle(ChatFormatting.RED);
 				player.displayClientMessage(message, true);
 			}
 			return InteractionResult.FAIL;

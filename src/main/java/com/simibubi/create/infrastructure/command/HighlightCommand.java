@@ -2,13 +2,11 @@ package com.simibubi.create.infrastructure.command;
 
 import java.util.Collection;
 
-import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
-import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.fabric.ReachUtil;
 
 import net.createmod.catnip.utility.lang.Components;

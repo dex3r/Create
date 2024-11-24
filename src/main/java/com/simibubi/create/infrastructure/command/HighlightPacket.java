@@ -4,6 +4,7 @@ import com.simibubi.create.AllSpecialTextures;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
+import net.createmod.catnip.CatnipClient;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;

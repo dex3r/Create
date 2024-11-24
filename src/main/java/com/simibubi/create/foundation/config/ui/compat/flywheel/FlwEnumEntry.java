@@ -4,15 +4,14 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.simibubi.create.foundation.config.ui.ConfigScreen;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.Theme;
-import com.simibubi.create.foundation.gui.UIRenderHelper;
-import com.simibubi.create.foundation.gui.element.BoxElement;
-import com.simibubi.create.foundation.gui.element.DelegatedStencilElement;
-import com.simibubi.create.foundation.gui.element.TextStencilElement;
-import com.simibubi.create.foundation.gui.widget.BoxWidget;
 
+import net.createmod.catnip.config.ui.ConfigScreen;
+import net.createmod.catnip.gui.UIRenderHelper;
+import net.createmod.catnip.gui.element.BoxElement;
+import net.createmod.catnip.gui.element.DelegatedStencilElement;
+import net.createmod.catnip.gui.element.TextStencilElement;
+import net.createmod.catnip.gui.widget.BoxWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -32,14 +31,14 @@ public class FlwEnumEntry extends FlwValueEntry<Enum<?>> {
 
 		DelegatedStencilElement l = AllIcons.I_CONFIG_PREV.asStencil();
 		cycleLeft = new BoxWidget(0, 0, cycleWidth + 8, 16)
-				.withCustomBackground(Theme.c(Theme.Key.PONDER_BACKGROUND_FLAT))
+				.withCustomBackground(BoxElement.COLOR_BACKGROUND_FLAT)
 				.showingElement(l)
 				.withCallback(() -> cycleValue(-1));
 		l.withElementRenderer(BoxWidget.gradientFactory.apply(cycleLeft));
 
 		DelegatedStencilElement r = AllIcons.I_CONFIG_NEXT.asStencil();
 		cycleRight = new BoxWidget(0, 0, cycleWidth + 8, 16)
-				.withCustomBackground(Theme.c(Theme.Key.PONDER_BACKGROUND_FLAT))
+				.withCustomBackground(BoxElement.COLOR_BACKGROUND_FLAT)
 				.showingElement(r)
 				.withCallback(() -> cycleValue(1));
 		r.at(cycleWidth - 8, 0);
@@ -94,7 +93,7 @@ public class FlwEnumEntry extends FlwValueEntry<Enum<?>> {
 		cycleRight.render(graphics, mouseX, mouseY, partialTicks);
 
 		new BoxElement()
-				.withBackground(Theme.c(Theme.Key.PONDER_BACKGROUND_FLAT))
+				.withBackground(BoxElement.COLOR_BACKGROUND_FLAT)
 				.flatBorder(0x01_000000)
 				.withBounds(48, 6)
 				.at(cycleLeft.getX() + 22, cycleLeft.getY() + 5)

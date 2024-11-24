@@ -10,7 +10,6 @@ import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock.PanelSlot;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock.PanelState;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock.PanelType;
-import com.simibubi.create.foundation.model.BakedModelWrapperWithData;
 import com.simibubi.create.foundation.model.BakedQuadHelper;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
@@ -26,9 +25,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.data.ModelData.Builder;
-import net.minecraftforge.client.model.data.ModelProperty;
 
 public class FactoryPanelModel extends BakedModelWrapperWithData {
 

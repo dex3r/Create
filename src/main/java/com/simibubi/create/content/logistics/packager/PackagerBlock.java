@@ -9,6 +9,7 @@ import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.block.WrenchableDirectionalBlock;
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import io.github.fabricators_of_create.porting_lib.block.NeighborChangeListeningBlock;
 import net.createmod.catnip.utility.lang.Lang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,7 +33,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<PackagerBlockEntity>, IWrenchable {
+public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<PackagerBlockEntity>, IWrenchable, NeighborChangeListeningBlock {
 
 	public static final EnumProperty<PackagerType> TYPE = EnumProperty.create("type", PackagerType.class);
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -155,7 +156,6 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 
 	@Override
 	public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
-		super.onNeighborChange(state, level, pos, neighbor);
 		if (neighbor.relative(state.getOptionalValue(FACING)
 			.orElse(Direction.UP))
 			.equals(pos))

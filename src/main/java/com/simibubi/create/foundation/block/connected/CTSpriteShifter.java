@@ -3,10 +3,7 @@ package com.simibubi.create.foundation.block.connected;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.simibubi.create.foundation.block.render.SpriteShiftEntry;
-
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.resources.ResourceLocation;
 
 public class CTSpriteShifter {

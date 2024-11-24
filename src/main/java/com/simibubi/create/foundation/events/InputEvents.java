@@ -17,6 +17,7 @@ import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents;
 import io.github.fabricators_of_create.porting_lib.event.client.KeyInputCallback;
 import io.github.fabricators_of_create.porting_lib.event.client.MouseInputEvents;
 import io.github.fabricators_of_create.porting_lib.event.client.MouseInputEvents.Action;
+import net.fabricmc.api.EnvType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -68,16 +69,12 @@ public class InputEvents {
 			return InteractionResult.SUCCESS;
 		}
 
-		if (key == mc.options.keyUse && FactoryPanelConnectionHandler.onRightClick()) {
-			event.setCanceled(true);
-			return;
-		}
-
 		boolean glueCancelled = CreateClient.GLUE_HANDLER.onMouseInput(false);
 		LinkedControllerClientHandler.deactivateInLectern();
 		boolean relocatorCancelled = TrainRelocator.onClicked();
+		boolean factoryPanelCancelled = FactoryPanelConnectionHandler.onRightClick();
 
-		return glueCancelled || relocatorCancelled
+		return glueCancelled || relocatorCancelled || factoryPanelCancelled
 				? InteractionResult.SUCCESS
 				: InteractionResult.PASS;
 	}

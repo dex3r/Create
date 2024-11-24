@@ -8,13 +8,11 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.simibubi.create.foundation.config.ui.ConfigTextField;
-import com.simibubi.create.foundation.gui.Theme;
-import com.simibubi.create.foundation.gui.UIRenderHelper;
-import com.simibubi.create.foundation.gui.element.TextStencilElement;
-import com.simibubi.create.foundation.utility.Components;
-
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.client.accessor.AbstractWidgetAccessor;
+import net.createmod.catnip.config.ui.ConfigTextField;
+import net.createmod.catnip.gui.UIRenderHelper;
+import net.createmod.catnip.gui.element.TextStencilElement;
+import net.createmod.catnip.utility.lang.Components;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;

@@ -75,7 +75,7 @@ public class MechanicalCraftingEmiRecipe extends CreateEmiRecipe<CraftingRecipe>
 			int yPosition = (int) (y + 1 + (i / getWidth()) * f);
 			widgets.add(new CrafterSlotWidget(ingredient, xPosition, yPosition))
 					.backgroundTexture(
-							AllGuiTextures.JEI_SLOT.location, AllGuiTextures.JEI_SLOT.startX, AllGuiTextures.JEI_SLOT.startY
+							AllGuiTextures.JEI_SLOT.location, AllGuiTextures.JEI_SLOT.getStartX(), AllGuiTextures.JEI_SLOT.getStartY()
 					);
 		}
 

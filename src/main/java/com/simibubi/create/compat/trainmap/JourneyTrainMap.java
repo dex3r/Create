@@ -16,7 +16,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.Mth;
-import net.minecraftforge.client.event.InputEvent;
 
 public class JourneyTrainMap {
 

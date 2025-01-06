@@ -3,9 +3,6 @@ package com.simibubi.create.content.logistics.item.filter.attribute.attributes;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.createmod.catnip.utility.NBTHelper;
-import net.createmod.catnip.utility.lang.Components;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,13 +10,15 @@ import com.simibubi.create.content.logistics.item.filter.attribute.AllItemAttrib
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttributeType;
 
+import net.createmod.catnip.utility.NBTHelper;
+import net.createmod.catnip.utility.lang.Components;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class EnchantAttribute implements ItemAttribute {
 	private @Nullable Enchantment enchantment;
@@ -55,7 +54,7 @@ public class EnchantAttribute implements ItemAttribute {
 	public void save(CompoundTag nbt) {
 		if (enchantment == null)
 			return;
-		ResourceLocation id = ForgeRegistries.ENCHANTMENTS.getKey(enchantment);
+		ResourceLocation id = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
 		if (id == null)
 			return;
 		NBTHelper.writeResourceLocation(nbt, "enchantId", id);
@@ -64,7 +63,7 @@ public class EnchantAttribute implements ItemAttribute {
 	@Override
 	public void load(CompoundTag nbt) {
 		if (nbt.contains("enchantId")) {
-			enchantment = ForgeRegistries.ENCHANTMENTS.getValue(NBTHelper.readResourceLocation(nbt, "enchantId"));
+			enchantment = BuiltInRegistries.ENCHANTMENT.get(NBTHelper.readResourceLocation(nbt, "enchantId"));
 		}
 	}
 

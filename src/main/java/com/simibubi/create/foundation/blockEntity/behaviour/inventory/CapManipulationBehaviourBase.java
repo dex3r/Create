@@ -1,5 +1,7 @@
 package com.simibubi.create.foundation.blockEntity.behaviour.inventory;
 
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
+
 import javax.annotation.Nullable;
 
 import com.google.common.base.Predicate;
@@ -9,7 +11,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper.ExtractionCountMode;
 
-import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
+import net.createmod.catnip.utility.BlockFace;
 import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.BlockPos;

@@ -15,6 +15,8 @@ import static com.simibubi.create.foundation.data.recipe.CompatMetals.SILVER;
 import static com.simibubi.create.foundation.data.recipe.CompatMetals.TIN;
 import static com.simibubi.create.foundation.data.recipe.CompatMetals.URANIUM;
 
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
+
 import com.simibubi.create.AllTags.AllItemTags;
 import com.simibubi.create.content.contraptions.glue.SuperGlueItem;
 import com.simibubi.create.content.contraptions.minecart.MinecartCouplingItem;
@@ -77,8 +79,8 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 
-import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -340,6 +342,7 @@ public class AllItems {
 
 	CARDBOARD_HELMET = REGISTRATE.item("cardboard_helmet", p -> new CardboardHelmetItem(ArmorItem.Type.HELMET, p))
 		.tag(forgeItemTag("armors/helmet"), ItemTags.TRIMMABLE_ARMOR)
+		.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
 		.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
 		.model(TrimmableArmorModelGenerator::generate)
 		.register(),
@@ -347,6 +350,7 @@ public class AllItems {
 		CARDBOARD_CHESTPLATE =
 			REGISTRATE.item("cardboard_chestplate", p -> new CardboardArmorItem(ArmorItem.Type.CHESTPLATE, p))
 				.tag(forgeItemTag("armors/chestplate"), ItemTags.TRIMMABLE_ARMOR)
+				.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
 				.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
 				.model(TrimmableArmorModelGenerator::generate)
 				.register(),
@@ -354,12 +358,14 @@ public class AllItems {
 		CARDBOARD_LEGGINGS =
 			REGISTRATE.item("cardboard_leggings", p -> new CardboardArmorItem(ArmorItem.Type.LEGGINGS, p))
 				.tag(forgeItemTag("armors/leggings"), ItemTags.TRIMMABLE_ARMOR)
+				.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
 				.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
 				.model(TrimmableArmorModelGenerator::generate)
 				.register(),
 
 		CARDBOARD_BOOTS = REGISTRATE.item("cardboard_boots", p -> new CardboardArmorItem(ArmorItem.Type.BOOTS, p))
 			.tag(forgeItemTag("armors/boots"), ItemTags.TRIMMABLE_ARMOR)
+			.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
 			.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
 			.model(TrimmableArmorModelGenerator::generate)
 			.register();

@@ -23,7 +23,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class PipeAttachmentModel extends BakedModelWrapperWithData {
+public class PipeAttachmentModel extends ForwardingBakedModel {
 
 	private boolean ao;
 

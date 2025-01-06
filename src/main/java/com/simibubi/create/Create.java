@@ -117,9 +117,9 @@ public class Create implements ModInitializer {
 
 		AllConfigs.register();
 
-		AllArmInteractionPointTypes.register(modEventBus);
-		AllFanProcessingTypes.register(modEventBus);
-		AllItemAttributeTypes.register(modEventBus);
+		AllArmInteractionPointTypes.register();
+		AllFanProcessingTypes.register();
+		AllItemAttributeTypes.register();
 		BlockSpoutingBehaviour.registerDefaults();
 
 		// FIXME: some of these registrations are not thread-safe

@@ -1,11 +1,14 @@
 package com.simibubi.create.content.logistics.item.filter.attribute;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
+import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
+
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes.HauntingType;
-import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes.SplashingType;
+import net.minecraft.core.Registry;
 
 import org.jetbrains.annotations.ApiStatus;
 
@@ -13,6 +16,8 @@ import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllRegistries;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
+import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes.HauntingType;
+import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes.SplashingType;
 import com.simibubi.create.content.logistics.item.filter.attribute.attributes.AddedByAttribute;
 import com.simibubi.create.content.logistics.item.filter.attribute.attributes.BookAuthorAttribute;
 import com.simibubi.create.content.logistics.item.filter.attribute.attributes.BookCopyAttribute;
@@ -41,15 +46,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
 import net.minecraftforge.registries.DeferredRegister;
 
 // TODO - Documentation
 public class AllItemAttributeTypes {
-	private static final DeferredRegister<ItemAttributeType> REGISTER = DeferredRegister.create(AllRegistries.Keys.ITEM_ATTRIBUTE_TYPES, Create.ID);
-	private static final RecipeWrapper RECIPE_WRAPPER = new RecipeWrapper(new ItemStackHandler(1));
+	private static final ItemStackHandlerContainer RECIPE_WRAPPER = new ItemStackHandlerContainer();
 
 	public static final Supplier<ItemAttributeType>
 		PLACEABLE = singleton("placeable", s -> s.getItem() instanceof BlockItem),
@@ -121,13 +122,12 @@ public class AllItemAttributeTypes {
 	}
 
 	private static Supplier<ItemAttributeType> register(String id, ItemAttributeType type) {
-		return REGISTER.register(id, () -> type);
+		Registry.register(AllRegistries.ITEM_ATTRIBUTE_TYPES, Create.asResource(id), type);
+		return () -> type;
 	}
 
 	@ApiStatus.Internal
-	public static void register(IEventBus modEventBus) {
-		REGISTER.register(modEventBus);
-
+	public static void register() {
 		// Register legacy deserializers to maintain backwards compatability
 		AllItemAttributeLegacyDeserializers.register();
 	}

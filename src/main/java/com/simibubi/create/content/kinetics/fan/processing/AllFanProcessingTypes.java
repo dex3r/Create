@@ -1,31 +1,20 @@
 package com.simibubi.create.content.kinetics.fan.processing;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
+import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
-
-import com.simibubi.create.AllRegistries;
-import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPointType;
-
-import net.minecraft.resources.ResourceLocation;
-
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
-
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
-
-import net.minecraft.util.RandomSource;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import com.simibubi.create.AllRecipeTypes;
+import com.simibubi.create.AllRegistries;
 import com.simibubi.create.AllTags.AllBlockTags;
 import com.simibubi.create.AllTags.AllFluidTags;
 import com.simibubi.create.Create;
@@ -40,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import net.createmod.catnip.utility.VecHelper;
 import net.createmod.catnip.utility.theme.Color;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -71,8 +61,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
 public class AllFanProcessingTypes {
-	private static final DeferredRegister<FanProcessingType> REGISTER = DeferredRegister.create(AllRegistries.Keys.FAN_PROCESSING_TYPES, Create.ID);
-
 	public static final Supplier<NoneType> NONE = register("none", new NoneType());
 	public static final Supplier<BlastingType> BLASTING = register("blasting", new BlastingType());
 	public static final Supplier<HauntingType> HAUNTING = register("haunting", new HauntingType());
@@ -93,11 +81,11 @@ public class AllFanProcessingTypes {
 	}
 
 	private static <T extends FanProcessingType> Supplier<T> register(String name, T type) {
-		return REGISTER.register(name, () -> type);
+		Registry.register(AllRegistries.FAN_PROCESSING_TYPES, Create.asResource(name), type);
+		return () -> type;
 	}
 
-	public static void register(IEventBus eventBus) {
-		REGISTER.register(eventBus);
+	public static void register() {
 	}
 
 	@Nullable

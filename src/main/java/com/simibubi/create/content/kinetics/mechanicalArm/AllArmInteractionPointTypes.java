@@ -1,11 +1,14 @@
 package com.simibubi.create.content.kinetics.mechanicalArm;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllRegistries;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.BeltBlock;
@@ -31,12 +34,11 @@ import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringB
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.InvManipulationBehaviour;
 import com.simibubi.create.foundation.item.SmartInventory;
 
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.createmod.catnip.utility.VecHelper;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResultHolder;
@@ -58,8 +60,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 
 public class AllArmInteractionPointTypes {
-	private static final DeferredRegister<ArmInteractionPointType> REGISTER = DeferredRegister.create(AllRegistries.Keys.ARM_INTERACTION_POINT_TYPES, Create.ID);
-
 	static {
 		register("basin", new BasinType());
 		register("belt", new BeltType());
@@ -81,11 +81,10 @@ public class AllArmInteractionPointTypes {
 	}
 
 	private static <T extends ArmInteractionPointType> void register(String name, T type) {
-		REGISTER.register(name, () -> type);
+		Registry.register(AllRegistries.ARM_INTERACTION_POINT_TYPES, Create.asResource(name), type);
 	}
 
-	public static void register(IEventBus eventBus) {
-		REGISTER.register(eventBus);
+	public static void register() {
 	}
 
 	//

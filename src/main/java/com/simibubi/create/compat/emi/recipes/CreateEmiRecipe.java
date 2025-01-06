@@ -1,10 +1,10 @@
 package com.simibubi.create.compat.emi.recipes;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import net.createmod.catnip.utility.Pair;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +28,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.TextureWidget;
 import dev.emi.emi.api.widget.WidgetHolder;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import net.createmod.catnip.utility.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
@@ -145,7 +145,7 @@ public abstract class CreateEmiRecipe<T extends Recipe<?>> implements EmiRecipe 
 	}
 
 	public static SlotWidget addSlot(WidgetHolder widgets, EmiIngredient stack, int x, int y, AllGuiTextures texture) {
-		return widgets.add(new CreateSlotWidget(stack, x, y)).backgroundTexture(texture.location, texture.startX, texture.startY);
+		return widgets.add(new CreateSlotWidget(stack, x, y)).backgroundTexture(texture.location, texture.getStartX(), texture.getStartY());
 	}
 
 	public static EmiStack fluidStack(FluidStack stack) {
@@ -153,7 +153,7 @@ public abstract class CreateEmiRecipe<T extends Recipe<?>> implements EmiRecipe 
 	}
 
 	public static TextureWidget addTexture(WidgetHolder widgets, AllGuiTextures texture, int x, int y) {
-		return widgets.addTexture(texture.location, x, y, texture.width, texture.height, texture.startX, texture.startY);
+		return widgets.addTexture(texture.location, x, y, texture.getWidth(), texture.getHeight(), texture.getStartX(), texture.getStartY());
 	}
 
 	public static <T, U> U firstOrElse(List<T> list, U empty, Function<T, U> function) {

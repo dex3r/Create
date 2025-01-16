@@ -16,7 +16,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.CreativeModeTabRegistry;
 
 public class InItemGroupAttribute implements ItemAttribute {
 	private CreativeModeTab group;

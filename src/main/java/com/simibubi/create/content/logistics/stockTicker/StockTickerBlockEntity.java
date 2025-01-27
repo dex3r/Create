@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -27,6 +26,11 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.utility.Iterate;
 import net.createmod.catnip.utility.NBTHelper;
 import net.createmod.catnip.utility.lang.Components;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -43,10 +47,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
-public class StockTickerBlockEntity extends StockCheckingBlockEntity implements IHaveHoveringInformation {
+public class StockTickerBlockEntity extends StockCheckingBlockEntity implements IHaveHoveringInformation, SidedStorageBlockEntity {
 
 	// Player-interface Feature
 	protected List<List<BigItemStack>> lastClientsideStockSnapshot;
@@ -60,13 +62,11 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 
 	// Shop feature
 	protected SmartInventory receivedPayments;
-	protected LazyOptional<IItemHandler> capability;
 
 	public StockTickerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		previouslyUsedAddress = "";
 		receivedPayments = new SmartInventory(27, this, 64, false);
-		capability = LazyOptional.of(() -> receivedPayments);
 		categories = new ArrayList<>();
 		hiddenCategoriesByPlayer = new HashMap<>();
 	}
@@ -97,7 +97,7 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 		notifyUpdate();
 		return result;
 	}
-	
+
 	@Override
 	public InventorySummary getRecentSummary() {
 		InventorySummary recentSummary = super.getRecentSummary();
@@ -216,8 +216,7 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 			.forGoggles(tooltip);
 
 		InventorySummary summary = new InventorySummary();
-		for (int i = 0; i < receivedPayments.getSlots(); i++)
-			summary.add(receivedPayments.getStackInSlot(i));
+		receivedPayments.nonEmptyViews().forEach(summary::add);
 		for (BigItemStack entry : summary.getStacksByCount())
 			CreateLang.builder()
 				.text(Components.translatable(entry.stack.getDescriptionId())
@@ -232,10 +231,9 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 	}
 
 	@Override
-	public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-		if (isItemHandlerCap(cap))
-			return capability.cast();
-		return super.getCapability(cap, side);
+	@Nullable
+	public Storage<ItemVariant> getItemStorage(@Nullable Direction side) {
+		return this.receivedPayments;
 	}
 
 	@Override
@@ -246,12 +244,6 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 				Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
 					filter);
 		super.destroy();
-	}
-
-	@Override
-	public void invalidate() {
-		capability.invalidate();
-		super.invalidate();
 	}
 
 	public class CategoryMenuProvider implements MenuProvider {

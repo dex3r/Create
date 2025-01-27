@@ -1,21 +1,18 @@
 package com.simibubi.create.content.logistics.packager;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+
 import com.simibubi.create.content.logistics.box.PackageItem;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.minecraft.world.item.ItemStack;
 
-public class PackagerItemHandler implements IItemHandlerModifiable {
+public class PackagerItemHandler extends SingleStackStorage {
 
-	private PackagerBlockEntity blockEntity;
+	private final PackagerBlockEntity blockEntity;
 
 	public PackagerItemHandler(PackagerBlockEntity blockEntity) {
 		this.blockEntity = blockEntity;
-	}
-
-	@Override
-	public int getSlots() {
-		return 1;
 	}
 
 	@Override

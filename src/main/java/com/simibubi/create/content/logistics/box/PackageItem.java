@@ -1,5 +1,7 @@
 package com.simibubi.create.content.logistics.box;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -9,9 +11,9 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.box.PackageStyles.PackageStyle;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import net.createmod.catnip.utility.VecHelper;
 import net.createmod.catnip.utility.lang.Components;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -61,6 +63,10 @@ public class PackageItem extends Item {
 
 	public static boolean isPackage(ItemStack stack) {
 		return stack.getItem() instanceof PackageItem;
+	}
+
+	public static boolean isPackage(ItemVariant variant) {
+		return variant.getItem() instanceof PackageItem;
 	}
 
 	@Override
@@ -147,6 +153,10 @@ public class PackageItem extends Item {
 		return matchAddress(getAddress(box), address);
 	}
 
+	public static boolean matchAddress(ItemVariant box, String address) {
+		return matchAddress(getAddress(box), address);
+	}
+
 	public static boolean matchAddress(String boxAddress, String address) {
 		if (address.isBlank())
 			return boxAddress.isBlank();
@@ -161,6 +171,13 @@ public class PackageItem extends Item {
 		String boxAddress = !box.hasTag() ? ""
 			: box.getTag()
 				.getString("Address");
+		return boxAddress;
+	}
+
+	public static String getAddress(ItemVariant variant) {
+		String boxAddress = !variant.hasNbt() ? ""
+			: variant.getNbt()
+			.getString("Address");
 		return boxAddress;
 	}
 

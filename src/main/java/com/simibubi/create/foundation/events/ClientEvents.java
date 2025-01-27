@@ -1,5 +1,24 @@
 package com.simibubi.create.foundation.events;
 
+import io.github.fabricators_of_create.porting_lib.client_events.event.client.RenderArmCallback;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityMountEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.PlayerTickEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.player.AttackEntityEvent;
+import io.github.fabricators_of_create.porting_lib.event.client.CameraSetupCallback;
+import io.github.fabricators_of_create.porting_lib.event.client.CameraSetupCallback.CameraInfo;
+import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
+import io.github.fabricators_of_create.porting_lib.event.client.DrawSelectionEvents;
+import io.github.fabricators_of_create.porting_lib.event.client.FogEvents;
+import io.github.fabricators_of_create.porting_lib.event.client.FogEvents.ColorData;
+import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents;
+import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback;
+import io.github.fabricators_of_create.porting_lib.event.client.RenderHandCallback;
+import io.github.fabricators_of_create.porting_lib.event.client.RenderPlayerEvents;
+import io.github.fabricators_of_create.porting_lib.event.client.RenderTickStartCallback;
+import io.github.fabricators_of_create.porting_lib.event.client.RenderTooltipBorderColorCallback;
+import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback;
+import io.github.fabricators_of_create.porting_lib.event.common.AttackAirCallback;
+
 import java.util.List;
 
 import com.mojang.blaze3d.shaders.FogShape;
@@ -11,7 +30,6 @@ import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.Create;
 import com.simibubi.create.CreateClient;
-import com.simibubi.create.compat.trainmap.TrainMapEvents;
 import com.simibubi.create.content.contraptions.ContraptionHandler;
 import com.simibubi.create.content.contraptions.ContraptionHandlerClient;
 import com.simibubi.create.content.contraptions.actors.seat.ContraptionPlayerPassengerRotation;
@@ -25,6 +43,7 @@ import com.simibubi.create.content.contraptions.render.ContraptionRenderInfoMana
 import com.simibubi.create.content.contraptions.wrench.RadialWrenchHandler;
 import com.simibubi.create.content.decoration.girder.GirderWrenchBehavior;
 import com.simibubi.create.content.equipment.armor.BacktankArmorLayer;
+import com.simibubi.create.content.equipment.armor.CardboardArmorHandlerClient;
 import com.simibubi.create.content.equipment.armor.CardboardArmorStealthOverlay;
 import com.simibubi.create.content.equipment.armor.DivingHelmetItem;
 import com.simibubi.create.content.equipment.armor.NetheriteBacktankFirstPersonRenderer;
@@ -81,23 +100,6 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.gui.OpenCreateMenuButton;
 
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererCallback;
-import io.github.fabricators_of_create.porting_lib.client_events.event.client.RenderArmCallback;
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityMountEvents;
-import io.github.fabricators_of_create.porting_lib.entity.events.PlayerTickEvents;
-import io.github.fabricators_of_create.porting_lib.entity.events.player.AttackEntityEvent;
-import io.github.fabricators_of_create.porting_lib.event.client.CameraSetupCallback;
-import io.github.fabricators_of_create.porting_lib.event.client.CameraSetupCallback.CameraInfo;
-import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
-import io.github.fabricators_of_create.porting_lib.event.client.DrawSelectionEvents;
-import io.github.fabricators_of_create.porting_lib.event.client.FogEvents;
-import io.github.fabricators_of_create.porting_lib.event.client.FogEvents.ColorData;
-import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents;
-import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback;
-import io.github.fabricators_of_create.porting_lib.event.client.RenderHandCallback;
-import io.github.fabricators_of_create.porting_lib.event.client.RenderTickStartCallback;
-import io.github.fabricators_of_create.porting_lib.event.client.RenderTooltipBorderColorCallback;
-import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback;
-import io.github.fabricators_of_create.porting_lib.event.common.AttackAirCallback;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.StitchedSprite;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
@@ -447,6 +449,8 @@ public class ClientEvents {
 		InteractEvents.USE.register(ContraptionHandlerClient::rightClickingOnContraptionsGetsHandledLocally);
 		RenderArmCallback.EVENT.register(NetheriteBacktankFirstPersonRenderer::onRenderPlayerHand);
 		PlayerTickEvents.END.register(ContraptionHandlerClient::preventRemotePlayersWalkingAnimations);
+		PlayerTickEvents.END.register(CardboardArmorHandlerClient::keepCacheAliveDesignDespiteNotRendering);
+		RenderPlayerEvents.PRE.register(CardboardArmorHandlerClient::playerRendersAsBoxWhenSneaking);
 		ClientPlayConnectionEvents.DISCONNECT.register(ClientEvents::onLeave);
 		DrawSelectionEvents.BLOCK.register(TrackBlockOutline::drawCustomBlockSelection);
 		AttackEntityEvent.ATTACK_ENTITY.register(PackageClientInteractionHandler::onPlayerPunchPackage);

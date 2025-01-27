@@ -1,5 +1,8 @@
 package com.simibubi.create.content.logistics.packager;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -15,8 +18,9 @@ import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.LogisticalStockResponsePacket;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import net.createmod.catnip.utility.NBTHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -46,7 +50,12 @@ public class InventorySummary {
 	public void add(BigItemStack entry) {
 		add(entry.stack, entry.count);
 	}
-	
+
+	public void add(StorageView<ItemVariant> view) {
+		int count = TransferUtil.truncateLong(view.getAmount());
+		add(view.getResource().toStack(count), count);
+	}
+
 	public Map<Item, List<BigItemStack>> getItemMap() {
 		return items;
 	}
@@ -73,7 +82,7 @@ public class InventorySummary {
 				return;
 			}
 		}
-		
+
 		if (stack.getCount() > stack.getMaxStackSize())
 			stack = stack.copyWithCount(1);
 
@@ -144,11 +153,11 @@ public class InventorySummary {
 		int remaining = stacks.size();
 
 		List<BigItemStack> currentList = null;
-		PacketTarget target = PacketDistributor.PLAYER.with(() -> player);
 
-		if (stacks.isEmpty())
-			AllPackets.getChannel()
-				.send(target, new LogisticalStockResponsePacket(true, pos, Collections.emptyList()));
+		if (stacks.isEmpty()) {
+			LogisticalStockResponsePacket packet = new LogisticalStockResponsePacket(true, pos, Collections.emptyList());
+			AllPackets.getChannel().sendToClient(packet, player);
+		}
 
 		for (BigItemStack entry : stacks) {
 			if (currentList == null)

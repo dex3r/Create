@@ -116,6 +116,7 @@ public class Create implements ModInitializer {
 		AllPlacementModifiers.register();
 
 		AllConfigs.register();
+		AllRegistries.register();
 
 		AllArmInteractionPointTypes.register();
 		AllFanProcessingTypes.register();
@@ -181,4 +182,3 @@ public class Create implements ModInitializer {
 	}
 
 }
-

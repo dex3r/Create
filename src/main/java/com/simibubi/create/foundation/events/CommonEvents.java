@@ -1,5 +1,12 @@
 package com.simibubi.create.foundation.events;
 
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityDataEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityMountEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents.LivingVisibilityEvent;
+import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents;
+
 import java.util.concurrent.Executor;
 
 import org.jetbrains.annotations.Nullable;
@@ -17,6 +24,7 @@ import com.simibubi.create.content.contraptions.minecart.CouplingPhysics;
 import com.simibubi.create.content.contraptions.minecart.MinecartCouplingItem;
 import com.simibubi.create.content.contraptions.minecart.capability.CapabilityMinecartController;
 import com.simibubi.create.content.contraptions.mounted.MinecartContraptionItem;
+import com.simibubi.create.content.equipment.armor.CardboardArmorHandler;
 import com.simibubi.create.content.equipment.armor.DivingBootsItem;
 import com.simibubi.create.content.equipment.armor.DivingHelmetItem;
 import com.simibubi.create.content.equipment.armor.NetheriteDivingHandler;
@@ -33,14 +41,17 @@ import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import com.simibubi.create.content.fluids.FluidBottleItemHook;
 import com.simibubi.create.content.fluids.FluidReactions;
 import com.simibubi.create.content.kinetics.belt.BeltHelper;
+import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorConnectionHandler;
 import com.simibubi.create.content.kinetics.chainConveyor.ServerChainConveyorHandler;
 import com.simibubi.create.content.kinetics.crank.ValveHandleBlock;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelBlockEntity;
 import com.simibubi.create.content.kinetics.deployer.DeployerFakePlayer;
 import com.simibubi.create.content.kinetics.deployer.ManualApplicationRecipe;
-import com.simibubi.create.content.processing.burner.BlazeBurnerHandler;
-import com.simibubi.create.content.redstone.link.LinkHandler;
 import com.simibubi.create.content.kinetics.drill.CobbleGenOptimisation;
+import com.simibubi.create.content.logistics.stockTicker.StockTickerInteractionHandler;
+import com.simibubi.create.content.processing.burner.BlazeBurnerHandler;
+import com.simibubi.create.content.redstone.displayLink.ClickToLinkBlockItem;
+import com.simibubi.create.content.redstone.link.LinkHandler;
 import com.simibubi.create.content.redstone.link.controller.LinkedControllerServerHandler;
 import com.simibubi.create.content.trains.entity.CarriageEntityHandler;
 import com.simibubi.create.content.trains.schedule.ScheduleItemEntityInteraction;
@@ -52,11 +63,6 @@ import com.simibubi.create.foundation.utility.ServerSpeedProvider;
 import com.simibubi.create.foundation.utility.TickBasedCache;
 import com.simibubi.create.infrastructure.command.AllCommands;
 
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityDataEvents;
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents;
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityMountEvents;
-import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents;
-import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents;
 import net.createmod.catnip.utility.WorldAttached;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
@@ -244,6 +250,7 @@ public class CommonEvents {
 
 		UseEntityCallback.EVENT.register(MinecartCouplingItem::handleInteractionWithMinecart);
 		UseEntityCallback.EVENT.register(MinecartContraptionItem::wrenchCanBeUsedToPickUpMinecartContraptions);
+		UseEntityCallback.EVENT.register(StockTickerInteractionHandler::interactWithLogisticsManager);
 		UseBlockCallback.EVENT.register(WrenchEventHandler::useOwnWrenchLogicForCreateBlocks);
 		UseBlockCallback.EVENT.register(LinkHandler::onBlockActivated);
 		UseBlockCallback.EVENT.register(ItemUseOverrides::onBlockActivated);
@@ -254,6 +261,8 @@ public class CommonEvents {
 		UseBlockCallback.EVENT.register(ValueSettingsInputHandler::onBlockActivated);
 		UseBlockCallback.EVENT.register(ValveHandleBlock::onBlockActivated);
 		UseBlockCallback.EVENT.register(ClipboardValueSettingsHandler::rightClickToCopy);
+		UseBlockCallback.EVENT.register(ChainConveyorConnectionHandler::onItemUsedOnBlock);
+		UseBlockCallback.EVENT.register(ClickToLinkBlockItem::linkableItemAlwaysPlacesWhenUsed);
 		AttackBlockCallback.EVENT.register(ClipboardValueSettingsHandler::leftClickToPaste);
 		AttackBlockCallback.EVENT.register(ZapperInteractionHandler::leftClickingBlocksWithTheZapperSelectsTheBlock);
 		UseEntityCallback.EVENT.register(ScheduleItemEntityInteraction::interactWithConductor);
@@ -278,5 +287,8 @@ public class CommonEvents {
 		PlayerBlockBreakEvents.BEFORE.register(SymmetryHandler::onBlockDestroyed);
 		PlayerBlockBreakEvents.AFTER.register(ExtendoGripItem::consumeDurabilityOnBlockBreak);
 		BlockEvents.POST_PROCESS_PLACE.register(ExtendoGripItem::consumeDurabilityOnPlace);
+		EntityEvents.SIZE.register(CardboardArmorHandler::playerHitboxChangesWhenHidingAsBox);
+		LivingVisibilityEvent.VISIBILITY.register(CardboardArmorHandler::playersStealthWhenWearingCardboard);
+		LivingEntityEvents.TICK.register(CardboardArmorHandler::mobsMayLoseTargetWhenItIsWearingCardboard);
 	}
 }

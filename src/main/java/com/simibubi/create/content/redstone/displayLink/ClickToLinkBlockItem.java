@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class ClickToLinkBlockItem extends BlockItem {
@@ -29,16 +31,14 @@ public abstract class ClickToLinkBlockItem extends BlockItem {
 		super(pBlock, pProperties);
 	}
 
-	@SubscribeEvent
-	public static void linkableItemAlwaysPlacesWhenUsed(PlayerInteractEvent.RightClickBlock event) {
-		ItemStack usedItem = event.getItemStack();
+	public static InteractionResult linkableItemAlwaysPlacesWhenUsed(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
+		ItemStack usedItem = player.getItemInHand(hand);
 		if (!(usedItem.getItem() instanceof ClickToLinkBlockItem blockItem))
-			return;
-		if (event.getLevel()
-			.getBlockState(event.getPos())
-			.is(blockItem.getBlock()))
-			return;
-		event.setUseBlock(Result.DENY);
+			return InteractionResult.PASS;
+		if (level.getBlockState(hit.getBlockPos()).is(blockItem.getBlock()))
+			return InteractionResult.PASS;
+
+		return InteractionResult.FAIL;
 	}
 
 	@Override

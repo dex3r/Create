@@ -1,10 +1,13 @@
 package com.simibubi.create.content.redstone.thresholdSwitch;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
+
 import java.util.List;
 import java.util.Objects;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.compat.thresholdSwitch.ThresholdSwitchCompat;
-import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
 import com.simibubi.create.content.processing.recipe.ProcessingInventory;
 import com.simibubi.create.content.redstone.DirectedDirectionalBlock;
 import com.simibubi.create.content.redstone.FilteredDetectorFilterSlot;
@@ -18,7 +21,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.inventory.TankManipu
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import net.createmod.catnip.utility.BlockFace;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -28,6 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -254,10 +258,11 @@ public class ThresholdSwitchBlockEntity extends SmartBlockEntity {
 		}
 	}
 
-	private boolean isSuitableInventory(BlockEntity be) {
-		return be != null && !(be instanceof StockTickerBlockEntity || be.getCapability(ForgeCapabilities.ITEM_HANDLER)
-			.filter(ProcessingInventory.class::isInstance)
-			.isPresent());
+	private boolean isSuitableInventory(Storage<ItemVariant> storage, StorageProvider<ItemVariant> provider) {
+		if (AllBlocks.STOCK_TICKER.has(provider.findBlockState()))
+			return false;
+
+		return !(storage instanceof ProcessingInventory);
 	}
 
 	private BlockPos getTargetPos() {

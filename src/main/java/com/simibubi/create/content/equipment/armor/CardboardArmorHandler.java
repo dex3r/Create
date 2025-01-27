@@ -1,10 +1,12 @@
 package com.simibubi.create.content.equipment.armor;
 
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents;
+
 import java.util.UUID;
 
 import com.simibubi.create.AllItems;
 
-import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -18,15 +20,13 @@ import net.minecraft.world.entity.player.Player;
 
 public class CardboardArmorHandler {
 
-	@SubscribeEvent
-	public static void playerHitboxChangesWhenHidingAsBox(EntityEvent.Size event) {
-		if (event.getEntity().isAddedToWorld() && testForStealth(event.getEntity())) {
+	public static void playerHitboxChangesWhenHidingAsBox(EntityEvents.Size event) {
+		if (testForStealth(event.getEntity())) {
 			event.setNewSize(EntityDimensions.fixed(0.8F, 0.8F));
 			event.setNewEyeHeight(0.6F);
 		}
 	}
 
-	@SubscribeEvent
 	public static void playersStealthWhenWearingCardboard(LivingEntityEvents.LivingVisibilityEvent event) {
 		LivingEntity entity = event.getEntity();
 		if (!testForStealth(entity))
@@ -34,9 +34,7 @@ public class CardboardArmorHandler {
 		event.modifyVisibility(0);
 	}
 
-	@SubscribeEvent
-	public static void mobsMayLoseTargetWhenItIsWearingCardboard(LivingEntityEvents.LivingTickEvent event) {
-		LivingEntity entity = event.getEntity();
+	public static void mobsMayLoseTargetWhenItIsWearingCardboard(LivingEntity entity) {
 		if (entity.tickCount % 16 != 0)
 			return;
 		if (!(entity instanceof Mob mob))

@@ -1,5 +1,9 @@
 package com.simibubi.create.content.logistics.packager;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.Create;
@@ -34,6 +39,9 @@ import com.simibubi.create.foundation.item.ItemHelper;
 
 import net.createmod.catnip.utility.Iterate;
 import net.createmod.catnip.utility.NBTHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -48,7 +56,7 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class PackagerBlockEntity extends SmartBlockEntity {
+public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity {
 
 	public boolean redstonePowered;
 	public int buttonCooldown;
@@ -61,7 +69,6 @@ public class PackagerBlockEntity extends SmartBlockEntity {
 	public List<ItemStack> queuedExitingPackages;
 
 	public PackagerItemHandler inventory;
-	private final LazyOptional<IItemHandler> invProvider;
 
 	public static final int CYCLE = 20;
 	public int animationTicks;
@@ -79,7 +86,6 @@ public class PackagerBlockEntity extends SmartBlockEntity {
 		heldBox = ItemStack.EMPTY;
 		previouslyUnwrapped = ItemStack.EMPTY;
 		inventory = new PackagerItemHandler(this);
-		invProvider = LazyOptional.of(() -> inventory);
 		animationTicks = 0;
 		animationInward = true;
 		queuedExitingPackages = new LinkedList<>();
@@ -94,8 +100,8 @@ public class PackagerBlockEntity extends SmartBlockEntity {
 		behaviours.add(invVersionTracker = new VersionedInventoryTrackerBehaviour(this));
 	}
 
-	private boolean supportsBlockEntity(BlockEntity target) {
-		return target != null && !(target instanceof PortableStorageInterfaceBlockEntity);
+	private boolean supportsBlockEntity(Storage<ItemVariant> storage, StorageProvider<ItemVariant> provider) {
+		return !(provider.findBlockEntity() instanceof PortableStorageInterfaceBlockEntity);
 	}
 
 	@Override
@@ -110,7 +116,7 @@ public class PackagerBlockEntity extends SmartBlockEntity {
 
 		if (buttonCooldown > 0)
 			buttonCooldown--;
-		
+
 		if (animationTicks == 0) {
 			previouslyUnwrapped = ItemStack.EMPTY;
 
@@ -142,7 +148,7 @@ public class PackagerBlockEntity extends SmartBlockEntity {
 
 		InventorySummary availableItems = new InventorySummary();
 
-		IItemHandler targetInv = targetInventory.getInventory();
+		Storage<ItemVariant> targetInv = targetInventory.getInventory();
 		if (targetInv == null || targetInv instanceof PackagerItemHandler) {
 			this.availableItems = availableItems;
 			return availableItems;
@@ -586,12 +592,6 @@ public class PackagerBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	public void invalidate() {
-		super.invalidate();
-		invProvider.invalidate();
-	}
-
-	@Override
 	public void destroy() {
 		super.destroy();
 		ItemHelper.dropContents(level, worldPosition, inventory);
@@ -601,10 +601,9 @@ public class PackagerBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-		if (cap == ForgeCapabilities.ITEM_HANDLER)
-			return invProvider.cast();
-		return super.getCapability(cap, side);
+	@Nullable
+	public Storage<ItemVariant> getItemStorage(@Nullable Direction side) {
+		return this.inventory;
 	}
 
 	public float getTrayOffset(float partialTicks) {

@@ -1,5 +1,8 @@
 package com.simibubi.create.content.logistics.packagePort;
 
+import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
+import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,9 +18,10 @@ import com.simibubi.create.foundation.blockEntity.behaviour.animatedContainer.An
 import com.simibubi.create.foundation.item.SmartInventory;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
-import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
 import net.createmod.catnip.utility.lang.Components;
+import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -42,14 +46,14 @@ public abstract class PackagePortBlockEntity extends SmartBlockEntity implements
 
 	protected AnimatedContainerBehaviour<PackagePortMenu> openTracker;
 
-	protected LazyOptional<IItemHandler> itemHandler;
+	protected final Storage<ItemVariant> exposedInventory;
 
 	public PackagePortBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		addressFilter = "";
 		acceptsPackages = true;
 		inventory = new SmartInventory(18, this);
-		itemHandler = LazyOptional.of(() -> new PackagePortAutomationInventoryWrapper(inventory, this));
+		this.exposedInventory = new PackagePortAutomationInventoryWrapper(inventory, this);
 	}
 
 	public boolean isBackedUp() {

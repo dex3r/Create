@@ -1,7 +1,12 @@
 package com.simibubi.create.content.logistics.stockTicker;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllEntityTypes;
 import com.simibubi.create.AllItems;
@@ -17,6 +22,8 @@ import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.utility.Couple;
 import net.createmod.catnip.utility.Iterate;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,27 +36,23 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class StockTickerInteractionHandler {
 
-	@SubscribeEvent
-	public static void interactWithLogisticsManager(EntityInteractSpecific event) {
-		Entity entity = event.getTarget();
-		Player player = event.getEntity();
-		if (player == null || entity == null)
-			return;
+	public static InteractionResult interactWithLogisticsManager(Player player, Level level, InteractionHand hand, Entity entity, @Nullable EntityHitResult hit) {
 		if (player.isSpectator())
-			return;
+			return InteractionResult.PASS;
 
-		Level level = event.getLevel();
 		BlockPos targetPos = getStockTickerPosition(entity);
 		if (targetPos == null)
-			return;
+			return InteractionResult.PASS;
 
 		if (interactWithLogisticsManagerAt(player, level, targetPos)) {
-			event.setCancellationResult(InteractionResult.SUCCESS);
-			event.setCanceled(true);
+			return InteractionResult.SUCCESS;
 		}
+
+		return InteractionResult.PASS;
 	}
 
 	public static boolean interactWithLogisticsManagerAt(Player player, Level level, BlockPos targetPos) {
@@ -124,10 +127,11 @@ public class StockTickerInteractionHandler {
 		int occupiedSlots = 0;
 		for (BigItemStack entry : paymentEntries.getStacksByCount())
 			occupiedSlots += Mth.ceil(entry.count / (float) entry.stack.getMaxStackSize());
-		for (int i = 0; i < tickerBE.receivedPayments.getSlots(); i++)
-			if (tickerBE.receivedPayments.getStackInSlot(i)
-				.isEmpty())
+		for (StorageView<ItemVariant> slot : tickerBE.receivedPayments) {
+			if (slot.isResourceBlank()) {
 				occupiedSlots--;
+			}
+		}
 
 		if (occupiedSlots > 0) {
 			AllSoundEvents.DENY.playOnServer(level, player.blockPosition());
@@ -173,7 +177,7 @@ public class StockTickerInteractionHandler {
 			if (simulate)
 				continue;
 
-			toTransfer.forEach(s -> ItemHandlerHelper.insertItemStacked(tickerBE.receivedPayments, s, false));
+			toTransfer.forEach(s -> TransferUtil.insertItem(tickerBE.receivedPayments, s));
 		}
 
 		tickerBE.broadcastPackageRequest(RequestType.PLAYER, order, null, ShoppingListItem.getAddress(mainHandItem));

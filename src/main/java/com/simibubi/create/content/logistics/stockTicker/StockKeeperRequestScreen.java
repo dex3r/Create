@@ -1,5 +1,7 @@
 package com.simibubi.create.content.logistics.stockTicker;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +41,7 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import me.pepperbell.simplenetworking.SimpleChannel;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.utility.AnimationTickHolder;
@@ -58,6 +61,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
@@ -69,9 +73,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.network.simple.SimpleChannel;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockKeeperRequestMenu>
 	implements ScreenWithStencils {
@@ -164,7 +165,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		menu.screenReference = this;
 		hiddenCategories =
 			new HashSet<>(blockEntity.hiddenCategoriesByPlayer.getOrDefault(menu.player.getUUID(), List.of()));
-		
+
 		forcedEntries = new InventorySummary();
 
 		itemToProgram = menu.player.getMainHandItem();
@@ -218,8 +219,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		super.init();
 		clearWidgets();
 
-		int x = getGuiLeft();
-		int y = getGuiTop();
+		int x = this.leftPos;
+		int y = this.topPos;
 
 		itemsX = x + (windowWidth - cols * colWidth) / 2 + 1;
 		itemsY = y + 33;
@@ -254,7 +255,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		extraAreas.add(new Rect2i(0, y + windowHeight - 15 - leftHeight, x, height));
 		if (encodeRequester)
 			extraAreas.add(new Rect2i(x + windowWidth, y + windowHeight - 15 - rightHeight, rightHeight, rightHeight));
-		
+
 		if (initial) {
 			playUiSound(SoundEvents.WOOD_HIT, 0.5f, 1.5f);
 			playUiSound(SoundEvents.BOOK_PAGE_TURN, 1, 1);
@@ -345,7 +346,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 				ItemStack stack = entry.stack;
 
 				if (modSearch) {
-					if (ForgeRegistries.ITEMS.getKey(stack.getItem())
+					if (BuiltInRegistries.ITEM.getKey(stack.getItem())
 						.getNamespace()
 						.contains(value)) {
 						displayedItemsInCategory.add(entry);
@@ -366,7 +367,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 					.getString()
 					.toLowerCase(Locale.ROOT)
 					.contains(value)
-					|| ForgeRegistries.ITEMS.getKey(stack.getItem())
+					|| BuiltInRegistries.ITEM.getKey(stack.getItem())
 						.getPath()
 						.contains(value)) {
 					displayedItemsInCategory.add(entry);
@@ -406,7 +407,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 					summary.erase(stack.stack);
 			}
 		}
-		
+
 		boolean allEmpty = true;
 		for (List<BigItemStack> list : displayedItems)
 			allEmpty &= list.isEmpty();
@@ -464,8 +465,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		float currentScroll = itemScroll.getValue(partialTicks);
 		Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
 
-		int x = getGuiLeft();
-		int y = getGuiTop();
+		int x = this.leftPos;
+		int y = this.topPos;
 
 		// BG
 		HEADER.render(graphics, x - 15, y);
@@ -475,7 +476,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 			y += BODY.getHeight();
 		}
 		FOOTER.render(graphics, x - 15, y);
-		y = getGuiTop();
+		y = this.topPos;
 
 		// Render text input hints
 		if (addressBox.getValue()
@@ -922,13 +923,13 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 
 		// Ordered recipe is hovered
 		if (y >= orderY - 31 && y < orderY - 31 + rowHeight) {
-			int jeiX = getGuiLeft() + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
+			int jeiX = this.leftPos + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
 			int col = Mth.floorDiv(x - jeiX, colWidth);
 			if (recipesToOrder.size() > col && col >= 0)
 				return Couple.create(-2, col);
 		}
 
-		if (y < getGuiTop() + 16 || y > getGuiTop() + windowHeight - 80)
+		if (y < this.topPos + 16 || y > this.topPos + windowHeight - 80)
 			return noneHovered;
 		if (!itemScroll.settled())
 			return noneHovered;
@@ -959,8 +960,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 	}
 
 	private boolean isConfirmHovered(int mouseX, int mouseY) {
-		int confirmX = getGuiLeft() + 143;
-		int confirmY = getGuiTop() + windowHeight - 39;
+		int confirmX = this.leftPos + 143;
+		int confirmY = this.topPos + windowHeight - 39;
 		int confirmW = 78;
 		int confirmH = 18;
 
@@ -1008,8 +1009,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 
 		// Scroll bar
 		int barX = itemsX + cols * colWidth - 1;
-		if (getMaxScroll() > 0 && lmb && pMouseX > barX && pMouseX <= barX + 8 && pMouseY > getGuiTop() + 15
-			&& pMouseY < getGuiTop() + windowHeight - 82) {
+		if (getMaxScroll() > 0 && lmb && pMouseX > barX && pMouseX <= barX + 8 && pMouseY > this.topPos + 15
+			&& pMouseY < this.topPos + windowHeight - 82) {
 			scrollHandleActive = true;
 			if (minecraft.isWindowActive())
 				GLFW.glfwSetInputMode(minecraft.getWindow()
@@ -1025,7 +1026,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 			isLocked = !isLocked;
 			AllPackets.getChannel()
 				.sendToServer(new StockKeeperLockPacket(blockEntity.getBlockPos(), isLocked));
-			playUiSound(SoundEvents.UI_BUTTON_CLICK.get(), 1, 1);
+			playUiSound(SoundEvents.UI_BUTTON_CLICK.value(), 1, 1);
 			return true;
 		}
 
@@ -1041,15 +1042,15 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		// Confirm
 		if (lmb && isConfirmHovered((int) pMouseX, (int) pMouseY)) {
 			sendIt();
-			playUiSound(SoundEvents.UI_BUTTON_CLICK.get(), 1, 1);
+			playUiSound(SoundEvents.UI_BUTTON_CLICK.value(), 1, 1);
 			return true;
 		}
 
 		// Category hiding
 		int localY = (int) (pMouseY - itemsY);
 		if (itemScroll.settled() && lmb && !categories.isEmpty() && pMouseX >= itemsX
-			&& pMouseX < itemsX + cols * colWidth && pMouseY >= getGuiTop() + 16
-			&& pMouseY <= getGuiTop() + windowHeight - 80) {
+			&& pMouseX < itemsX + cols * colWidth && pMouseY >= this.topPos + 16
+			&& pMouseY <= this.topPos + windowHeight - 80) {
 			for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
 				CategoryEntry entry = categories.get(categoryIndex);
 				if (Mth.floor((localY - entry.y) / (float) rowHeight + itemScroll.getChaseTarget()) != 0)
@@ -1178,10 +1179,10 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 
 		existingOrder.count = current + Math.min(transfer, blockEntity.getLastClientsideStockSnapshotAsSummary()
 			.getCountOf(entry.stack) - current);
-		
+
 		if (existingOrder.count != current && current != 0)
 			playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
-		
+
 		return true;
 	}
 
@@ -1222,14 +1223,14 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		int totalH = getMaxScroll() * rowHeight + windowH;
 		int barSize = Math.max(5, Mth.floor((float) windowH / totalH * (windowH - 2)));
 
-		int minY = getGuiTop() + 15 + barSize / 2;
-		int maxY = getGuiTop() + 15 + windowH - barSize / 2;
+		int minY = this.topPos + 15 + barSize / 2;
+		int maxY = this.topPos + 15 + windowH - barSize / 2;
 
 		if (barSize >= windowH - 2)
 			return true;
 
 		int barX = itemsX + cols * colWidth;
-		double target = (pMouseY - getGuiTop() - 15 - barSize / 2.0) * totalH / (windowH - 2) / rowHeight;
+		double target = (pMouseY - this.topPos - 15 - barSize / 2.0) * totalH / (windowH - 2) / rowHeight;
 		itemScroll.chase(Mth.clamp(target, 0, getMaxScroll()), 0.8, Chaser.EXP);
 
 		if (minecraft.isWindowActive()) {
@@ -1305,7 +1306,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 				continue;
 			forcedEntries.add(toOrder.stack, -1 - Math.max(0, countOf - toOrder.count));
 		}
-		
+
 		AllPackets.getChannel()
 			.sendToServer(new PackageOrderRequestPacket(blockEntity.getBlockPos(), new PackageOrder(itemsToOrder),
 				addressBox.getValue(), encodeRequester));
@@ -1314,7 +1315,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		recipesToOrder = new ArrayList<>();
 		blockEntity.ticksSinceLastUpdate = 10;
 		successTicks = 1;
-		
+
 		if (isSchematicListMode())
 			menu.player.closeContainer();
 	}

@@ -9,12 +9,13 @@ import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagerItemHandler;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 public class RepackagerBlockEntity extends PackagerBlockEntity {
 
@@ -29,20 +30,14 @@ public class RepackagerBlockEntity extends PackagerBlockEntity {
 		if (animationTicks > 0)
 			return false;
 
-		IItemHandler targetInv = targetInventory.getInventory();
+		Storage<ItemVariant> targetInv = targetInventory.getInventory();
 		if (targetInv == null)
 			return false;
 
 		boolean targetIsCreativeCrate = targetInv instanceof BottomlessItemHandler;
-		boolean anySpace = false;
 
-		for (int slot = 0; slot < targetInv.getSlots(); slot++) {
-			ItemStack remainder = targetInv.insertItem(slot, box, simulate);
-			if (!remainder.isEmpty())
-				continue;
-			anySpace = true;
-			break;
-		}
+		long insertable = StorageUtil.simulateInsert(targetInv, ItemVariant.of(box), box.getCount(), null);
+		boolean anySpace = insertable > 0;
 
 		if (!targetIsCreativeCrate && !anySpace)
 			return false;
@@ -58,7 +53,7 @@ public class RepackagerBlockEntity extends PackagerBlockEntity {
 
 	@Override
 	public void recheckIfLinksPresent() {}
-	
+
 	@Override
 	public boolean redstoneModeActive() {
 		return true;
@@ -68,14 +63,14 @@ public class RepackagerBlockEntity extends PackagerBlockEntity {
 		if (queuedRequests == null && (!heldBox.isEmpty() || animationTicks != 0))
 			return;
 
-		IItemHandler targetInv = targetInventory.getInventory();
+		Storage<ItemVariant> targetInv = targetInventory.getInventory();
 		if (targetInv == null || targetInv instanceof PackagerItemHandler)
 			return;
 
 		attemptToDefrag(targetInv);
 	}
 
-	protected void attemptToDefrag(IItemHandler targetInv) {
+	protected void attemptToDefrag(Storage<ItemVariant> targetInv) {
 		defragmenter.clear();
 		int completedOrderId = -1;
 

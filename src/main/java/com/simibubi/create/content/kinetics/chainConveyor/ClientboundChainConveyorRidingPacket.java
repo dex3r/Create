@@ -7,7 +7,6 @@ import com.simibubi.create.foundation.networking.SimplePacketBase;
 import com.simibubi.create.foundation.render.PlayerSkyhookRenderer;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
 
 public class ClientboundChainConveyorRidingPacket extends SimplePacketBase {
 
@@ -27,7 +26,7 @@ public class ClientboundChainConveyorRidingPacket extends SimplePacketBase {
 	}
 
 	@Override
-	public boolean handle(NetworkEvent.Context context) {
+	public boolean handle(Context context) {
 		context.enqueueWork(() -> {
 			PlayerSkyhookRenderer.updatePlayerList(this.uuids);
 		});

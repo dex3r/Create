@@ -13,6 +13,8 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.utility.AnimationTickHolder;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
@@ -20,11 +22,7 @@ public class CardboardArmorHandlerClient {
 
 	private static final Cache<UUID, Integer> BOXES_PLAYERS_ARE_HIDING_AS = new TickBasedCache<>(20, true);
 
-	@SubscribeEvent
-	public static void keepCacheAliveDesignDespiteNotRendering(PlayerTickEvent event) {
-		if (event.phase == Phase.START)
-			return;
-		Player player = event.player;
+	public static void keepCacheAliveDesignDespiteNotRendering(Player player) {
 		if (!CardboardArmorHandler.testForStealth(player))
 			return;
 		try {
@@ -34,19 +32,14 @@ public class CardboardArmorHandlerClient {
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void playerRendersAsBoxWhenSneaking(RenderPlayerEvent.Pre event) {
-		Player player = event.getEntity();
+	public static boolean playerRendersAsBoxWhenSneaking(Player player, PlayerRenderer renderer, float partialTick, PoseStack ms, MultiBufferSource buffer, int packedLight) {
 		if (!CardboardArmorHandler.testForStealth(player))
-			return;
-
-		event.setCanceled(true);
+			return false;
 
 		if (player == Minecraft.getInstance().player
 			&& Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON)
-			return;
+			return true;
 
-		PoseStack ms = event.getPoseStack();
 		ms.pushPose();
 		ms.translate(0, 2 / 16f, 0);
 
@@ -59,17 +52,19 @@ public class CardboardArmorHandlerClient {
 				Math.min(Math.abs(Mth.cos((AnimationTickHolder.getRenderTime() % 256) / 2.0f)) * 2 / 16f, movement * 5),
 				0);
 
-		float interpolatedYaw = Mth.lerp(event.getPartialTick(), player.yRotO, player.getYRot());
+		float interpolatedYaw = Mth.lerp(partialTick, player.yRotO, player.getYRot());
 
 		try {
 			PartialModel model = AllPartialModels.PACKAGES_TO_HIDE_AS.get(getCurrentBoxIndex(player));
-			PackageRenderer.renderBox(player, -interpolatedYaw + -90, ms, event.getMultiBufferSource(),
-				event.getPackedLight(), model);
+			PackageRenderer.renderBox(player, -interpolatedYaw + -90, ms, buffer,
+				packedLight, model);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
 
 		ms.popPose();
+
+		return true;
 	}
 
 	private static Integer getCurrentBoxIndex(Player player) throws ExecutionException {

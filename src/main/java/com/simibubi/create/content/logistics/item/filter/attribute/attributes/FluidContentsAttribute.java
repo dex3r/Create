@@ -2,6 +2,7 @@ package com.simibubi.create.content.logistics.item.filter.attribute.attributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,15 +11,18 @@ import com.simibubi.create.content.logistics.item.filter.attribute.AllItemAttrib
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttributeType;
 
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class FluidContentsAttribute implements ItemAttribute {
 	private @Nullable Fluid fluid;
@@ -28,17 +32,14 @@ public class FluidContentsAttribute implements ItemAttribute {
 	}
 
 	private static List<Fluid> extractFluids(ItemStack stack) {
+		Storage<FluidVariant> storage = ContainerItemContext.withConstant(stack).find(FluidStorage.ITEM);
+		if (storage == null)
+			return List.of();
+
 		List<Fluid> fluids = new ArrayList<>();
-
-		LazyOptional<IFluidHandlerItem> capability =
-			stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
-
-		capability.ifPresent((cap) -> {
-			for (int i = 0; i < cap.getTanks(); i++) {
-				fluids.add(cap.getFluidInTank(i).getFluid());
-			}
-		});
-
+		for (StorageView<FluidVariant> view : storage.nonEmptyViews()) {
+			fluids.add(view.getResource().getFluid());
+		}
 		return fluids;
 	}
 
@@ -69,16 +70,16 @@ public class FluidContentsAttribute implements ItemAttribute {
 	public void save(CompoundTag nbt) {
 		if (fluid == null)
 			return;
-		ResourceLocation id = ForgeRegistries.FLUIDS.getKey(fluid);
-		if (id == null)
+		Optional<ResourceLocation> id = BuiltInRegistries.FLUID.getResourceKey(fluid).map(ResourceKey::location);
+		if (id.isEmpty())
 			return;
-		nbt.putString("id", id.toString());
+		nbt.putString("id", id.get().toString());
 	}
 
 	@Override
 	public void load(CompoundTag nbt) {
 		if (nbt.contains("id")) {
-			fluid = ForgeRegistries.FLUIDS.getValue(ResourceLocation.tryParse(nbt.getString("id")));
+			fluid = BuiltInRegistries.FLUID.get(ResourceLocation.tryParse(nbt.getString("id")));
 		}
 	}
 

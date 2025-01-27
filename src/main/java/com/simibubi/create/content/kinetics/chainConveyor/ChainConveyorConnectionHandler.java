@@ -10,6 +10,7 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import net.createmod.catnip.CatnipClient;
 import net.createmod.catnip.utility.Iterate;
 import net.createmod.catnip.utility.VecHelper;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -17,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -55,39 +57,33 @@ public class ChainConveyorConnectionHandler {
 		return true;
 	}
 
-	@SubscribeEvent
-	public static void onItemUsedOnBlock(PlayerInteractEvent.RightClickBlock event) {
-		ItemStack itemStack = event.getItemStack();
-		BlockPos pos = event.getPos();
-		Level level = event.getLevel();
-		Player player = event.getEntity();
+	public static InteractionResult onItemUsedOnBlock(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
+		ItemStack itemStack = player.getItemInHand(hand);
+		BlockPos pos = hit.getBlockPos();
 		BlockState blockState = level.getBlockState(pos);
 
 		if (!AllBlocks.CHAIN_CONVEYOR.has(blockState))
-			return;
+			return InteractionResult.PASS;
 		if (!isChain(itemStack))
-			return;
+			return InteractionResult.PASS;
 		if (!player.mayBuild() || player instanceof FakePlayer)
-			return;
-
-		event.setCanceled(true);
-		event.setCancellationResult(InteractionResult.CONSUME);
+			return InteractionResult.PASS;
 
 		if (!level.isClientSide())
-			return;
+			return InteractionResult.CONSUME;
 		if (level.getBlockEntity(pos) instanceof ChainConveyorBlockEntity ccbe
 			&& ccbe.connections.size() >= AllConfigs.server().kinetics.maxChainConveyorConnections.get()) {
 			CreateLang.translate("chain_conveyor.cannot_add_more_connections")
 				.style(ChatFormatting.RED)
 				.sendStatus(player);
-			return;
+			return InteractionResult.CONSUME;
 		}
 
 		if (firstPos == null || firstDim != level.dimension()) {
 			firstPos = pos;
 			firstDim = level.dimension();
-			player.swing(event.getHand());
-			return;
+			player.swing(hand);
+			return InteractionResult.CONSUME;
 		}
 
 		boolean success = validateAndConnect(level, pos, player, itemStack, false);
@@ -95,7 +91,7 @@ public class ChainConveyorConnectionHandler {
 
 		if (!success) {
 			AllSoundEvents.DENY.play(level, player, pos);
-			return;
+			return InteractionResult.CONSUME;
 		}
 
 		SoundType soundtype = Blocks.CHAIN.defaultBlockState()
@@ -103,6 +99,8 @@ public class ChainConveyorConnectionHandler {
 		if (soundtype != null)
 			level.playSound(player, pos, soundtype.getPlaceSound(), SoundSource.BLOCKS,
 				(soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+
+		return InteractionResult.CONSUME;
 	}
 
 	private static boolean isChain(ItemStack itemStack) {

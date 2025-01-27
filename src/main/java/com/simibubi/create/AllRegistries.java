@@ -1,11 +1,10 @@
 package com.simibubi.create;
 
-import com.mojang.serialization.Lifecycle;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPointType;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttributeType;
 
-import net.minecraft.core.MappedRegistry;
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 
@@ -15,7 +14,10 @@ public class AllRegistries {
 	public static final Registry<ItemAttributeType> ITEM_ATTRIBUTE_TYPES = registry(Keys.ITEM_ATTRIBUTE_TYPES);
 
 	private static <T> Registry<T> registry(ResourceKey<Registry<T>> registryKey) {
-		return new MappedRegistry<>(registryKey, Lifecycle.stable());
+		return FabricRegistryBuilder.createSimple(registryKey).buildAndRegister();
+	}
+
+	public static void register() {
 	}
 
 	public static final class Keys {

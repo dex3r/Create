@@ -5,11 +5,11 @@ import org.joml.Quaternionfc;
 
 import dev.engine_room.flywheel.api.instance.InstanceHandle;
 import dev.engine_room.flywheel.api.instance.InstanceType;
-import dev.engine_room.flywheel.lib.instance.ColoredLitInstance;
+import dev.engine_room.flywheel.lib.instance.ColoredLitOverlayInstance;
 import net.createmod.catnip.render.SpriteShiftEntry;
 import net.minecraft.core.Vec3i;
 
-public class ScrollInstance extends ColoredLitInstance {
+public class ScrollInstance extends ColoredLitOverlayInstance {
 	public float x;
 	public float y;
 	public float z;
@@ -27,7 +27,7 @@ public class ScrollInstance extends ColoredLitInstance {
 	public float scaleU;
 	public float scaleV;
 
-	public ScrollInstance(InstanceType<? extends ColoredLitInstance> type, InstanceHandle handle) {
+	public ScrollInstance(InstanceType<? extends ColoredLitOverlayInstance> type, InstanceHandle handle) {
 		super(type, handle);
 	}
 

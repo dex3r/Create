@@ -24,10 +24,10 @@ public class StandardBogeyVisual implements BogeyVisual {
 
 	public StandardBogeyVisual(VisualizationContext ctx, float partialTick, boolean inContraption) {
 		var shaftInstancer = ctx.instancerProvider()
-				.instancer(InstanceTypes.TRANSFORMED, Models.block(AllBlocks.SHAFT.getDefaultState()
-						.setValue(ShaftBlock.AXIS, Direction.Axis.Z)));
-		shaft1 = shaftInstancer.createInstance();
-		shaft2 = shaftInstancer.createInstance();
+			.instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.SHAFT));
+
+		shaft1 = shaftInstancer.createInstance().rotateToFace(Direction.SOUTH);
+		shaft2 = shaftInstancer.createInstance().rotateToFace(Direction.SOUTH);
 	}
 
 	@Override
@@ -146,10 +146,9 @@ public class StandardBogeyVisual implements BogeyVisual {
 		public Large(VisualizationContext ctx, float partialTick, boolean inContraption) {
 			super(ctx, partialTick, inContraption);
 			var secondaryShaftInstancer = ctx.instancerProvider()
-					.instancer(InstanceTypes.TRANSFORMED, Models.block(AllBlocks.SHAFT.getDefaultState()
-							.setValue(ShaftBlock.AXIS, Direction.Axis.X)));
-			secondaryShaft1 = secondaryShaftInstancer.createInstance();
-			secondaryShaft2 = secondaryShaftInstancer.createInstance();
+				.instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.SHAFT));
+			secondaryShaft1 = secondaryShaftInstancer.createInstance().rotateToFace(Direction.EAST);
+			secondaryShaft2 = secondaryShaftInstancer.createInstance().rotateToFace(Direction.EAST);
 			drive = ctx.instancerProvider()
 					.instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.BOGEY_DRIVE))
 					.createInstance();

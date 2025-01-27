@@ -9,7 +9,6 @@ import com.simibubi.create.foundation.render.AllInstanceTypes;
 
 import dev.engine_room.flywheel.api.instance.Instance;
 import dev.engine_room.flywheel.api.instance.InstancerProvider;
-import dev.engine_room.flywheel.api.model.Model;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.model.Models;
 import net.minecraft.core.Direction;
@@ -60,10 +59,6 @@ public class SawVisual extends KineticBlockEntityVisual<SawBlockEntity> {
 	@Override
 	protected void _delete() {
 		rotatingModel.delete();
-	}
-
-	protected Model model() {
-		return VirtualRenderHelper.blockModel(blockState);
 	}
 
 	@Override

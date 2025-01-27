@@ -5,19 +5,18 @@ import org.joml.Vector3f;
 
 import dev.engine_room.flywheel.api.instance.InstanceHandle;
 import dev.engine_room.flywheel.api.instance.InstanceType;
-import dev.engine_room.flywheel.lib.instance.ColoredLitInstance;
+import dev.engine_room.flywheel.lib.instance.ColoredLitOverlayInstance;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.block.state.BlockState;
 
-public class RotatingInstance extends ColoredLitInstance {
+public class RotatingInstance extends ColoredLitOverlayInstance {
 	public static final float SPEED_MULTIPLIER = 6;
 
-    public byte rotationAxisX;
-    public byte rotationAxisY;
-    public byte rotationAxisZ;
+	public byte rotationAxisX;
+	public byte rotationAxisY;
+	public byte rotationAxisZ;
 	public float x;
 	public float y;
 	public float z;
@@ -98,12 +97,12 @@ public class RotatingInstance extends ColoredLitInstance {
 	}
 
 	public RotatingInstance setRotationAxis(Direction.Axis axis) {
-        Direction orientation = Direction.get(Direction.AxisDirection.POSITIVE, axis);
-        return setRotationAxis(orientation.step());
-    }
+		Direction orientation = Direction.get(Direction.AxisDirection.POSITIVE, axis);
+		return setRotationAxis(orientation.step());
+	}
 
-    public RotatingInstance setRotationAxis(Vector3f axis) {
-        return setRotationAxis(axis.x(), axis.y(), axis.z());
+	public RotatingInstance setRotationAxis(Vector3f axis) {
+		return setRotationAxis(axis.x(), axis.y(), axis.z());
 	}
 
 	public RotatingInstance setRotationAxis(float rotationAxisX, float rotationAxisY, float rotationAxisZ) {
@@ -114,8 +113,8 @@ public class RotatingInstance extends ColoredLitInstance {
 	}
 
 	public RotatingInstance setPosition(Vec3i pos) {
-        return setPosition(pos.getX(), pos.getY(), pos.getZ());
-    }
+		return setPosition(pos.getX(), pos.getY(), pos.getZ());
+	}
 
 	public RotatingInstance setPosition(Vector3f pos) {
 		return setPosition(pos.x(), pos.y(), pos.z());

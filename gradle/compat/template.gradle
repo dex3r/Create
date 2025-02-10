@@ -1,9 +1,0 @@
-repositories {
-    // add mavens here
-}
-
-// define versions here
-
-dependencies {
-    // add runtime-only dependencies (modLocalRuntime)
-}

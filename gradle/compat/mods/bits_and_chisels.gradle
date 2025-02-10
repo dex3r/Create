@@ -1,9 +1,0 @@
-repositories {
-    maven { url = "https://api.modrinth.com/maven" }
-}
-
-String bncVersion = "2.6.13"
-
-dependencies {
-    modLocalRuntime("maven.modrinth:bits-and-chisels:$bncVersion")
-}

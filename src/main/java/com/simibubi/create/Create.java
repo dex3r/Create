@@ -91,7 +91,7 @@ public class Create implements ModInitializer {
 
 	@Override
 	public void onInitialize() { // onCtor
-		LOGGER.info("{} {} initializing! Commit hash: {}", NAME, CreateBuildInfo.VERSION, CreateBuildInfo.GIT_COMMIT);
+		LOGGER.info("{} {} initializing!", NAME, CreateBuildInfo.VERSION);
 
 		AllSoundEvents.prepare();
 		AllTags.init();

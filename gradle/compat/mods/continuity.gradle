@@ -1,9 +1,0 @@
-repositories {
-    maven { url = "https://api.modrinth.com/maven" }
-}
-
-String continuityVersion = "3.0.0-beta.4+1.20.1"
-
-dependencies {
-    modLocalRuntime("maven.modrinth:continuity:$continuityVersion")
-}

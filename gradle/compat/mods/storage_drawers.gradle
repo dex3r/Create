@@ -1,9 +1,0 @@
-repositories {
-    maven { url = "https://api.modrinth.com/maven" }
-}
-
-String storageDrawersVersion = "1.20.1-12.10.4"
-
-dependencies {
-    modLocalRuntime("maven.modrinth:storagedrawers:$storageDrawersVersion")
-}

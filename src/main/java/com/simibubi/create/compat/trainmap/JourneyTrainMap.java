@@ -13,6 +13,7 @@ import journeymap.client.api.util.UIState;
 import journeymap.client.ui.fullscreen.Fullscreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.Mth;
@@ -33,7 +34,7 @@ public class JourneyTrainMap {
 		TrainMapSyncClient.requestData();
 	}
 
-	public static void mouseClick(InputEvent.MouseButton.Pre event) {
+	public static boolean mouseClick(Screen screen, int mouseX, int mouseY) {
 		Minecraft mc = Minecraft.getInstance();
 		if (!(mc.screen instanceof Fullscreen screen))
 			return;

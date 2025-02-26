@@ -11,6 +11,7 @@ import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.Create;
 import com.simibubi.create.CreateClient;
+import com.simibubi.create.compat.trainmap.TrainMapEvents;
 import com.simibubi.create.content.contraptions.ContraptionHandler;
 import com.simibubi.create.content.contraptions.ContraptionHandlerClient;
 import com.simibubi.create.content.contraptions.actors.seat.ContraptionPlayerPassengerRotation;
@@ -81,11 +82,11 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.gui.OpenCreateMenuButton;
 
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererCallback;
+import net.createmod.catnip.animation.AnimationTickHolder;
+import net.createmod.catnip.levelWrappers.WrappedClientLevel;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.StitchedSprite;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
-import net.createmod.catnip.animation.AnimationTickHolder;
-import net.createmod.catnip.levelWrappers.WrappedClientLevel;
 import net.createmod.ponder.foundation.PonderTooltipHandler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -459,6 +460,8 @@ public class ClientEvents {
 		ResourceLocation latePhase = Create.asResource("late");
 		ScreenEvents.AFTER_INIT.addPhaseOrdering(Event.DEFAULT_PHASE, latePhase);
 		ScreenEvents.AFTER_INIT.register(latePhase, OpenCreateMenuButton.OpenConfigButtonHandler::onGuiInit);
+
+		TrainMapEvents.init();
 
 		// Flywheel Events
 		ReloadLevelRendererCallback.EVENT.register(ContraptionRenderInfoManager::onReloadLevelRenderer);

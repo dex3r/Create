@@ -29,6 +29,8 @@
     "accessor.ServerLevelAccessor",
     "accessor.SystemReportAccessor",
     "accessor.UseOnContextAccessor",
+    "compat.ftbchunks.LargeMapScreenAccessor",
+    "compat.ftbchunks.RegionMapPanelAccessor",
     "fabric.AbstractMinecartMixin",
     "fabric.BlockableEventLoopAccessor",
     "fabric.EntityAccessor",

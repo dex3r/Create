@@ -6,10 +6,6 @@ import java.util.function.Supplier;
 import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.registries.BuiltInRegistries;
-
-import net.fabricmc.loader.api.FabricLoader;
-
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
@@ -39,6 +35,7 @@ public enum Mods {
 	MODERNUI,
 	FTBCHUNKS,
 	JOURNEYMAP,
+	FTBLIBRARY,
 
 	// fabric mods
 	SANDWICHABLE,

@@ -21,6 +21,10 @@ public class CreateMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+		if (mixinClassName.contains("ftbchunks")) {
+			return Mods.FTBCHUNKS.isLoaded();
+		}
+
 		if (targetClassName.equals("journeymap/client/ui/fullscreen/Fullscreen") && !Mods.JOURNEYMAP.isLoaded())
 			return false;
 		return true;

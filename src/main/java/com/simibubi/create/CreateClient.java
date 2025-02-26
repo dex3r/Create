@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.compat.Mods;
+import com.simibubi.create.compat.ftb.FTBIntegration;
 import com.simibubi.create.compat.sodium.SodiumCompat;
 import com.simibubi.create.compat.trinkets.Trinkets;
 import com.simibubi.create.content.contraptions.glue.SuperGlueSelectionHandler;
@@ -40,7 +41,6 @@ import com.simibubi.create.infrastructure.gui.CreateMainMenuScreen;
 
 import net.createmod.catnip.config.ui.BaseConfigScreen;
 import net.createmod.catnip.config.ui.ConfigScreen;
-import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBufferCache;
 import net.createmod.ponder.foundation.PonderIndex;
@@ -110,12 +110,9 @@ public class CreateClient implements ClientModInitializer {
 		PonderIndex.addPlugin(new CreatePonderPlugin());
 
 		setupConfigUIBackground();
-		// --- TODO/FIXME: still needed?
-		registerOverlays();
-		UIRenderHelper.init();
-		// ---
 
 		// fabric exclusive
+		registerOverlays();
 		ClientEvents.register();
 		InputEvents.register();
 		AllPackets.getChannel().initClientListener();
@@ -129,6 +126,7 @@ public class CreateClient implements ClientModInitializer {
 	private static void initCompat() {
 		Mods.TRINKETS.executeIfInstalled(() -> () -> Trinkets.clientInit());
 		Mods.SODIUM.executeIfInstalled(() -> () -> SodiumCompat.init());
+		Mods.FTBCHUNKS.executeIfInstalled(() -> () -> FTBIntegration.init());
 	}
 
 	private static void registerOverlays() {

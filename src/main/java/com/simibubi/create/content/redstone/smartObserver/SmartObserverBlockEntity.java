@@ -6,6 +6,8 @@ import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.fluids.PipeConnection.Flow;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour.TransportedResult;
+import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorBlockEntity;
+import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorPackage;
 import com.simibubi.create.content.redstone.DirectedDirectionalBlock;
 import com.simibubi.create.content.redstone.FilteredDetectorFilterSlot;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -109,6 +111,16 @@ public class SmartObserverBlockEntity extends SmartBlockEntity {
 				activate();
 				return;
 			}
+			return;
+		}
+		
+		// Detect packages looping on a chain conveyor
+		if (level.getBlockEntity(targetPos) instanceof ChainConveyorBlockEntity ccbe) {
+			for (ChainConveyorPackage box : ccbe.getLoopingPackages())
+				if (filtering.test(box.item)) {
+					activate();
+					return;
+				}
 			return;
 		}
 

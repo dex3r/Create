@@ -2,12 +2,12 @@ package com.simibubi.create.content.kinetics.mechanicalArm;
 
 import javax.annotation.Nullable;
 
-import com.simibubi.create.AllRegistries;
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.foundation.item.ItemHelper;
 
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -93,7 +93,8 @@ public class ArmInteractionPoint {
 		return type.canCreatePoint(level, pos, cachedState);
 	}
 
-	public void keepAlive() {}
+	public void keepAlive() {
+	}
 
 	@Nullable
 	protected Storage<ItemVariant> getHandler() {
@@ -131,7 +132,7 @@ public class ArmInteractionPoint {
 	}
 
 	public final CompoundTag serialize(BlockPos anchor) {
-		ResourceLocation key = AllRegistries.ARM_INTERACTION_POINT_TYPES.getKey(type);
+		ResourceLocation key = CreateBuiltInRegistries.ARM_INTERACTION_POINT_TYPE.getKey(type);
 		if (key == null)
 			throw new IllegalArgumentException("Could not get id for ArmInteractionPointType " + type + "!");
 
@@ -147,7 +148,7 @@ public class ArmInteractionPoint {
 		ResourceLocation id = ResourceLocation.tryParse(nbt.getString("Type"));
 		if (id == null)
 			return null;
-		ArmInteractionPointType type = AllRegistries.ARM_INTERACTION_POINT_TYPES.get(id);
+		ArmInteractionPointType type = CreateBuiltInRegistries.ARM_INTERACTION_POINT_TYPE.get(id);
 		if (type == null)
 			return null;
 		BlockPos pos = NbtUtils.readBlockPos(nbt.getCompound("Pos")).offset(anchor);

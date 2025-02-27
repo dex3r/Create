@@ -32,10 +32,12 @@ public final class SingletonItemAttribute implements ItemAttribute {
 	}
 
 	@Override
-	public void save(CompoundTag nbt) {} // NO-OP
+	public void save(CompoundTag nbt) {
+	} // NO-OP
 
 	@Override
-	public void load(CompoundTag nbt) {} // NO-OP
+	public void load(CompoundTag nbt) {
+	} // NO-OP
 
 	@Override
 	public String getTranslationKey() {

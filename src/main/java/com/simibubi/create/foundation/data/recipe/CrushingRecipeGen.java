@@ -405,7 +405,21 @@ public class CrushingRecipeGen extends ProcessingRecipeGen {
 				.output(0.75f, Mods.AET, "ambrosium_shard", 1)
 				.output(0.125f, Mods.AET, "holystone", 1)
 				.output(0.75f, AllItems.EXP_NUGGET.get())
-				.whenModLoaded(Mods.AET.getId()))
+				.whenModLoaded(Mods.AET.getId())),
+		
+		// IE
+		
+		IE_COKE_DUST = create(Mods.IE.recipeId("coal_coke"), b -> b.duration(200)
+			.require(Mods.IE, "coal_coke").output(Mods.IE, "dust_coke")
+			.whenModLoaded(Mods.IE.getId())),
+		
+		IE_COKE_BLOCK = create(Mods.IE.recipeId("coke_block"), b -> b.duration(200)
+			.require(Mods.IE, "coke").output(1, Mods.IE.asResource("dust_coke"), 9)
+			.whenModLoaded(Mods.IE.getId())),
+	
+		IE_SLAG_GRAVEL = create(Mods.IE.recipeId("slag"), b -> b.duration(200)
+			.require(Mods.IE, "slag").output(Mods.IE, "slag_gravel")
+			.whenModLoaded(Mods.IE.getId()));
 
 
 	;

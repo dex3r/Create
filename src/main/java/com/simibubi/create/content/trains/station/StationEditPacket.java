@@ -92,9 +92,12 @@ public class StationEditPacket extends BlockEntityConfigurationPacket<StationBlo
 		Level level = be.getLevel();
 		BlockPos blockPos = be.getBlockPos();
 		BlockState blockState = level.getBlockState(blockPos);
-
+		GlobalStation station = be.getStation();
+		
 		if (dropSchedule) {
-			be.dropSchedule(player);
+			if (station == null)
+				return;
+			be.dropSchedule(player, station.getPresentTrain());
 			return;
 		}
 		
@@ -115,8 +118,7 @@ public class StationEditPacket extends BlockEntityConfigurationPacket<StationBlo
 				return;
 			if (tryAssemble) {
 				be.assemble(player.getUUID());
-				assemblyComplete = be.getStation() != null && be.getStation()
-					.getPresentTrain() != null;
+				assemblyComplete = station != null && station.getPresentTrain() != null;
 			} else {
 				if (be.tryDisassembleTrain(player) && be.tryEnterAssemblyMode())
 					be.refreshAssemblyInfo();

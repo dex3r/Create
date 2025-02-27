@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 public class ChangeTitleInstruction extends TextScheduleInstruction {
 
@@ -59,7 +60,7 @@ public class ChangeTitleInstruction extends TextScheduleInstruction {
 
 	@Override
 	@Nullable
-	public DiscoveredPath start(ScheduleRuntime runtime) {
+	public DiscoveredPath start(ScheduleRuntime runtime, Level level) {
 		runtime.currentTitle = getScheduleTitle();
 		runtime.state = State.PRE_TRANSIT;
 		runtime.currentEntry++;

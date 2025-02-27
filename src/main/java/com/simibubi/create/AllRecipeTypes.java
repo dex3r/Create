@@ -27,6 +27,7 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.Pro
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeSerializer;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
+import com.simibubi.create.foundation.recipe.ItemCopyingRecipe;
 
 import net.createmod.catnip.lang.Lang;
 import net.minecraft.core.Registry;
@@ -62,7 +63,8 @@ public enum AllRecipeTypes implements IRecipeTypeInfo {
 	MECHANICAL_CRAFTING(MechanicalCraftingRecipe.Serializer::new),
 	SEQUENCED_ASSEMBLY(SequencedAssemblyRecipeSerializer::new),
 
-	TOOLBOX_DYEING(() -> new SimpleCraftingRecipeSerializer<>(ToolboxDyeingRecipe::new), () -> RecipeType.CRAFTING, false);
+	TOOLBOX_DYEING(() -> new SimpleCraftingRecipeSerializer<>(ToolboxDyeingRecipe::new), () -> RecipeType.CRAFTING, false),
+	ITEM_COPYING(() -> new SimpleCraftingRecipeSerializer<>(ItemCopyingRecipe::new), () -> RecipeType.CRAFTING, false);
 
 	public static final Predicate<? super Recipe<?>> CAN_BE_AUTOMATED = r -> !r.getId()
 		.getPath()

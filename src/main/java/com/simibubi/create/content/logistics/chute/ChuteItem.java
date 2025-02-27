@@ -38,9 +38,8 @@ public class ChuteItem extends BlockItem {
 		if (blockState.canBeReplaced())
 			context = BlockPlaceContext.at(context, correctPos, face);
 		else {
-			if (!(blockState.getBlock() instanceof ChuteBlock) || world.isClientSide)
+			if (!(blockState.getBlock() instanceof ChuteBlock block) || world.isClientSide)
 				return InteractionResult.FAIL;
-			AbstractChuteBlock block = (AbstractChuteBlock) blockState.getBlock();
 			if (block.getFacing(blockState) == Direction.DOWN) {
 				world.setBlockAndUpdate(correctPos,
 					ProperWaterloggedBlock.withWater(world,

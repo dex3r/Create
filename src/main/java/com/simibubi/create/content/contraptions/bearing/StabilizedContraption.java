@@ -1,8 +1,9 @@
 package com.simibubi.create.content.contraptions.bearing;
 
+import com.simibubi.create.AllContraptionTypes;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.ContraptionType;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,7 +38,7 @@ public class StabilizedContraption extends Contraption {
 
 	@Override
 	public ContraptionType getType() {
-		return ContraptionType.STABILIZED;
+		return AllContraptionTypes.STABILIZED.get();
 	}
 
 	@Override

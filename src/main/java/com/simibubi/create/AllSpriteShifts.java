@@ -94,6 +94,8 @@ public class AllSpriteShifts {
 		ANDESIDE_BELT_CASING = get("block/belt/brass_belt_casing", "block/belt/andesite_belt_casing"),
 		CRAFTER_THINGIES = get("block/crafter_thingies", "block/crafter_thingies");
 
+	public static final SpriteShiftEntry BOGEY_BELT = get("block/bogey/belt", "block/bogey/belt_scroll");
+
 	static {
 		populateMaps();
 	}

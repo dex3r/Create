@@ -29,8 +29,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllInteractionBehaviours;
-import com.simibubi.create.AllMovementBehaviours;
+import com.simibubi.create.AllTags.AllContraptionTypeTags;
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
+import com.simibubi.create.api.contraption.BlockMovementChecks;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionControlsMovement;
 import com.simibubi.create.content.contraptions.actors.harvester.HarvesterMovementBehaviour;
 import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
@@ -40,9 +43,7 @@ import com.simibubi.create.content.contraptions.bearing.MechanicalBearingBlock;
 import com.simibubi.create.content.contraptions.bearing.StabilizedContraption;
 import com.simibubi.create.content.contraptions.bearing.WindmillBearingBlock;
 import com.simibubi.create.content.contraptions.bearing.WindmillBearingBlockEntity;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
-import com.simibubi.create.content.contraptions.behaviour.MovingInteractionBehaviour;
 import com.simibubi.create.content.contraptions.chassis.AbstractChassisBlock;
 import com.simibubi.create.content.contraptions.chassis.ChassisBlockEntity;
 import com.simibubi.create.content.contraptions.chassis.StickerBlock;
@@ -72,7 +73,6 @@ import com.simibubi.create.content.trains.bogey.AbstractBogeyBlock;
 import com.simibubi.create.foundation.blockEntity.IMultiBlockEntityContainer;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.utility.BlockHelper;
-import com.simibubi.create.foundation.utility.ICoordinate;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.createmod.catnip.data.Iterate;
@@ -86,12 +86,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.IdMapper;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
@@ -103,6 +105,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
@@ -139,6 +142,7 @@ public abstract class Contraption {
 	public boolean disassembled;
 
 	protected Map<BlockPos, StructureBlockInfo> blocks;
+	protected Map<BlockPos, CompoundTag> updateTags;
 	protected List<MutablePair<StructureBlockInfo, MovementContext>> actors;
 	protected Map<BlockPos, MovingInteractionBehaviour> interactors;
 	protected List<ItemStack> disabledActors;
@@ -165,6 +169,7 @@ public abstract class Contraption {
 
 	public Contraption() {
 		blocks = new HashMap<>();
+		updateTags = new HashMap<>();
 		seats = new ArrayList<>();
 		actors = new ArrayList<>();
 		disabledActors = new ArrayList<>();
@@ -594,9 +599,8 @@ public abstract class Contraption {
 	private boolean moveChassis(Level world, BlockPos pos, Direction movementDirection, Queue<BlockPos> frontier,
 								Set<BlockPos> visited) {
 		BlockEntity be = world.getBlockEntity(pos);
-		if (!(be instanceof ChassisBlockEntity))
+		if (!(be instanceof ChassisBlockEntity chassis))
 			return false;
-		ChassisBlockEntity chassis = (ChassisBlockEntity) be;
 		chassis.addAttachedChasses(frontier, visited);
 		List<BlockPos> includedBlockPositions = chassis.getIncludedBlockPositions(movementDirection, false);
 		if (includedBlockPositions == null)
@@ -613,7 +617,7 @@ public abstract class Contraption {
 			blockstate = blockstate.setValue(RedstoneContactBlock.POWERED, true);
 		if (AllBlocks.POWERED_SHAFT.has(blockstate))
 			blockstate = BlockHelper.copyProperties(blockstate, AllBlocks.SHAFT.getDefaultState());
-		if (blockstate.getBlock() instanceof ControlsBlock && getType() == ContraptionType.CARRIAGE)
+		if (blockstate.getBlock() instanceof ControlsBlock && AllContraptionTypeTags.OPENS_CONTROLS.matches(this.getType()))
 			blockstate = blockstate.setValue(ControlsBlock.OPEN, true);
 		if (blockstate.hasProperty(SlidingDoorBlock.VISIBLE))
 			blockstate = blockstate.setValue(SlidingDoorBlock.VISIBLE, false);
@@ -646,21 +650,29 @@ public abstract class Contraption {
 		bounds = bounds.minmax(new AABB(localPos));
 
 		BlockEntity be = pair.getValue();
+
+		if (be != null) {
+			CompoundTag updateTag = be.getUpdateTag();
+			// empty tags are intentionally kept, see writeBlocksCompound
+			// for testing, this line can be commented to emulate legacy behavior
+			updateTags.put(localPos, updateTag);
+		}
+
 		storage.addBlock(level, state, pos, localPos, be);
 
 		captureMultiblock(localPos, structureBlockInfo, be);
 
-		if (AllMovementBehaviours.getBehaviour(state) != null)
+		if (MovementBehaviour.REGISTRY.get(state) != null)
 			actors.add(MutablePair.of(structureBlockInfo, null));
 
-		MovingInteractionBehaviour interactionBehaviour = AllInteractionBehaviours.getBehaviour(state);
+		MovingInteractionBehaviour interactionBehaviour = MovingInteractionBehaviour.REGISTRY.get(state);
 		if (interactionBehaviour != null)
 			interactors.put(localPos, interactionBehaviour);
 
 		if (be instanceof CreativeCrateBlockEntity
 				&& ((CreativeCrateBlockEntity) be).getBehaviour(FilteringBehaviour.TYPE)
-				.getFilter()
-				.isEmpty())
+			.getFilter()
+			.isEmpty())
 			hasUniversalCreativeCrate = true;
 	}
 
@@ -670,9 +682,12 @@ public abstract class Contraption {
 
 		CompoundTag nbt = structureBlockInfo.nbt();
 		BlockPos controllerPos = nbt.contains("Controller") ?
-				toLocalPos(NbtUtils.readBlockPos(nbt.getCompound("Controller"))) :
-				localPos;
+			toLocalPos(NbtUtils.readBlockPos(nbt.getCompound("Controller"))) :
+			localPos;
 		nbt.put("Controller", NbtUtils.writeBlockPos(controllerPos));
+
+		if (updateTags.containsKey(localPos))
+			updateTags.get(localPos).put("Controller", NbtUtils.writeBlockPos(controllerPos));
 
 		if (multiBlockBE.isController() && multiBlockBE.getHeight() <= 1 && multiBlockBE.getWidth() <= 1) {
 			nbt.put("LastKnownPos", NbtUtils.writeBlockPos(BlockPos.ZERO.below(Integer.MAX_VALUE - 1)));
@@ -721,17 +736,17 @@ public abstract class Contraption {
 
 		capturedMultiblocks.clear();
 		nbt.getList("CapturedMultiblocks", Tag.TAG_COMPOUND).forEach(c -> {
-				CompoundTag tag = (CompoundTag) c;
-				if (!tag.contains("Controller", Tag.TAG_COMPOUND) && !tag.contains("Parts", Tag.TAG_LIST))
-					return;
+			CompoundTag tag = (CompoundTag) c;
+			if (!tag.contains("Controller", Tag.TAG_COMPOUND) && !tag.contains("Parts", Tag.TAG_LIST))
+				return;
 
-				BlockPos controllerPos = NbtUtils.readBlockPos(tag.getCompound("Controller"));
-				tag.getList("Parts", Tag.TAG_COMPOUND).forEach(part -> {
-					BlockPos partPos = NbtUtils.readBlockPos((CompoundTag) part);
-					StructureBlockInfo partInfo = this.blocks.get(partPos);
-					capturedMultiblocks.put(controllerPos, partInfo);
-				});
+			BlockPos controllerPos = NbtUtils.readBlockPos(tag.getCompound("Controller"));
+			tag.getList("Parts", Tag.TAG_COMPOUND).forEach(part -> {
+				BlockPos partPos = NbtUtils.readBlockPos((CompoundTag) part);
+				StructureBlockInfo partInfo = this.blocks.get(partPos);
+				capturedMultiblocks.put(controllerPos, partInfo);
 			});
+		});
 
 		storage.read(nbt, spawnData, this);
 
@@ -771,7 +786,7 @@ public abstract class Contraption {
 			StructureBlockInfo structureBlockInfo = getBlocks().get(pos);
 			if (structureBlockInfo == null)
 				return;
-			MovingInteractionBehaviour behaviour = AllInteractionBehaviours.getBehaviour(structureBlockInfo.state());
+			MovingInteractionBehaviour behaviour = MovingInteractionBehaviour.REGISTRY.get(structureBlockInfo.state());
 			if (behaviour != null)
 				interactors.put(pos, behaviour);
 		});
@@ -786,9 +801,10 @@ public abstract class Contraption {
 
 	public CompoundTag writeNBT(boolean spawnPacket) {
 		CompoundTag nbt = new CompoundTag();
-		nbt.putString("Type", getType().id);
+		ResourceLocation typeId = this.getType().holder.key().location();
+		nbt.putString("Type", typeId.toString());
 
-		CompoundTag blocksNBT = writeBlocksCompound();
+		CompoundTag blocksNBT = writeBlocksCompound(spawnPacket);
 
 		ListTag multiblocksNBT = new ListTag();
 		capturedMultiblocks.keySet().forEach(controllerPos -> {
@@ -805,7 +821,7 @@ public abstract class Contraption {
 
 		ListTag actorsNBT = new ListTag();
 		for (MutablePair<StructureBlockInfo, MovementContext> actor : getActors()) {
-			MovementBehaviour behaviour = AllMovementBehaviours.getBehaviour(actor.left.state());
+			MovementBehaviour behaviour = MovementBehaviour.REGISTRY.get(actor.left.state());
 			if (behaviour == null)
 				continue;
 			CompoundTag compound = new CompoundTag();
@@ -874,7 +890,7 @@ public abstract class Contraption {
 		storage.write(nbt, spawnPacket);
 	}
 
-	private CompoundTag writeBlocksCompound() {
+	private CompoundTag writeBlocksCompound(boolean spawnPacket) {
 		CompoundTag compound = new CompoundTag();
 		HashMapPalette<BlockState> palette = new HashMapPalette<>(new IdMapper<>(), 16, (i, s) -> {
 			throw new IllegalStateException("Palette Map index exceeded maximum");
@@ -883,11 +899,32 @@ public abstract class Contraption {
 
 		for (StructureBlockInfo block : this.blocks.values()) {
 			int id = palette.idFor(block.state());
+			BlockPos pos = block.pos();
 			CompoundTag c = new CompoundTag();
-			c.putLong("Pos", block.pos().asLong());
+			c.putLong("Pos", pos.asLong());
 			c.putInt("State", id);
-			if (block.nbt() != null)
-				c.put("Data", block.nbt());
+
+			CompoundTag updateTag = updateTags.get(pos);
+			if (spawnPacket) {
+				// for client sync, treat the updateTag as the data
+				if (updateTag != null) {
+					c.put("Data", updateTag);
+				} else if (block.nbt() != null) {
+					// an updateTag is saved for all BlockEntities, even when empty.
+					// this case means that the contraption was assembled pre-updateTags.
+					// in this case, we need to use the full BlockEntity data.
+					c.put("Data", block.nbt());
+					NBTHelper.putMarker(c, "Legacy");
+				}
+			} else {
+				// otherwise, write actual data as the data, save updateTag on its own
+				if (block.nbt() != null) {
+					c.put("Data", block.nbt());
+				}
+				if (updateTag != null) {
+					c.put("UpdateTag", updateTag);
+				}
+			}
 			blockList.add(c);
 		}
 
@@ -929,32 +966,68 @@ public abstract class Contraption {
 
 			this.blocks.put(info.pos(), info);
 
+			if (c.contains("UpdateTag", Tag.TAG_COMPOUND)) {
+				CompoundTag updateTag = c.getCompound("UpdateTag");
+				// it's very important that empty tags are read here. see writeBlocksCompound
+				this.updateTags.put(info.pos(), updateTag);
+			}
+
 			if (!world.isClientSide)
 				return;
 
-			CompoundTag tag = info.nbt();
-			if (tag == null)
-				return;
-
-			tag.putInt("x", info.pos().getX());
-			tag.putInt("y", info.pos().getY());
-			tag.putInt("z", info.pos().getZ());
-
-			BlockEntity be = BlockEntity.loadStatic(info.pos(), info.state(), tag);
+			// create the BlockEntity client-side for rendering
+			BlockEntity be = readBlockEntity(world, info, c);
 			if (be == null)
 				return;
-			be.setLevel(world);
-			if (be instanceof KineticBlockEntity kbe)
-				kbe.setSpeed(0);
-			be.getBlockState();
 
 			presentBlockEntities.put(info.pos(), be);
 
-			MovementBehaviour movementBehaviour = AllMovementBehaviours.getBehaviour(info.state());
+			MovementBehaviour movementBehaviour = MovementBehaviour.REGISTRY.get(info.state());
 			if (movementBehaviour == null || !movementBehaviour.disableBlockEntityRendering()) {
 				renderedBlockEntities.add(be);
 			}
 		});
+	}
+
+	@Nullable
+	private static BlockEntity readBlockEntity(Level level, StructureBlockInfo info, CompoundTag tag) {
+		BlockState state = info.state();
+		BlockPos pos = info.pos();
+		CompoundTag nbt = info.nbt();
+
+		if (tag.contains("Legacy")) {
+			// for contraptions that were assembled pre-updateTags, we need to use the old strategy.
+			if (nbt == null)
+				return null;
+
+			nbt.putInt("x", pos.getX());
+			nbt.putInt("y", pos.getY());
+			nbt.putInt("z", pos.getZ());
+
+			BlockEntity be = BlockEntity.loadStatic(pos, state, nbt);
+			postprocessReadBlockEntity(level, be);
+			return be;
+		}
+
+		if (!state.hasBlockEntity() || !(state.getBlock() instanceof EntityBlock entityBlock))
+			return null;
+
+		BlockEntity be = entityBlock.newBlockEntity(pos, state);
+		postprocessReadBlockEntity(level, be);
+		if (be != null && nbt != null) {
+			be.handleUpdateTag(nbt);
+		}
+
+		return be;
+	}
+
+	private static void postprocessReadBlockEntity(Level level, @Nullable BlockEntity be) {
+		if (be != null) {
+			be.setLevel(level);
+			if (be instanceof KineticBlockEntity kbe) {
+				kbe.setSpeed(0);
+			}
+		}
 	}
 
 	private static StructureBlockInfo readStructureBlockInfo(CompoundTag blockListEntry,
@@ -1089,7 +1162,7 @@ public abstract class Contraption {
 				if (blockState.getDestroySpeed(world, targetPos) == -1 || (state.getCollisionShape(world, targetPos)
 						.isEmpty()
 						&& !blockState.getCollisionShape(world, targetPos)
-						.isEmpty())) {
+					.isEmpty())) {
 					if (targetPos.getY() == world.getMinBuildHeight())
 						targetPos = targetPos.above();
 					world.levelEvent(2001, targetPos, Block.getId(state));
@@ -1110,7 +1183,7 @@ public abstract class Contraption {
 					state = state.setValue(SlidingDoorBlock.VISIBLE, !state.getValue(SlidingDoorBlock.OPEN))
 							.setValue(SlidingDoorBlock.POWERED, false);
 				// Stop Sculk shriekers from getting "stuck" if moved mid-shriek.
-				if(state.is(Blocks.SCULK_SHRIEKER)){
+				if (state.is(Blocks.SCULK_SHRIEKER)) {
 					state = Blocks.SCULK_SHRIEKER.defaultBlockState();
 				}
 
@@ -1129,7 +1202,7 @@ public abstract class Contraption {
 				CompoundTag tag = block.nbt();
 
 				// Temporary fix: Calling load(CompoundTag tag) on a Sculk sensor causes it to not react to vibrations.
-				if(state.is(Blocks.SCULK_SENSOR) || state.is(Blocks.SCULK_SHRIEKER))
+				if (state.is(Blocks.SCULK_SENSOR) || state.is(Blocks.SCULK_SHRIEKER))
 					tag = null;
 
 				if (blockEntity != null)
@@ -1194,12 +1267,11 @@ public abstract class Contraption {
 
 			BoundingBox boundingBox = optionalBoundingBox.get();
 			BlockPos newControllerPos = new BlockPos(boundingBox.minX(), boundingBox.minY(), boundingBox.minZ());
-			BlockPos newLocalPos = toLocalPos(newControllerPos);
 			BlockPos otherPos = transform.unapply(newControllerPos);
 
 			multiblockParts.forEach(info -> info.nbt().put("Controller", NbtUtils.writeBlockPos(newControllerPos)));
 
-			if (controllerPos.equals(newLocalPos))
+			if (controllerPos.equals(otherPos))
 				return;
 
 			// swap nbt data to the new controller position
@@ -1236,7 +1308,7 @@ public abstract class Contraption {
 
 		for (MutablePair<StructureBlockInfo, MovementContext> pair : actors) {
 			MovementContext context = new MovementContext(world, pair.left, this);
-			MovementBehaviour behaviour = AllMovementBehaviours.getBehaviour(pair.left.state());
+			MovementBehaviour behaviour = MovementBehaviour.REGISTRY.get(pair.left.state());
 					if (behaviour != null)
 				behaviour.startMoving(context);
 			pair.setRight(context);
@@ -1266,7 +1338,7 @@ public abstract class Contraption {
 
 	public void setActorsActive(ItemStack referenceStack, boolean enable) {
 		for (MutablePair<StructureBlockInfo, MovementContext> pair : actors) {
-			MovementBehaviour behaviour = AllMovementBehaviours.getBehaviour(pair.left.state());
+			MovementBehaviour behaviour = MovementBehaviour.REGISTRY.get(pair.left.state());
 			if (behaviour == null)
 				continue;
 			ItemStack behaviourStack = behaviour.canBeDisabledVia(pair.right);
@@ -1296,7 +1368,7 @@ public abstract class Contraption {
 
 	public void forEachActor(Level world, BiConsumer<MovementBehaviour, MovementContext> callBack) {
 		for (MutablePair<StructureBlockInfo, MovementContext> pair : actors) {
-			MovementBehaviour behaviour = AllMovementBehaviours.getBehaviour(pair.getLeft().state());
+			MovementBehaviour behaviour = MovementBehaviour.REGISTRY.get(pair.getLeft().state());
 			if (behaviour == null)
 				continue;
 			callBack.accept(behaviour, pair.getRight());
@@ -1315,7 +1387,7 @@ public abstract class Contraption {
 	public void expandBoundsAroundAxis(Axis axis) {
 		Set<BlockPos> blocks = getBlocks().keySet();
 
-		int radius = (int) (Math.ceil(Math.sqrt(getRadius(blocks, axis))));
+		int radius = (int) (Math.ceil(getRadius(blocks, axis)));
 
 		int maxX = radius + 2;
 		int maxY = radius + 2;
@@ -1324,13 +1396,13 @@ public abstract class Contraption {
 		int minY = -radius - 1;
 		int minZ = -radius - 1;
 
-		if (axis == Direction.Axis.X) {
+		if (axis == Axis.X) {
 			maxX = (int) bounds.maxX;
 			minX = (int) bounds.minX;
-		} else if (axis == Direction.Axis.Y) {
+		} else if (axis == Axis.Y) {
 			maxY = (int) bounds.maxY;
 			minY = (int) bounds.minY;
-		} else if (axis == Direction.Axis.Z) {
+		} else if (axis == Axis.Z) {
 			maxZ = (int) bounds.maxZ;
 			minZ = (int) bounds.minZ;
 		}
@@ -1416,32 +1488,38 @@ public abstract class Contraption {
 				});
 	}
 
-	public static float getRadius(Set<BlockPos> blocks, Direction.Axis axis) {
+	public static double getRadius(Iterable<? extends Vec3i> blocks, Axis axis) {
+		Axis axisA;
+		Axis axisB;
+
 		switch (axis) {
-			case X:
-				return getMaxDistSqr(blocks, BlockPos::getY, BlockPos::getZ);
-			case Y:
-				return getMaxDistSqr(blocks, BlockPos::getX, BlockPos::getZ);
-			case Z:
-				return getMaxDistSqr(blocks, BlockPos::getX, BlockPos::getY);
+			case X-> {
+				axisA = Axis.Y;
+				axisB = Axis.Z;
+			}
+			case Y-> {
+				axisA = Axis.X;
+				axisB = Axis.Z;
+			}
+			case Z-> {
+				axisA = Axis.X;
+				axisB = Axis.Y;
+			}
+			default -> throw new IllegalStateException("Unexpected value: " + axis);
 		}
 
-		throw new IllegalStateException("Impossible axis");
-	}
+		int maxDistSq = 0;
+		for (Vec3i vec : blocks) {
+			int a = vec.get(axisA);
+			int b = vec.get(axisB);
 
-	public static float getMaxDistSqr(Set<BlockPos> blocks, ICoordinate one, ICoordinate other) {
-		float maxDistSq = -1;
-		for (BlockPos pos : blocks) {
-			float a = one.get(pos);
-			float b = other.get(pos);
-
-			float distSq = a * a + b * b;
+			int distSq = a * a + b * b;
 
 			if (distSq > maxDistSq)
 				maxDistSq = distSq;
 		}
 
-		return maxDistSq;
+		return Math.sqrt(maxDistSq);
 	}
 
 	public MountedStorageManager getStorage() {
@@ -1476,7 +1554,7 @@ public abstract class Contraption {
 
 	public boolean containsBlockBreakers() {
 		for (MutablePair<StructureBlockInfo, MovementContext> pair : actors) {
-			MovementBehaviour behaviour = AllMovementBehaviours.getBehaviour(pair.getLeft().state());
+			MovementBehaviour behaviour = MovementBehaviour.REGISTRY.get(pair.getLeft().state());
 			if (behaviour instanceof BlockBreakingMovementBehaviour || behaviour instanceof HarvesterMovementBehaviour)
 				return true;
 		}

@@ -26,16 +26,18 @@ public class FilterItemStack {
 
 	public static FilterItemStack of(ItemStack filter) {
 		if (filter.hasTag()) {
-			CompoundTag stackTag = filter.getTag();
-			stackTag.remove("Enchantments");
-			stackTag.remove("AttributeModifiers");
-
-			if (AllItems.FILTER.isIn(filter))
+			if (AllItems.FILTER.isIn(filter)) {
+				trimFilterTag(filter);
 				return new ListFilterItemStack(filter);
-			if (AllItems.ATTRIBUTE_FILTER.isIn(filter))
+			}
+			if (AllItems.ATTRIBUTE_FILTER.isIn(filter)) {
+				trimFilterTag(filter);
 				return new AttributeFilterItemStack(filter);
-			if (AllItems.PACKAGE_FILTER.isIn(filter))
+			}
+			if (AllItems.PACKAGE_FILTER.isIn(filter)) {
+				trimFilterTag(filter);
 				return new PackageFilterItemStack(filter);
+			}
 		}
 
 		return new FilterItemStack(filter);
@@ -47,6 +49,12 @@ public class FilterItemStack {
 
 	public static FilterItemStack empty() {
 		return of(ItemStack.EMPTY);
+	}
+
+	private static void trimFilterTag(ItemStack filter) {
+		CompoundTag stackTag = filter.getTag();
+		stackTag.remove("Enchantments");
+		stackTag.remove("AttributeModifiers");
 	}
 
 	public boolean isEmpty() {
@@ -141,10 +149,10 @@ public class FilterItemStack {
 
 			shouldRespectNBT = defaults ? false
 				: filter.getTag()
-					.getBoolean("RespectNBT");
+				.getBoolean("RespectNBT");
 			isBlacklist = defaults ? false
 				: filter.getTag()
-					.getBoolean("Blacklist");
+				.getBoolean("Blacklist");
 		}
 
 		@Override
@@ -183,11 +191,11 @@ public class FilterItemStack {
 			attributeTests = new ArrayList<>();
 			whitelistMode = WhitelistMode.values()[defaults ? 0
 				: filter.getTag()
-					.getInt("WhitelistMode")];
+				.getInt("WhitelistMode")];
 
 			ListTag attributes = defaults ? new ListTag()
 				: filter.getTag()
-					.getList("MatchedAttributes", Tag.TAG_COMPOUND);
+				.getList("MatchedAttributes", Tag.TAG_COMPOUND);
 			for (Tag inbt : attributes) {
 				CompoundTag compound = (CompoundTag) inbt;
 				ItemAttribute attribute = ItemAttribute.loadStatic(compound);
@@ -211,35 +219,35 @@ public class FilterItemStack {
 				boolean matches = attribute.appliesTo(stack, world) != inverted;
 
 				if (matches) {
-                    switch (whitelistMode) {
-                        case BLACKLIST -> {
-                            return false;
-                        }
-                        case WHITELIST_CONJ -> {
+					switch (whitelistMode) {
+						case BLACKLIST -> {
+							return false;
+						}
+						case WHITELIST_CONJ -> {
 							continue;
-                        }
-                        case WHITELIST_DISJ -> {
-                            return true;
-                        }
-                    }
+						}
+						case WHITELIST_DISJ -> {
+							return true;
+						}
+					}
 				} else {
-                    switch (whitelistMode) {
-                        case BLACKLIST, WHITELIST_DISJ -> {
+					switch (whitelistMode) {
+						case BLACKLIST, WHITELIST_DISJ -> {
 							continue;
-                        }
-                        case WHITELIST_CONJ -> {
-                            return false;
-                        }
-                    }
+						}
+						case WHITELIST_CONJ -> {
+							return false;
+						}
+					}
 				}
 			}
 
-            return switch (whitelistMode) {
-                case BLACKLIST, WHITELIST_CONJ -> true;
-                case WHITELIST_DISJ -> false;
-            };
+			return switch (whitelistMode) {
+				case BLACKLIST, WHITELIST_CONJ -> true;
+				case WHITELIST_DISJ -> false;
+			};
 
-        }
+		}
 
 	}
 

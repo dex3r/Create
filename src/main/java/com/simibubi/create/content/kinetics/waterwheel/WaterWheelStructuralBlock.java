@@ -3,10 +3,13 @@ package com.simibubi.create.content.kinetics.waterwheel;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.content.equipment.goggles.IProxyHoveringInformation;
+import com.simibubi.create.api.equipment.goggles.IProxyHoveringInformation;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.render.MultiPosDestructionHandler;
 import com.simibubi.create.foundation.utility.AdventureUtil;
@@ -34,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -86,12 +90,12 @@ public class WaterWheelStructuralBlock extends DirectionalBlock implements IWren
 
 	@Override
 	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-		BlockHitResult pHit) {
+								 BlockHitResult pHit) {
 		if (AdventureUtil.isAdventure(pPlayer))
 			return InteractionResult.PASS;
 		if (!stillValid(pLevel, pPos, pState, false))
 			return InteractionResult.FAIL;
-		if (!(pLevel.getBlockEntity(getMaster(pLevel, pPos, pState))instanceof WaterWheelBlockEntity wwt))
+		if (!(pLevel.getBlockEntity(getMaster(pLevel, pPos, pState)) instanceof WaterWheelBlockEntity wwt))
 			return InteractionResult.FAIL;
 		return wwt.applyMaterialIfValid(pPlayer.getItemInHand(pHand));
 	}
@@ -114,7 +118,7 @@ public class WaterWheelStructuralBlock extends DirectionalBlock implements IWren
 
 	@Override
 	public BlockState updateShape(BlockState pState, Direction pFacing, BlockState pFacingState, LevelAccessor pLevel,
-		BlockPos pCurrentPos, BlockPos pFacingPos) {
+								  BlockPos pCurrentPos, BlockPos pFacingPos) {
 		if (stillValid(pLevel, pCurrentPos, pState, false)) {
 			BlockPos masterPos = getMaster(pLevel, pCurrentPos, pState);
 			if (!pLevel.getBlockTicks()
@@ -161,7 +165,7 @@ public class WaterWheelStructuralBlock extends DirectionalBlock implements IWren
 
 	@Override
 	public boolean addLandingEffects(BlockState state1, ServerLevel level, BlockPos pos, BlockState state2,
-		LivingEntity entity, int numberOfParticles) {
+									 LivingEntity entity, int numberOfParticles) {
 		return true;
 	}
 

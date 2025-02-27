@@ -45,7 +45,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
@@ -98,9 +97,13 @@ public class FactoryPanelScreen extends AbstractSimiScreen {
 			return;
 		}
 
-		craftingIngredients = new ArrayList<>();
-		NonNullList<Ingredient> ingredients = availableCraftingRecipe.getIngredients();
+		craftingIngredients = convertRecipeToPackageOrderContext(availableCraftingRecipe, inputConfig);
+	}
+
+	public static List<BigItemStack> convertRecipeToPackageOrderContext(CraftingRecipe availableCraftingRecipe, List<BigItemStack> inputs) {
+		List<BigItemStack> craftingIngredients = new ArrayList<>();
 		BigItemStack emptyIngredient = new BigItemStack(ItemStack.EMPTY, 1);
+		NonNullList<Ingredient> ingredients = availableCraftingRecipe.getIngredients();
 
 		int width = Math.min(3, ingredients.size());
 		int height = Math.min(3, ingredients.size() / 3 + 1);
@@ -121,11 +124,11 @@ public class FactoryPanelScreen extends AbstractSimiScreen {
 			BigItemStack craftingIngredient = emptyIngredient;
 
 			if (!ingredient.isEmpty())
-				for (BigItemStack bigItemStack : inputConfig)
+				for (BigItemStack bigItemStack : inputs)
 					if (ingredient.test(bigItemStack.stack))
-						craftingIngredient = bigItemStack;
-
+						craftingIngredient = new BigItemStack(bigItemStack.stack, 1);
 			craftingIngredients.add(craftingIngredient);
+			
 			if (width < 3 && (i + 1) % width == 0)
 				for (int j = 0; j < 3 - width; j++)
 					craftingIngredients.add(emptyIngredient);
@@ -133,6 +136,8 @@ public class FactoryPanelScreen extends AbstractSimiScreen {
 
 		while (craftingIngredients.size() < 9)
 			craftingIngredients.add(emptyIngredient);
+		
+		return craftingIngredients;
 	}
 
 	@Override
@@ -149,8 +154,8 @@ public class FactoryPanelScreen extends AbstractSimiScreen {
 		int y = guiTop;
 
 		if (addressBox == null) {
-			addressBox =
-				new AddressEditBox(this, new NoShadowFontWrapper(font), x + 36, y + windowHeight - 51, 108, 10, false);
+			String frogAddress = behaviour.getFrogAddress();
+			addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 36, y + windowHeight - 51, 108, 10, false, frogAddress);
 			addressBox.setValue(behaviour.recipeAddress);
 			addressBox.setTextColor(0x555555);
 		}
@@ -585,6 +590,9 @@ public class FactoryPanelScreen extends AbstractSimiScreen {
 	public boolean mouseScrolled(double mouseX, double mouseY, double pDelta) {
 		int x = guiLeft;
 		int y = guiTop;
+		
+		if (addressBox.mouseScrolled(mouseX, mouseY, pDelta))
+			return true;
 
 		if (craftingActive)
 			return super.mouseScrolled(mouseX, mouseY, pDelta);
@@ -666,8 +674,6 @@ public class FactoryPanelScreen extends AbstractSimiScreen {
 		availableCraftingRecipe = level.getRecipeManager()
 			.getAllRecipesFor(RecipeType.CRAFTING)
 			.parallelStream()
-			.filter(r -> r.getSerializer() == RecipeSerializer.SHAPED_RECIPE
-				|| r.getSerializer() == RecipeSerializer.SHAPELESS_RECIPE)
 			.filter(r -> output.getItem() == r.getResultItem(level.registryAccess())
 				.getItem())
 			.filter(r -> {

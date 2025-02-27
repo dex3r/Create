@@ -8,14 +8,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 
-import org.jetbrains.annotations.NotNull;
-
 public class BuildersTeaItem extends Item {
 	public BuildersTeaItem(Properties properties) {
 		super(properties);
 	}
 
-	public @NotNull ItemStack finishUsingItem(@NotNull ItemStack stack, @NotNull Level level, @NotNull LivingEntity livingEntity) {
+	@Override
+	public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity livingEntity) {
 		ItemStack eatResult = super.finishUsingItem(stack, level, livingEntity);
 		if (livingEntity instanceof Player player && !player.getAbilities().instabuild) {
 			if (eatResult.isEmpty()) {
@@ -27,11 +26,13 @@ public class BuildersTeaItem extends Item {
 		return eatResult;
 	}
 
-	public int getUseDuration(@NotNull ItemStack stack) {
+	@Override
+	public int getUseDuration(ItemStack stack) {
 		return 42;
 	}
 
-	public @NotNull UseAnim getUseAnimation(@NotNull ItemStack stack) {
+	@Override
+	public UseAnim getUseAnimation(ItemStack stack) {
 		return UseAnim.DRINK;
 	}
 }

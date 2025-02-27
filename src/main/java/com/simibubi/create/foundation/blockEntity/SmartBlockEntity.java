@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import com.simibubi.create.api.event.BlockEntityBehaviourEvent;
-import com.simibubi.create.api.schematic.nbt.IPartialSafeNBT;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockEntityItemRequirement;
+import com.simibubi.create.api.schematic.nbt.PartialSafeNBT;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockEntityItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.CreateAdvancement;
@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import io.github.fabricators_of_create.porting_lib.block.ChunkUnloadListeningBlockEntity;
 
 public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
-	implements IPartialSafeNBT, IInteractionChecker, ChunkUnloadListeningBlockEntity, ISpecialBlockEntityItemRequirement, VirtualBlockEntity {
+	implements PartialSafeNBT, IInteractionChecker, SpecialBlockEntityItemRequirement, VirtualBlockEntity, ChunkUnloadListeningBlockEntity {
 
 	private final Map<BehaviourType<?>, BlockEntityBehaviour> behaviours = new Reference2ObjectArrayMap<>();
 	private boolean initialized = false;

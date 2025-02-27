@@ -21,12 +21,12 @@ import com.simibubi.create.foundation.virtualWorld.VirtualRenderWorld;
 import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
+import net.createmod.catnip.animation.AnimationTickHolder;
+import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.createmod.catnip.animation.AnimationTickHolder;
-import net.createmod.catnip.nbt.NBTHelper;
-import net.createmod.catnip.math.VecHelper;
-import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -50,7 +50,7 @@ public class DeployerRenderer extends SafeBlockEntityRenderer<DeployerBlockEntit
 
 	@Override
 	protected void renderSafe(DeployerBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-		int light, int overlay) {
+							  int light, int overlay) {
 		renderItem(be, partialTicks, ms, buffer, light, overlay);
 		FilteringRenderer.renderOnBlockEntity(be, partialTicks, ms, buffer, light, overlay);
 
@@ -60,7 +60,7 @@ public class DeployerRenderer extends SafeBlockEntityRenderer<DeployerBlockEntit
 	}
 
 	protected void renderItem(DeployerBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-		int light, int overlay) {
+							  int light, int overlay) {
 
 		if (be.heldItem.isEmpty()) return;
 
@@ -110,7 +110,7 @@ public class DeployerRenderer extends SafeBlockEntityRenderer<DeployerBlockEntit
 	}
 
 	protected void renderComponents(DeployerBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-		int light, int overlay) {
+									int light, int overlay) {
 		VertexConsumer vb = buffer.getBuffer(RenderType.solid());
 		if (!VisualizationManager.supportsVisualization(be.getLevel())) {
 			KineticBlockEntityRenderer.renderRotatingKineticBlock(be, getRenderedBlockState(be), ms, vb, light);
@@ -155,7 +155,7 @@ public class DeployerRenderer extends SafeBlockEntityRenderer<DeployerBlockEntit
 	}
 
 	public static void renderInContraption(MovementContext context, VirtualRenderWorld renderWorld,
-		ContraptionMatrices matrices, MultiBufferSource buffer) {
+										   ContraptionMatrices matrices, MultiBufferSource buffer) {
 		VertexConsumer builder = buffer.getBuffer(RenderType.solid());
 		BlockState blockState = context.state;
 		Mode mode = NBTHelper.readEnum(context.blockEntityData, "Mode", Mode.class);
@@ -188,8 +188,7 @@ public class DeployerRenderer extends SafeBlockEntityRenderer<DeployerBlockEntit
 
 		m.pushPose();
 		Direction.Axis axis = Direction.Axis.Y;
-		if (context.state.getBlock() instanceof IRotate) {
-			IRotate def = (IRotate) context.state.getBlock();
+		if (context.state.getBlock() instanceof IRotate def) {
 			axis = def.getRotationAxis(context.state);
 		}
 

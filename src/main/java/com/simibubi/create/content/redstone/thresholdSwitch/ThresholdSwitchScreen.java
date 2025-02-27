@@ -16,16 +16,15 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 
 import dev.engine_room.flywheel.lib.transform.TransformStack;
+import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.ScreenOpener;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
-import net.createmod.catnip.data.Iterate;
 import net.createmod.ponder.foundation.ui.PonderTagScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -160,21 +159,21 @@ public class ThresholdSwitchScreen extends AbstractSimiScreen {
 
 		}
 
-        graphics.drawString(font,
-                Component.literal("\u2265 " + (typeOfCurrentTarget == ThresholdType.UNSUPPORTED ? ""
-                        : forItems ? onAbove.getState() / valueStep
-                        : blockEntity.format(onAbove.getState() / valueStep, stacks)
-                        .getString())),
+		graphics.drawString(font,
+			Component.literal("\u2265 " + (typeOfCurrentTarget == ThresholdType.UNSUPPORTED ? ""
+				: forItems ? onAbove.getState() / valueStep
+				: blockEntity.format(onAbove.getState() / valueStep, stacks)
+				.getString())),
 			x + 53, y + 28, 0xFFFFFFFF, true);
-        graphics.drawString(font,
-                Component.literal("\u2264 " + (typeOfCurrentTarget == ThresholdType.UNSUPPORTED ? ""
-                        : forItems ? offBelow.getState() / valueStep
-                        : blockEntity.format(offBelow.getState() / valueStep, stacks)
-                        .getString())),
+		graphics.drawString(font,
+			Component.literal("\u2264 " + (typeOfCurrentTarget == ThresholdType.UNSUPPORTED ? ""
+				: forItems ? offBelow.getState() / valueStep
+				: blockEntity.format(offBelow.getState() / valueStep, stacks)
+				.getString())),
 			x + 53, y + 28 + 24, 0xFFFFFFFF, true);
 
 		GuiGameElement.of(renderedItem).<GuiGameElement
-			.GuiRenderBuilder>at(x + background.getWidth() + 6, y + background.getHeight() - 56, -200)
+				.GuiRenderBuilder>at(x + background.getWidth() + 6, y + background.getHeight() - 56, -200)
 			.scale(5)
 			.render(graphics);
 
@@ -183,7 +182,7 @@ public class ThresholdSwitchScreen extends AbstractSimiScreen {
 
 		ItemStack displayItem = blockEntity.getDisplayItemForScreen();
 		GuiGameElement.of(displayItem.isEmpty() ? new ItemStack(Items.BARRIER) : displayItem).<GuiGameElement
-			.GuiRenderBuilder>at(itemX, itemY, 0)
+				.GuiRenderBuilder>at(itemX, itemY, 0)
 			.render(graphics);
 
 		int torchX = x + 23;
@@ -202,7 +201,7 @@ public class ThresholdSwitchScreen extends AbstractSimiScreen {
 
 		for (boolean power : Iterate.trueAndFalse) {
 			GuiGameElement.of(Blocks.REDSTONE_TORCH.defaultBlockState()
-				.setValue(RedstoneTorchBlock.LIT, blockEntity.isInverted() ^ power))
+					.setValue(RedstoneTorchBlock.LIT, blockEntity.isInverted() ^ power))
 				.scale(20)
 				.render(graphics);
 			ms.translate(0, 26, 0);

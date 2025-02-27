@@ -5,7 +5,7 @@ import java.util.Optional;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllEnchantments;
 import com.simibubi.create.AllShapes;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement.ItemUseType;
@@ -47,7 +47,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
 
-public class BacktankBlock extends HorizontalKineticBlock implements IBE<BacktankBlockEntity>, SimpleWaterloggedBlock, ISpecialBlockItemRequirement {
+public class BacktankBlock extends HorizontalKineticBlock implements IBE<BacktankBlockEntity>, SimpleWaterloggedBlock, SpecialBlockItemRequirement {
 
 	public BacktankBlock(Properties properties) {
 		super(properties);
@@ -188,8 +188,10 @@ public class BacktankBlock extends HorizontalKineticBlock implements IBE<Backtan
 		Optional<BacktankBlockEntity> blockEntityOptional = getBlockEntityOptional(blockGetter, pos);
 
 //		CompoundTag forgeCapsTag = blockEntityOptional.map(BacktankBlockEntity::getForgeCapsTag)
-//			.orElse(null);
+	//			.map(CompoundTag::copy)
+			.orElse(null);
 		CompoundTag vanillaTag = blockEntityOptional.map(BacktankBlockEntity::getVanillaTag)
+				.map(CompoundTag::copy)
 			.orElse(new CompoundTag());
 		int air = blockEntityOptional.map(BacktankBlockEntity::getAirLevel)
 			.orElse(0);

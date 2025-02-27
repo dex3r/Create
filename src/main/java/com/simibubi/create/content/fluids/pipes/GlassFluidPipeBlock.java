@@ -4,7 +4,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
@@ -30,7 +30,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class GlassFluidPipeBlock extends AxisPipeBlock implements IBE<StraightPipeBlockEntity>, SimpleWaterloggedBlock, ISpecialBlockItemRequirement {
+public class GlassFluidPipeBlock extends AxisPipeBlock implements IBE<StraightPipeBlockEntity>, SimpleWaterloggedBlock, SpecialBlockItemRequirement {
 
 	public static final BooleanProperty ALT = BooleanProperty.create("alt");
 

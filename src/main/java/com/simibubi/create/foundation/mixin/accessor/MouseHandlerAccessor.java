@@ -7,7 +7,6 @@ import net.minecraft.client.MouseHandler;
 
 @Mixin(MouseHandler.class)
 public interface MouseHandlerAccessor {
-
 	@Accessor("xpos")
 	void create$setXPos(double xPos);
 

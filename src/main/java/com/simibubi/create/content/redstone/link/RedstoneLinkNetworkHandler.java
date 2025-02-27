@@ -118,8 +118,7 @@ public class RedstoneLinkNetworkHandler {
 				power = Math.max(other.getTransmittedStrength(), power);
 		}
 
-		if (actor instanceof LinkBehaviour) {
-			LinkBehaviour linkBehaviour = (LinkBehaviour) actor;
+		if (actor instanceof LinkBehaviour linkBehaviour) {
 			// fix one-to-one loading order problem
 			if (linkBehaviour.isListening()) {
 				linkBehaviour.newPosition = true;

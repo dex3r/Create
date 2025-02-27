@@ -1,7 +1,8 @@
 package com.simibubi.create.content.contraptions.pulley;
 
+import com.simibubi.create.AllContraptionTypes;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AssemblyException;
-import com.simibubi.create.content.contraptions.ContraptionType;
 import com.simibubi.create.content.contraptions.TranslatingContraption;
 
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,7 @@ public class PulleyContraption extends TranslatingContraption {
 
 	@Override
 	public ContraptionType getType() {
-		return ContraptionType.PULLEY;
+		return AllContraptionTypes.PULLEY.get();
 	}
 
 	public PulleyContraption() {}

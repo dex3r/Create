@@ -1,8 +1,9 @@
 package com.simibubi.create.content.contraptions.gantry;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllContraptionTypes;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AssemblyException;
-import com.simibubi.create.content.contraptions.ContraptionType;
 import com.simibubi.create.content.contraptions.TranslatingContraption;
 
 import net.minecraft.core.BlockPos;
@@ -49,7 +50,7 @@ public class GantryContraption extends TranslatingContraption {
 
 	@Override
 	public ContraptionType getType() {
-		return ContraptionType.GANTRY;
+		return AllContraptionTypes.GANTRY.get();
 	}
 
 	public Direction getFacing() {

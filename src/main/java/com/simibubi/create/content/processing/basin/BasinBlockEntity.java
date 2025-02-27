@@ -8,12 +8,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.AllTags;
-import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.FluidFX;
 import com.simibubi.create.content.fluids.particle.FluidParticleData;
 import com.simibubi.create.content.kinetics.belt.behaviour.DirectBeltInputBehaviour;
@@ -40,6 +52,7 @@ import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.data.IntAttached;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.lang.LangBuilder;
 import net.createmod.catnip.math.VecHelper;
@@ -63,6 +76,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -110,7 +124,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 
 	public static final int OUTPUT_ANIMATION_TIME = 10;
 	List<LongAttached<ItemStack>> visualizedOutputItems;
-	List<LongAttached<FluidStack>> visualizedOutputFluids;
+	List<LongAttached<io.github.fabricators_of_create.porting_lib.fluids.FluidStack>> visualizedOutputFluids;
 
 	// fabric: transfer things
 
@@ -129,7 +143,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		}
 	};
 
-	record Data(List<ItemStack> spoutputBuffer, List<FluidStack> spoutputFluidBuffer) {
+	record Data(List<ItemStack> spoutputBuffer, List<io.github.fabricators_of_create.porting_lib.fluids.FluidStack> spoutputFluidBuffer) {
 	}
 
 	public BasinBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -220,7 +234,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			c -> visualizedOutputItems.add(LongAttached.with(OUTPUT_ANIMATION_TIME, ItemStack.of(c))));
 		NBTHelper.iterateCompoundList(compound.getList("VisualizedFluids", Tag.TAG_COMPOUND),
 			c -> visualizedOutputFluids
-				.add(LongAttached.with(OUTPUT_ANIMATION_TIME, FluidStack.loadFluidStackFromNBT(c))));
+				.add(LongAttached.with(OUTPUT_ANIMATION_TIME, io.github.fabricators_of_create.porting_lib.fluids.FluidStack.loadFluidStackFromNBT(c))));
 	}
 
 	@Override
@@ -302,12 +316,11 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		}
 
 		BlockEntity blockEntity = level.getBlockEntity(worldPosition.above(2));
-		if (!(blockEntity instanceof MechanicalMixerBlockEntity)) {
+		if (!(blockEntity instanceof MechanicalMixerBlockEntity mixer)) {
 			setAreFluidsMoving(false);
 			return;
 		}
 
-		MechanicalMixerBlockEntity mixer = (MechanicalMixerBlockEntity) blockEntity;
 		setAreFluidsMoving(mixer.running && mixer.runningTicks <= 20);
 	}
 
@@ -363,7 +376,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			}
 			for (StorageView<FluidVariant> view : outputTank.getCapability().nonEmptyViews()) {
 				FluidVariant variant = view.getResource();
-				FluidStack stack = new FluidStack(view);
+				io.github.fabricators_of_create.porting_lib.fluids.FluidStack stack = new io.github.fabricators_of_create.porting_lib.fluids.FluidStack(view);
 				if (acceptOutputs(ImmutableList.of(), ImmutableList.of(stack), t)) {
 					view.extract(variant, stack.getAmount(), t);
 				}
@@ -437,7 +450,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		boolean update = false;
 
 		try (Transaction t = TransferUtil.getTransaction()) {
-			for (Iterator<ItemStack> iterator = spoutputBuffer.iterator(); iterator.hasNext();) {
+			for (Iterator<ItemStack> iterator = spoutputBuffer.iterator(); iterator.hasNext(); ) {
 				ItemStack itemStack = iterator.next();
 				// fabric: cleanup for #599
 				if (itemStack.isEmpty())
@@ -469,7 +482,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 				}
 			}
 
-			for (Iterator<FluidStack> iterator = spoutputFluidBuffer.iterator(); iterator.hasNext();) {
+			for (Iterator<FluidStack> iterator = spoutputFluidBuffer.iterator(); iterator.hasNext(); ) {
 				FluidStack fluidStack = iterator.next();
 
 				if (direction == Direction.DOWN) {
@@ -559,7 +572,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return spoutputBuffer.isEmpty() && spoutputFluidBuffer.isEmpty();
 	}
 
-	public boolean acceptOutputs(List<ItemStack> outputItems, List<FluidStack> outputFluids, TransactionContext ctx) {
+	public boolean acceptOutputs(List<ItemStack> outputItems, List<io.github.fabricators_of_create.porting_lib.fluids.FluidStack> outputFluids, TransactionContext ctx) {
 		outputInventory.allowInsertion();
 		outputTank.allowInsertion();
 		boolean acceptOutputsInner = acceptOutputsInner(outputItems, outputFluids, ctx);
@@ -568,7 +581,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return acceptOutputsInner;
 	}
 
-	private boolean acceptOutputsInner(List<ItemStack> outputItems, List<FluidStack> outputFluids, TransactionContext ctx) {
+	private boolean acceptOutputsInner(List<ItemStack> outputItems, List<io.github.fabricators_of_create.porting_lib.fluids.FluidStack> outputFluids, TransactionContext ctx) {
 		BlockState blockState = getBlockState();
 		if (!(blockState.getBlock() instanceof BasinBlock))
 			return false;
@@ -625,7 +638,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	}
 
 	private boolean acceptFluidOutputsIntoBasin(List<FluidStack> outputFluids, TransactionContext ctx,
-		Storage<FluidVariant> targetTank) {
+												Storage<FluidVariant> targetTank) {
 		for (FluidStack fluidStack : outputFluids) {
 			long fill = targetTank instanceof SmartFluidTankBehaviour.InternalFluidHandler
 				? ((SmartFluidTankBehaviour.InternalFluidHandler) targetTank).forceFill(fluidStack.copy(), ctx)
@@ -812,7 +825,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		boolean simplify = AllConfigs.client().simplifyFluidUnit.get();
 		for (SmartFluidTankBehaviour behaviour : tanks) {
 			for (TankSegment tank : behaviour.getTanks()) {
-				FluidStack fluidStack = tank.getTank().getFluid();
+				io.github.fabricators_of_create.porting_lib.fluids.FluidStack fluidStack = tank.getTank().getFluid();
 				if (fluidStack.isEmpty())
 					continue;
 				CreateLang.text("")

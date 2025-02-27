@@ -6,7 +6,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
@@ -53,7 +53,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FactoryPanelBlock extends FaceAttachedHorizontalDirectionalBlock
-	implements ProperWaterloggedBlock, IBE<FactoryPanelBlockEntity>, IWrenchable, ISpecialBlockItemRequirement {
+	implements ProperWaterloggedBlock, IBE<FactoryPanelBlockEntity>, IWrenchable, SpecialBlockItemRequirement {
 
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 

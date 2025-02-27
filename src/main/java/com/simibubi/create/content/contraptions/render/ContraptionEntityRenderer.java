@@ -4,10 +4,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.simibubi.create.AllMovementBehaviours;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.foundation.render.BlockEntityRenderHelper;
 import com.simibubi.create.foundation.virtualWorld.VirtualRenderWorld;
@@ -99,7 +98,7 @@ public class ContraptionEntityRenderer<C extends AbstractContraptionEntity> exte
 				context.world = level;
 			StructureTemplate.StructureBlockInfo blockInfo = actor.getLeft();
 
-			MovementBehaviour movementBehaviour = AllMovementBehaviours.getBehaviour(blockInfo.state());
+			MovementBehaviour movementBehaviour = MovementBehaviour.REGISTRY.get(blockInfo.state());
 			if (movementBehaviour != null) {
 				if (c.isHiddenInPortal(blockInfo.pos()))
 					continue;

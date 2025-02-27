@@ -568,6 +568,8 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 	}
 
 	public void finishedPrinting() {
+		if (replaceMode == ConfigureSchematicannonPacket.Option.REPLACE_EMPTY.ordinal())
+			printer.sendBlockUpdates(level);
 		inventory.setStackInSlot(0, ItemStack.EMPTY);
 		inventory.setStackInSlot(1, new ItemStack(AllItems.EMPTY_SCHEMATIC.get(), inventory.getStackInSlot(1)
 				.getCount() + 1));

@@ -18,7 +18,6 @@ import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -150,7 +149,7 @@ public class ElevatorScenes {
 		scene.idle(75);
 
 		scene.overlay().showControls(util.vector().blockSurface(util.grid().at(3, 6, 2), Direction.NORTH), Pointing.RIGHT, 60)
-				.rightClick();
+			.rightClick();
 		scene.idle(7);
 		scene.effects().indicateSuccess(util.grid().at(3, 6, 2));
 		scene.world().toggleRedstonePower(util.select().position(1, 13, 2));
@@ -173,7 +172,7 @@ public class ElevatorScenes {
 		scene.idle(80);
 
 		scene.overlay().showControls(util.vector().blockSurface(util.grid().at(1, 1, 2), Direction.UP), Pointing.DOWN, 60)
-				.rightClick();
+			.rightClick();
 		scene.idle(7);
 		scene.overlay().showOutlineWithText(util.select().position(1, 1, 2), 60)
 			.placeNearTarget()
@@ -241,7 +240,7 @@ public class ElevatorScenes {
 		scene.idle(10);
 
 		scene.overlay().showControls(util.vector().blockSurface(util.grid().at(4, 2, 2), Direction.UP), Pointing.DOWN, 60)
-				.scroll();
+			.scroll();
 		scene.idle(15);
 		scene.overlay().showText(90)
 			.placeNearTarget()
@@ -250,7 +249,7 @@ public class ElevatorScenes {
 		scene.idle(85);
 
 		scene.overlay().showControls(util.vector().blockSurface(util.grid().at(4, 2, 2), Direction.UP), Pointing.DOWN, 10)
-				.rightClick();
+			.rightClick();
 		scene.idle(7);
 		scene.world().cycleBlockProperty(midContact, ElevatorContactBlock.POWERING);
 		scene.world().cycleBlockProperty(topContact, ElevatorContactBlock.CALLING);
@@ -266,7 +265,7 @@ public class ElevatorScenes {
 		scene.idle(15);
 
 		scene.overlay().showControls(util.vector().blockSurface(util.grid().at(3, 6, 2), Direction.NORTH), Pointing.RIGHT, 60)
-				.rightClick();
+			.rightClick();
 		scene.idle(7);
 		scene.effects().indicateSuccess(util.grid().at(3, 6, 2));
 		scene.world().movePulley(pulleyPos, -1, 0);
@@ -282,7 +281,7 @@ public class ElevatorScenes {
 		scene.idle(20);
 
 		scene.overlay().showControls(util.vector().blockSurface(util.grid().at(3, 6, 2), Direction.NORTH), Pointing.RIGHT, 60)
-				.rightClick();
+			.rightClick();
 		scene.idle(7);
 		scene.effects().indicateSuccess(util.grid().at(3, 6, 2));
 		scene.world().movePulley(pulleyPos, 1, 0);
@@ -361,14 +360,14 @@ public class ElevatorScenes {
 		scene.world().showSectionAndMerge(util.select().position(nixiePos), Direction.DOWN, camLink);
 		scene.idle(15);
 		scene.overlay().showControls(util.vector().blockSurface(util.grid().at(4, 1, 0), Direction.UP), Pointing.DOWN, 15)
-				.rightClick()
-				.withItem(AllBlocks.DISPLAY_LINK.asStack());
+			.rightClick()
+			.withItem(AllBlocks.DISPLAY_LINK.asStack());
 		scene.world().toggleRedstonePower(util.select().position(1, 14, 2));
 		scene.idle(15);
 		scene.world().showSectionAndMerge(util.select().position(linkPos), Direction.DOWN, camLink);
 		scene.world().flashDisplayLink(linkPos);
 		scene.world().modifyBlockEntityNBT(util.select().position(nixiePos), NixieTubeBlockEntity.class, nbt -> {
-            Component component = Component.literal("0F");
+			Component component = Component.literal("0F");
 			nbt.putString("RawCustomText", component.getString());
 			nbt.putString("CustomText", Component.Serializer.toJson(component));
 		});
@@ -399,7 +398,7 @@ public class ElevatorScenes {
 
 		scene.world().flashDisplayLink(linkPos);
 		scene.world().modifyBlockEntityNBT(util.select().position(nixiePos), NixieTubeBlockEntity.class, nbt -> {
-            Component component = Component.literal("1F");
+			Component component = Component.literal("1F");
 			nbt.putString("RawCustomText", component.getString());
 			nbt.putString("CustomText", Component.Serializer.toJson(component));
 		});
@@ -415,7 +414,7 @@ public class ElevatorScenes {
 
 		scene.world().flashDisplayLink(linkPos);
 		scene.world().modifyBlockEntityNBT(util.select().position(nixiePos), NixieTubeBlockEntity.class, nbt -> {
-            Component component = Component.literal("2F");
+			Component component = Component.literal("2F");
 			nbt.putString("RawCustomText", component.getString());
 			nbt.putString("CustomText", Component.Serializer.toJson(component));
 		});

@@ -291,10 +291,9 @@ public class ClockworkBearingBlockEntity extends KineticBlockEntity
 
 	@Override
 	public void attach(ControlledContraptionEntity contraption) {
-		if (!(contraption.getContraption() instanceof ClockworkContraption))
+		if (!(contraption.getContraption() instanceof ClockworkContraption cc))
 			return;
 
-		ClockworkContraption cc = (ClockworkContraption) contraption.getContraption();
 		setChanged();
 		Direction facing = getBlockState().getValue(BlockStateProperties.FACING);
 		BlockPos anchor = worldPosition.relative(facing, cc.offset + 1);
@@ -380,9 +379,8 @@ public class ClockworkBearingBlockEntity extends KineticBlockEntity
 
 	@Override
 	public boolean isAttachedTo(AbstractContraptionEntity contraption) {
-		if (!(contraption.getContraption() instanceof ClockworkContraption))
+		if (!(contraption.getContraption() instanceof ClockworkContraption cc))
 			return false;
-		ClockworkContraption cc = (ClockworkContraption) contraption.getContraption();
 		if (cc.handType == HandType.HOUR)
 			return this.hourHand == contraption;
 		else

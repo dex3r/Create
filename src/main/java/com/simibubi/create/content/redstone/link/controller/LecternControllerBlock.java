@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
 
@@ -29,7 +29,7 @@ import net.minecraft.world.phys.HitResult;
 import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 
 public class LecternControllerBlock extends LecternBlock
-	implements IBE<LecternControllerBlockEntity>, ISpecialBlockItemRequirement, BlockPickInteractionAware {
+	implements IBE<LecternControllerBlockEntity>, SpecialBlockItemRequirement, BlockPickInteractionAware {
 
 	public LecternControllerBlock(Properties properties) {
 		super(properties);

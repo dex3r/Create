@@ -92,8 +92,7 @@ public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultB
 			.isVertical()) {
 			BlockEntity be = context.getLevel()
 				.getBlockEntity(context.getClickedPos());
-			if (be instanceof ItemVaultBlockEntity) {
-				ItemVaultBlockEntity vault = (ItemVaultBlockEntity) be;
+			if (be instanceof ItemVaultBlockEntity vault) {
 				ConnectivityHandler.splitMulti(vault);
 				vault.removeController(true);
 			}
@@ -107,9 +106,8 @@ public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultB
 	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean pIsMoving) {
 		if (state.hasBlockEntity() && (state.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
 			BlockEntity be = world.getBlockEntity(pos);
-			if (!(be instanceof ItemVaultBlockEntity))
+			if (!(be instanceof ItemVaultBlockEntity vaultBE))
 				return;
-			ItemVaultBlockEntity vaultBE = (ItemVaultBlockEntity) be;
 			ItemHelper.dropContents(world, pos, vaultBE.inventory);
 			world.removeBlockEntity(pos);
 			ConnectivityHandler.splitMulti(vaultBE);

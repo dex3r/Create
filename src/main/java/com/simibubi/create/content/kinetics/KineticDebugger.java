@@ -5,9 +5,9 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.createmod.catnip.render.SuperByteBufferCache;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.outliner.Outliner;
+import net.createmod.catnip.render.SuperByteBufferCache;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -47,16 +47,16 @@ public class KineticDebugger {
 		if (be.getTheoreticalSpeed() != 0 && !shape.isEmpty())
 			Outliner.getInstance().chaseAABB("kineticSource", shape.bounds()
 					.move(toOutline))
-					.lineWidth(1 / 16f)
-					.colored(be.hasSource() ? Color.generateFromLong(be.network).getRGB() : 0xffcc00);
+				.lineWidth(1 / 16f)
+				.colored(be.hasSource() ? Color.generateFromLong(be.network).getRGB() : 0xffcc00);
 
 		if (state.getBlock() instanceof IRotate) {
 			Axis axis = ((IRotate) state.getBlock()).getRotationAxis(state);
 			Vec3 vec = Vec3.atLowerCornerOf(Direction.get(AxisDirection.POSITIVE, axis)
-					.getNormal());
+				.getNormal());
 			Vec3 center = VecHelper.getCenterOf(be.getBlockPos());
 			Outliner.getInstance().showLine("rotationAxis", center.add(vec), center.subtract(vec))
-					.lineWidth(1 / 16f);
+				.lineWidth(1 / 16f);
 		}
 
 	}
@@ -76,10 +76,9 @@ public class KineticDebugger {
 			return null;
 		if (world == null)
 			return null;
-		if (!(obj instanceof BlockHitResult))
+		if (!(obj instanceof BlockHitResult ray))
 			return null;
 
-		BlockHitResult ray = (BlockHitResult) obj;
 		BlockEntity be = world.getBlockEntity(ray.getBlockPos());
 		if (!(be instanceof KineticBlockEntity))
 			return null;

@@ -3,8 +3,8 @@ package com.simibubi.create.content.equipment.clipboard;
 import javax.annotation.Nullable;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.foundation.CreateNBTProcessors;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
-import com.simibubi.create.foundation.utility.CreateNBTProcessors;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

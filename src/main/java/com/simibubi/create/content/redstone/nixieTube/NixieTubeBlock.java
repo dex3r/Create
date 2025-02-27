@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllShapes;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.equipment.clipboard.ClipboardEntry;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
@@ -56,7 +56,7 @@ import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBloc
 import io.github.fabricators_of_create.porting_lib.util.TagUtil;
 
 public class NixieTubeBlock extends DoubleFaceAttachedBlock
-	implements IBE<NixieTubeBlockEntity>, IWrenchable, SimpleWaterloggedBlock, ISpecialBlockItemRequirement, BlockPickInteractionAware, ConnectableRedstoneBlock {
+	implements IBE<NixieTubeBlockEntity>, IWrenchable, SimpleWaterloggedBlock, SpecialBlockItemRequirement, BlockPickInteractionAware, ConnectableRedstoneBlock {
 
 	protected final DyeColor color;
 

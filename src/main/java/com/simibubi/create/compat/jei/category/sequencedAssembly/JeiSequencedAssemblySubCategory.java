@@ -76,7 +76,7 @@ public abstract class JeiSequencedAssemblySubCategory {
 					.addSlot(RecipeIngredientRole.INPUT, x + 4, 15)
 					.setBackground(CreateRecipeCategory.getRenderedSlot(), -1, -1)
 					.addIngredients(FabricTypes.FLUID_STACK, CreateRecipeCategory.toJei(CreateRecipeCategory.withImprovedVisibility(fluidIngredient.getMatchingFluidStacks())))
-					.addTooltipCallback(CreateRecipeCategory.addFluidTooltip(fluidIngredient.getRequiredAmount()));
+					.addRichTooltipCallback(CreateRecipeCategory.addFluidTooltip(fluidIngredient.getRequiredAmount()));
 		}
 
 		@Override

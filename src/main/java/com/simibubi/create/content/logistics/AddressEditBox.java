@@ -24,13 +24,22 @@ public class AddressEditBox extends EditBox {
 
 	private DestinationSuggestions destinationSuggestions;
 	private Consumer<String> mainResponder;
-
+	private String prevValue = "=)";
+	
 	public AddressEditBox(Screen screen, Font pFont, int pX, int pY, int pWidth, int pHeight, boolean anchorToBottom) {
+		this(screen, pFont, pX, pY, pWidth, pHeight, anchorToBottom, null);
+	}
+	
+	public AddressEditBox(Screen screen, Font pFont, int pX, int pY, int pWidth, int pHeight, boolean anchorToBottom, String localAddress) {
         super(pFont, pX, pY, pWidth, pHeight, Component.empty());
-		destinationSuggestions = AddressEditBoxHelper.createSuggestions(screen, this, anchorToBottom);
+		destinationSuggestions = AddressEditBoxHelper.createSuggestions(screen, this, anchorToBottom, localAddress);
 		destinationSuggestions.setAllowSuggestions(true);
 		destinationSuggestions.updateCommandInfo();
-		mainResponder = t -> destinationSuggestions.updateCommandInfo();
+		mainResponder = t -> {
+			if (!t.equals(prevValue))
+				destinationSuggestions.updateCommandInfo();
+			prevValue = t;
+		};
 		setResponder(mainResponder);
 		setBordered(false);
 		setFocused(false);
@@ -60,11 +69,18 @@ public class AddressEditBox extends EditBox {
 
 	@Override
 	public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
+		if (pButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+			if (isMouseOver(pMouseX, pMouseY)) {
+				setValue("");
+				return true;
+			}
+		}
+		
 		boolean wasFocused = isFocused();
 		if (super.mouseClicked(pMouseX, pMouseY, pButton)) {
 			if (!wasFocused) {
-				setHighlightPos(getValue().length());
-				setCursorPosition(0);
+				setHighlightPos(0);
+				setCursorPosition(getValue().length());
 			}
 			return true;
 		}
@@ -81,8 +97,6 @@ public class AddressEditBox extends EditBox {
 	@Override
 	public void setFocused(boolean focused) {
 		super.setFocused(focused);
-		if (!focused)
-			setHighlightPos(getCursorPosition());
 	}
 
 	@Override

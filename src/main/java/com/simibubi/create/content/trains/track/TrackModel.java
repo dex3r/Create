@@ -44,11 +44,11 @@ public class TrackModel extends ForwardingBakedModel {
 
 		TrackShape trackShape = state.getValue(TrackBlock.SHAPE);
 		double hAngle = switch (trackShape) {
-		case XO -> 0;
-		case PD -> 45;
-		case ZO -> 90;
-		case ND -> 135;
-		default -> 0;
+			case XO -> 0;
+			case PD -> 45;
+			case ZO -> 90;
+			case ND -> 135;
+			default -> 0;
 		};
 
 		Vec3 verticalOffset = new Vec3(0, -0.25, 0);

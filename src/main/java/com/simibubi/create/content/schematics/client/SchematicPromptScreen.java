@@ -1,7 +1,5 @@
 package com.simibubi.create.content.schematics.client;
 
-import net.createmod.catnip.lang.Lang;
-
 import org.lwjgl.glfw.GLFW;
 
 import com.simibubi.create.AllItems;
@@ -15,6 +13,7 @@ import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class SchematicPromptScreen extends AbstractSimiScreen {
@@ -43,7 +42,7 @@ public class SchematicPromptScreen extends AbstractSimiScreen {
 		int x = guiLeft;
 		int y = guiTop + 2;
 
-		nameField = new EditBox(font, x + 49, y + 26, 131, 10, Lang.IMMUTABLE_EMPTY);
+		nameField = new EditBox(font, x + 49, y + 26, 131, 10, CommonComponents.EMPTY);
 		nameField.setTextColor(-1);
 		nameField.setTextColorUneditable(-1);
 		nameField.setBordered(false);
@@ -84,13 +83,13 @@ public class SchematicPromptScreen extends AbstractSimiScreen {
 		graphics.drawString(font, title, x + (background.getWidth() - 8 - font.width(title)) / 2, y + 4, 0x505050, false);
 
 		GuiGameElement.of(AllItems.SCHEMATIC.asStack())
-				.at(x + 22, y + 24, 0)
-				.render(graphics);
+			.at(x + 22, y + 24, 0)
+			.render(graphics);
 
 		GuiGameElement.of(AllItems.SCHEMATIC_AND_QUILL.asStack())
-				.scale(3)
-				.at(x + background.getWidth() + 6, y + background.getHeight() - 38, -200)
-				.render(graphics);
+			.scale(3)
+			.at(x + background.getWidth() + 6, y + background.getHeight() - 38, -200)
+			.render(graphics);
 	}
 
 	@Override

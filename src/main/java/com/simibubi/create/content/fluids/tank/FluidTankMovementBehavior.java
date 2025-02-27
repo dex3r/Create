@@ -1,6 +1,6 @@
 package com.simibubi.create.content.fluids.tank;
 
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 
 import net.minecraft.world.level.block.entity.BlockEntity;

@@ -3,6 +3,7 @@ package com.simibubi.create.content.kinetics.drill;
 import com.simibubi.create.content.kinetics.base.BlockBreakingKineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.behaviour.DirectBeltInputBehaviour;
 import com.simibubi.create.content.kinetics.drill.CobbleGenOptimisation.CobbleGenBlockConfiguration;
+import com.simibubi.create.content.logistics.chute.ChuteBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import net.minecraft.core.BlockPos;
@@ -38,6 +39,15 @@ public class DrillBlockEntity extends BlockBreakingKineticBlockEntity {
 	}
 
 	public boolean optimiseCobbleGen(BlockState stateToBreak) {
+		DirectBeltInputBehaviour inv =
+			BlockEntityBehaviour.get(level, breakingPos.below(), DirectBeltInputBehaviour.TYPE);
+		BlockEntity blockEntityBelow = level.getBlockEntity(breakingPos.below());
+		BlockEntity blockEntityAbove = level.getBlockEntity(breakingPos.above());
+
+		if (inv == null && !(blockEntityBelow instanceof HopperBlockEntity)
+			&& !(blockEntityAbove instanceof ChuteBlockEntity chute && chute.getItemMotion() > 0))
+			return false;
+		
 		CobbleGenBlockConfiguration config =
 			CobbleGenOptimisation.getConfig(level, worldPosition, getBlockState().getValue(DrillBlock.FACING));
 		if (config == null)
@@ -54,21 +64,20 @@ public class DrillBlockEntity extends BlockBreakingKineticBlockEntity {
 		if (currentOutput.isAir() || !currentOutput.equals(stateToBreak))
 			return false;
 
-		DirectBeltInputBehaviour inv =
-			BlockEntityBehaviour.get(level, breakingPos.below(), DirectBeltInputBehaviour.TYPE);
-
 		if (inv != null)
 			for (ItemStack stack : Block.getDrops(stateToBreak, sl, breakingPos, null))
 				inv.handleInsertion(stack, Direction.UP, false);
-		else {
-			BlockEntity blockEntity = level.getBlockEntity(breakingPos.below());
-			if (blockEntity instanceof HopperBlockEntity hbe) {
-				IItemHandler handler = hbe.getCapability(ForgeCapabilities.ITEM_HANDLER)
-					.orElse(null);
-				if (handler != null)
-					for (ItemStack stack : Block.getDrops(stateToBreak, sl, breakingPos, null))
-						ItemHandlerHelper.insertItemStacked(handler, stack, false);
-			}
+		else if (blockEntityBelow instanceof HopperBlockEntity hbe) {
+			IItemHandler handler = hbe.getCapability(ForgeCapabilities.ITEM_HANDLER)
+				.orElse(null);
+			if (handler != null)
+				for (ItemStack stack : Block.getDrops(stateToBreak, sl, breakingPos, null))
+					ItemHandlerHelper.insertItemStacked(handler, stack, false);
+		} else if (blockEntityAbove instanceof ChuteBlockEntity chute && chute.getItemMotion() > 0) {
+			for (ItemStack stack : Block.getDrops(stateToBreak, sl, breakingPos, null))
+				if (chute.getItem()
+					.isEmpty())
+					chute.setItem(stack, 0);
 		}
 
 		level.levelEvent(2001, breakingPos, Block.getId(stateToBreak));

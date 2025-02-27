@@ -113,8 +113,7 @@ public class DeployerFakePlayer extends FakePlayer {
 
 	public static boolean deployerCollectsDropsFromKilledEntities(LivingEntity target, DamageSource source, Collection<ItemEntity> drops, int lootingLevel, boolean recentlyHit) {
 		Entity trueSource = source.getEntity();
-		if (trueSource != null && trueSource instanceof DeployerFakePlayer) {
-			DeployerFakePlayer fakePlayer = (DeployerFakePlayer) trueSource;
+		if (trueSource != null && trueSource instanceof DeployerFakePlayer fakePlayer) {
 			drops
 				.forEach(stack -> fakePlayer.getInventory()
 					.placeItemBackInInventory(stack.getItem()));
@@ -150,7 +149,7 @@ public class DeployerFakePlayer extends FakePlayer {
 
 		CKinetics.DeployerAggroSetting setting = AllConfigs.server().kinetics.ignoreDeployerAttacks.get();
 
-		switch(setting) {
+		switch (setting) {
 			case ALL -> event.setCanceled(true);
 			case CREEPERS -> {
 				if (mob instanceof Creeper)

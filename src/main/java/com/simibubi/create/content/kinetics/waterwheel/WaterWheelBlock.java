@@ -4,6 +4,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
+
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
 import net.createmod.catnip.data.Couple;
@@ -19,6 +20,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -127,10 +129,6 @@ public class WaterWheelBlock extends DirectionalKineticBlock implements IBE<Wate
 	@Override
 	public BlockEntityType<? extends WaterWheelBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.WATER_WHEEL.get();
-	}
-
-	public static Couple<Integer> getSpeedRange() {
-		return Couple.create(8, 8);
 	}
 
 }

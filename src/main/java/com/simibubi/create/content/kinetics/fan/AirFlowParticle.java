@@ -1,8 +1,8 @@
 package com.simibubi.create.content.kinetics.fan;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 
 import net.createmod.catnip.math.VecHelper;
@@ -78,7 +78,7 @@ public class AirFlowParticle extends SimpleAnimatedParticle {
 			motion = motion.scale(airCurrent.maxDistance - (distance - 1f)).scale(.5f);
 
 			FanProcessingType type = getType(distance);
-			if (type == AllFanProcessingTypes.NONE) {
+			if (type == null) {
 				setColor(0xEEEEEE);
 				setAlpha(.25f);
 				selectSprite((int) Mth.clamp((distance / airCurrent.maxDistance) * 8 + random.nextInt(4),
@@ -100,9 +100,10 @@ public class AirFlowParticle extends SimpleAnimatedParticle {
 		}
 	}
 
+	@Nullable
 	private FanProcessingType getType(double distance) {
 		if (source.getAirCurrent() == null)
-			return AllFanProcessingTypes.NONE;
+			return null;
 		return source.getAirCurrent().getTypeAt((float) distance);
 	}
 

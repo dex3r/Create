@@ -8,9 +8,9 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.simibubi.create.Create;
-import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.content.equipment.goggles.IHaveHoveringInformation;
-import com.simibubi.create.content.kinetics.BlockStressValues;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.RotationPropagator;
 import com.simibubi.create.content.kinetics.base.IRotate.SpeedLevel;
@@ -404,7 +404,8 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	}
 
 	@Override
-	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
+	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+	}
 
 	@Override
 	public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
@@ -416,9 +417,9 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 				.forGoggles(tooltip);
 			Component hint = CreateLang.translateDirect("gui.contraptions.network_overstressed");
 			List<Component> cutString = TooltipHelper.cutTextComponent(hint, Palette.GRAY_AND_WHITE);
-			for (int i = 0; i < cutString.size(); i++)
+			for (Component component : cutString)
 				CreateLang.builder()
-					.add(cutString.get(i)
+					.add(component
 						.copy())
 					.forGoggles(tooltip);
 			return true;
@@ -432,9 +433,9 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 				CreateLang.translateDirect("gui.contraptions.not_fast_enough", I18n.get(getBlockState().getBlock()
 					.getDescriptionId()));
 			List<Component> cutString = TooltipHelper.cutTextComponent(hint, Palette.GRAY_AND_WHITE);
-			for (int i = 0; i < cutString.size(); i++)
+			for (Component component : cutString)
 				CreateLang.builder()
-					.add(cutString.get(i)
+					.add(component
 						.copy())
 					.forGoggles(tooltip);
 			return true;
@@ -528,10 +529,10 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	 * @param connectedViaCogs whether these kinetic blocks are connected via mutual
 	 *                         IRotate.hasIntegratedCogwheel()
 	 * @return factor of rotation speed from this BE to other. 0 if no rotation is
-	 *         transferred, or the standard rules apply (integrated shafts/cogs)
+	 * transferred, or the standard rules apply (integrated shafts/cogs)
 	 */
 	public float propagateRotationTo(KineticBlockEntity target, BlockState stateFrom, BlockState stateTo, BlockPos diff,
-		boolean connectedViaAxes, boolean connectedViaCogs) {
+									 boolean connectedViaAxes, boolean connectedViaCogs) {
 		return 0;
 	}
 
@@ -571,7 +572,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	 * @param state
 	 * @param otherState
 	 * @return true if this and the other component should check their propagation
-	 *         factor and are not already connected via integrated cogs or shafts
+	 * factor and are not already connected via integrated cogs or shafts
 	 */
 	public boolean isCustomConnection(KineticBlockEntity other, BlockState state, BlockState otherState) {
 		return false;

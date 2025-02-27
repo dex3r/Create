@@ -130,6 +130,7 @@ public class AllPartialModels {
 		CHAIN_CONVEYOR_SHAFT = block("chain_conveyor/shaft"),
 
 		FROGPORT_BODY = block("package_frogport/body"), FROGPORT_HEAD = block("package_frogport/head"),
+		FROGPORT_HEAD_GOGGLES = block("package_frogport/head_goggles"),
 		FROGPORT_TONGUE = block("package_frogport/tongue"),
 		POSTBOX_FLAG = block("package_postbox/flag"),
 
@@ -158,6 +159,7 @@ public class AllPartialModels {
 		BOGEY_FRAME = block("track/bogey/bogey_frame"), SMALL_BOGEY_WHEELS = block("track/bogey/bogey_wheel"),
 		BOGEY_PIN = block("track/bogey/bogey_drive_wheel_pin"), BOGEY_PISTON = block("track/bogey/bogey_drive_piston"),
 		BOGEY_DRIVE = block("track/bogey/bogey_drive"), LARGE_BOGEY_WHEELS = block("track/bogey/bogey_drive_wheel"),
+		BOGEY_DRIVE_BELT = block("track/bogey/bogey_drive_belt"),
 
 		TRAIN_COUPLING_HEAD = block("track/bogey/coupling_head"),
 		TRAIN_COUPLING_CABLE = block("track/bogey/coupling_cable"),
@@ -238,6 +240,7 @@ public class AllPartialModels {
 
 	public static final Map<Direction, PartialModel> METAL_GIRDER_BRACKETS = new EnumMap<>(Direction.class);
 	public static final Map<DyeColor, PartialModel> TOOLBOX_LIDS = new EnumMap<>(DyeColor.class);
+	public static final Map<DyeColor, PartialModel> DYED_VALVE_HANDLES = new EnumMap<>(DyeColor.class);
 	public static final Map<ResourceLocation, Couple<PartialModel>> FOLDING_DOORS = new HashMap<>();
 	public static final List<PartialModel> CONTRAPTION_CONTROLS_INDICATOR = new ArrayList<>();
 
@@ -257,8 +260,10 @@ public class AllPartialModels {
 			}
 			PIPE_ATTACHMENTS.put(type, map);
 		}
-		for (DyeColor color : DyeColor.values())
+		for (DyeColor color : DyeColor.values()) {
 			TOOLBOX_LIDS.put(color, block("toolbox/lid/" + Lang.asId(color.name())));
+			DYED_VALVE_HANDLES.put(color, block(Lang.asId(color.name()) + "_valve_handle"));
+		}
 		for (Direction d : Iterate.horizontalDirections) {
 			METAL_GIRDER_BRACKETS.put(d, block("metal_girder/bracket_" + Lang.asId(d.name())));
 			FACTORY_PANEL_ARROWS.put(d, block("factory_gauge/connections/arrow_" + Lang.asId(d.name())));

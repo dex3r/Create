@@ -14,9 +14,10 @@ import java.util.Queue;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.simibubi.create.AllContraptionTypes;
+import com.simibubi.create.api.contraption.BlockMovementChecks;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AssemblyException;
-import com.simibubi.create.content.contraptions.BlockMovementChecks;
-import com.simibubi.create.content.contraptions.ContraptionType;
 import com.simibubi.create.content.contraptions.TranslatingContraption;
 import com.simibubi.create.content.contraptions.piston.MechanicalPistonBlock.PistonState;
 import com.simibubi.create.infrastructure.config.AllConfigs;
@@ -47,10 +48,11 @@ public class PistonContraption extends TranslatingContraption {
 
 	@Override
 	public ContraptionType getType() {
-		return ContraptionType.PISTON;
+		return AllContraptionTypes.PISTON.get();
 	}
 
-	public PistonContraption() {}
+	public PistonContraption() {
+	}
 
 	public PistonContraption(Direction direction, boolean retract) {
 		orientation = direction;
@@ -126,9 +128,9 @@ public class PistonContraption extends TranslatingContraption {
 		extensionLength = extensionsInBack + extensionsInFront;
 		initialExtensionProgress = extensionsInFront;
 		pistonExtensionCollisionBox = new AABB(
-				BlockPos.ZERO.relative(direction, -1),
-				BlockPos.ZERO.relative(direction, -extensionLength - 1)).expandTowards(1,
-						1, 1);
+			BlockPos.ZERO.relative(direction, -1),
+			BlockPos.ZERO.relative(direction, -extensionLength - 1)).expandTowards(1,
+			1, 1);
 
 		if (extensionLength == 0)
 			throw AssemblyException.noPistonPoles();

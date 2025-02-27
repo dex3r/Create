@@ -4,7 +4,7 @@
 	"textures": {
 		"0": "create:block/port2",
 		"1": "create:block/port",
-		"particle": "create:block/port2"
+		"particle": "create:block/vault/vault_top_small"
 	},
 	"elements": [
 		{

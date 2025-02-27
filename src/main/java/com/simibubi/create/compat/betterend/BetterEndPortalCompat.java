@@ -33,7 +33,7 @@ public class BetterEndPortalCompat {
 
 			MethodType findDimensionEntryPointTypes = MethodType.methodType(PortalInfo.class, ServerLevel.class);
 			findDimensionEntryPointHandle = privateLookup.findVirtual(travelerStateClass, "findDimensionEntryPoint", findDimensionEntryPointTypes);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			Create.LOGGER.error("Create's Better End Portal compat failed to initialize: ", e);
 			hasErrored = true;
 		}

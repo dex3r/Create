@@ -51,6 +51,7 @@ public class ItemVaultBlockEntity extends SmartBlockEntity implements IMultiBloc
 			protected void onContentsChanged(int slot) {
 				super.onContentsChanged(slot);
 				recalculateComparatorsNextTick = true;
+				level.blockEntityChanged(worldPosition);
 			}
 		};
 

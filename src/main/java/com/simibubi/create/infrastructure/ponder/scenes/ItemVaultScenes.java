@@ -60,8 +60,8 @@ public class ItemVaultScenes {
 
 		ItemStack hand = AllItems.BRASS_HAND.asStack();
 		scene.overlay().showControls(util.vector().blockSurface(frontVault, Direction.NORTH), Pointing.RIGHT, 40)
-				.showing(AllIcons.I_MTD_CLOSE)
-				.withItem(hand);
+			.showing(AllIcons.I_MTD_CLOSE)
+			.withItem(hand);
 		scene.idle(7);
 
 		scene.overlay().showText(60)
@@ -85,7 +85,7 @@ public class ItemVaultScenes {
 			.pointAt(util.vector().topOf(2, 2, 3));
 
 		ItemStack[] junk =
-			{ new ItemStack(Items.APPLE), new ItemStack(Items.GOLD_INGOT, 8), new ItemStack(Items.TUFF, 32) };
+			{new ItemStack(Items.APPLE), new ItemStack(Items.GOLD_INGOT, 8), new ItemStack(Items.TUFF, 32)};
 		for (int i = 0; i < junk.length + 2; i++) {
 			scene.idle(4);
 
@@ -111,8 +111,8 @@ public class ItemVaultScenes {
 			.placeNearTarget()
 			.pointAt(util.vector().topOf(2, 1, 1));
 
-		for (int i = 0; i < junk.length; i++) {
-			scene.world().createItemOnBeltLike(util.grid().at(2, 1, 1), Direction.EAST, junk[i]);
+		for (ItemStack stack : junk) {
+			scene.world().createItemOnBeltLike(util.grid().at(2, 1, 1), Direction.EAST, stack);
 			scene.idle(18);
 		}
 

@@ -1,5 +1,7 @@
 package com.simibubi.create.content.contraptions.behaviour;
 
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
+
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.CampfireBlock;

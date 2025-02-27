@@ -20,12 +20,11 @@ public class AirParticleData implements ParticleOptions, ICustomParticleDataWith
 
 	public static final Codec<AirParticleData> CODEC = RecordCodecBuilder.create(i ->
 		i.group(
-			Codec.FLOAT.fieldOf("drag").forGetter(p -> p.drag),
-			Codec.FLOAT.fieldOf("speed").forGetter(p -> p.speed))
-		.apply(i, AirParticleData::new));
-
+				Codec.FLOAT.fieldOf("drag").forGetter(p -> p.drag),
+				Codec.FLOAT.fieldOf("speed").forGetter(p -> p.speed))
+			.apply(i, AirParticleData::new));
 	public static final ParticleOptions.Deserializer<AirParticleData> DESERIALIZER =
-		new ParticleOptions.Deserializer<AirParticleData>() {
+		new ParticleOptions.Deserializer<>() {
 			public AirParticleData fromCommand(ParticleType<AirParticleData> particleTypeIn, StringReader reader)
 				throws CommandSyntaxException {
 				reader.expect(' ');

@@ -23,11 +23,15 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
-import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.levelWrappers.SchematicLevel;
+import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.ponder.api.level.PonderLevel;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -41,6 +45,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -310,18 +315,17 @@ public class TrackTargetingBehaviour<T extends TrackEdgePoint> extends BlockEnti
 
 	@Environment(EnvType.CLIENT)
 	public static void render(LevelAccessor level, BlockPos pos, AxisDirection direction,
-		BezierTrackPointLocation bezier, PoseStack ms, MultiBufferSource buffer, int light, int overlay,
-		RenderedTrackOverlayType type, float scale) {
+							  BezierTrackPointLocation bezier, PoseStack ms, MultiBufferSource buffer, int light, int overlay,
+							  RenderedTrackOverlayType type, float scale) {
 		if (level instanceof SchematicLevel && !(level instanceof PonderLevel))
 			return;
 
 		BlockState trackState = level.getBlockState(pos);
 		Block block = trackState.getBlock();
-		if (!(block instanceof ITrackBlock))
+		if (!(block instanceof ITrackBlock track))
 			return;
 
 		ms.pushPose();
-		ITrackBlock track = (ITrackBlock) block;
 		PartialModel partial = track.prepareTrackOverlay(level, pos, trackState, bezier, direction, ms, type);
 		if (partial != null)
 			CachedBuffers.partial(partial, trackState)
@@ -333,14 +337,14 @@ public class TrackTargetingBehaviour<T extends TrackEdgePoint> extends BlockEnti
 		ms.popPose();
 	}
 
-	public void transform(StructureTransform transform) {
+	public void transform(BlockEntity be, StructureTransform transform) {
 		id = UUID.randomUUID();
 		targetTrack = transform.applyWithoutOffset(targetTrack);
 		if (prevDirection != null)
 			rotatedDirection = transform.applyWithoutOffsetUncentered(prevDirection);
 		if (targetBezier != null)
 			targetBezier = new BezierTrackPointLocation(transform.applyWithoutOffset(targetBezier.curveTarget()
-				.subtract(getPos()))
+					.subtract(getPos()))
 				.offset(getPos()), targetBezier.segment());
 		blockEntity.notifyUpdate();
 	}

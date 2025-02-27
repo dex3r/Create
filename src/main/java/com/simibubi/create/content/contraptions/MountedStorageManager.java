@@ -16,8 +16,8 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import com.mojang.datafixers.util.Pair;
 import com.simibubi.create.AllPackets;
+import com.simibubi.create.AllTags.AllMountedItemStorageTypeTags;
 import com.simibubi.create.Create;
-import com.simibubi.create.api.contraption.storage.MountedStorageTypeRegistry;
 import com.simibubi.create.api.contraption.storage.SyncedMountedStorage;
 import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorage;
 import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorageType;
@@ -85,21 +85,22 @@ public class MountedStorageManager {
 
 	public void initialize() {
 		if (this.isInitialized()) {
-			throw new IllegalStateException("Mounted storage has already been initialized");
+			// originally this threw an exception to try to catch mistakes.
+			// however, in the case where a Contraption is deserialized before its Entity, that would also throw,
+			// since both the deserialization and the onEntityCreated callback initialize the storage.
+			// this case occurs when placing a picked up minecart contraption.
+			// the reverse case is fine since deserialization also resets the manager first.
+			return;
 		}
 
 		this.allItemStorages = ImmutableMap.copyOf(this.itemsBuilder);
 
-		this.items = new MountedItemStorageWrapper(subMap(
-			this.allItemStorages, storage -> !storage.isInternal()
-		));
+		this.items = new MountedItemStorageWrapper(subMap(this.allItemStorages, this::isExposed));
 
 		this.allItems = this.items;
 		this.itemsBuilder = null;
 
-		ImmutableMap<BlockPos, MountedItemStorage> fuelMap = subMap(
-			this.allItemStorages, storage -> !storage.isInternal() && storage.providesFuel()
-		);
+		ImmutableMap<BlockPos, MountedItemStorage> fuelMap = subMap(this.allItemStorages, this::canUseForFuel);
 		this.fuelItems = fuelMap.isEmpty() ? null : new MountedItemStorageWrapper(fuelMap);
 
 		ImmutableMap<BlockPos, MountedFluidStorage> fluids = ImmutableMap.copyOf(this.fluidsBuilder);
@@ -110,6 +111,14 @@ public class MountedStorageManager {
 		this.syncedItemsBuilder = null;
 		this.syncedFluids = ImmutableMap.copyOf(this.syncedFluidsBuilder);
 		this.syncedFluidsBuilder = null;
+	}
+
+	private boolean isExposed(MountedItemStorage storage) {
+		return !AllMountedItemStorageTypeTags.INTERNAL.matches(storage);
+	}
+
+	private boolean canUseForFuel(MountedItemStorage storage) {
+		return this.isExposed(storage) && !AllMountedItemStorageTypeTags.FUEL_BLACKLIST.matches(storage);
 	}
 
 	private boolean isInitialized() {
@@ -137,7 +146,7 @@ public class MountedStorageManager {
 	}
 
 	public void addBlock(Level level, BlockState state, BlockPos globalPos, BlockPos localPos, @Nullable BlockEntity be) {
-		MountedItemStorageType<?> itemType = MountedStorageTypeRegistry.ITEM_LOOKUP.find(state);
+		MountedItemStorageType<?> itemType = MountedItemStorageType.REGISTRY.get(state.getBlock());
 		if (itemType != null) {
 			MountedItemStorage storage = itemType.mount(level, state, globalPos, be);
 			if (storage != null) {
@@ -145,7 +154,7 @@ public class MountedStorageManager {
 			}
 		}
 
-		MountedFluidStorageType<?> fluidType = MountedStorageTypeRegistry.FLUID_LOOKUP.find(state);
+		MountedFluidStorageType<?> fluidType = MountedFluidStorageType.REGISTRY.get(state.getBlock());
 		if (fluidType != null) {
 			MountedFluidStorage storage = fluidType.mount(level, state, globalPos, be);
 			if (storage != null) {
@@ -160,7 +169,7 @@ public class MountedStorageManager {
 
 		MountedItemStorage itemStorage = this.getAllItemStorages().get(localPos);
 		if (itemStorage != null) {
-			MountedItemStorageType<?> expectedType = MountedStorageTypeRegistry.ITEM_LOOKUP.find(state);
+			MountedItemStorageType<?> expectedType = MountedItemStorageType.REGISTRY.get(state.getBlock());
 			if (itemStorage.type == expectedType) {
 				itemStorage.unmount(level, state, globalPos, be);
 			}
@@ -168,7 +177,7 @@ public class MountedStorageManager {
 
 		MountedFluidStorage fluidStorage = this.getFluids().storages.get(localPos);
 		if (fluidStorage != null) {
-			MountedFluidStorageType<?> expectedType = MountedStorageTypeRegistry.FLUID_LOOKUP.find(state);
+			MountedFluidStorageType<?> expectedType = MountedFluidStorageType.REGISTRY.get(state.getBlock());
 			if (fluidStorage.type == expectedType) {
 				fluidStorage.unmount(level, state, globalPos, be);
 			}
@@ -354,10 +363,7 @@ public class MountedStorageManager {
 	}
 
 	/**
-	 * Gets a map of all MountedItemStorages in the contraption, irrelevant of them
-	 * being internal or providing fuel.
-	 * @see MountedItemStorage#isInternal()
-	 * @see MountedItemStorage#providesFuel()
+	 * Gets a map of all MountedItemStorages in the contraption, irrelevant of them being internal or providing fuel.
 	 */
 	public ImmutableMap<BlockPos, MountedItemStorage> getAllItemStorages() {
 		this.assertInitialized();

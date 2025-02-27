@@ -7,25 +7,26 @@ import org.slf4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.logging.LogUtils;
-import com.simibubi.create.api.behaviour.BlockSpoutingBehaviour;
+import com.simibubi.create.api.behaviour.spouting.BlockSpoutingBehaviour;
 import com.simibubi.create.compat.Mods;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
 import com.simibubi.create.compat.trinkets.Trinkets;
-import com.simibubi.create.content.contraptions.ContraptionMovementSetting;
 import com.simibubi.create.content.decoration.palettes.AllPaletteBlocks;
-import com.simibubi.create.content.equipment.potatoCannon.BuiltinPotatoProjectileTypes;
+import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileBlockHitActions;
+import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileEntityHitActions;
+import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileRenderModes;
 import com.simibubi.create.content.fluids.tank.BoilerHeaters;
 import com.simibubi.create.content.kinetics.TorquePropagator;
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import com.simibubi.create.content.kinetics.mechanicalArm.AllArmInteractionPointTypes;
 import com.simibubi.create.content.logistics.item.filter.attribute.AllItemAttributeTypes;
 import com.simibubi.create.content.logistics.packagerLink.GlobalLogisticsManager;
-import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 import com.simibubi.create.content.redstone.link.RedstoneLinkNetworkHandler;
 import com.simibubi.create.content.schematics.ServerSchematicLoader;
 import com.simibubi.create.content.trains.GlobalRailwayManager;
 import com.simibubi.create.content.trains.bogey.BogeySizes;
 import com.simibubi.create.content.trains.track.AllPortalTracks;
+import com.simibubi.create.foundation.CreateNBTProcessors;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.advancement.AllTriggers;
 import com.simibubi.create.foundation.block.CopperRegistries;
@@ -64,7 +65,9 @@ public class Create implements ModInitializer {
 		.disableHtmlEscaping()
 		.create();
 
-	/** Use the {@link Random} of a local {@link Level} or {@link Entity} or create one */
+	/**
+	 * Use the {@link Random} of a local {@link Level} or {@link Entity} or create one
+	 */
 	@Deprecated
 	public static final Random RANDOM = new Random();
 
@@ -78,7 +81,7 @@ public class Create implements ModInitializer {
 	static {
 		REGISTRATE.setTooltipModifierFactory(item ->
 			new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
-			.andThen(TooltipModifier.mapNull(KineticStats.create(item)))
+				.andThen(TooltipModifier.mapNull(KineticStats.create(item)))
 		);
 	}
 
@@ -96,6 +99,8 @@ public class Create implements ModInitializer {
 		AllSoundEvents.prepare();
 		AllTags.init();
 		AllCreativeModeTabs.register();
+		AllDisplaySources.register();
+		AllDisplayTargets.register();
 		AllBlocks.register();
 		AllItems.register();
 		AllFluids.register();
@@ -120,17 +125,7 @@ public class Create implements ModInitializer {
 		AllConfigs.register();
 		AllRegistries.register();
 
-		AllArmInteractionPointTypes.register();
-		AllFanProcessingTypes.register();
-		AllItemAttributeTypes.register();
-		BlockSpoutingBehaviour.registerDefaults();
-
 		// FIXME: some of these registrations are not thread-safe
-		AllMovementBehaviours.registerDefaults();
-		AllInteractionBehaviours.registerDefaults();
-		AllPortalTracks.registerDefaults();
-		AllDisplayBehaviours.registerDefaults();
-		ContraptionMovementSetting.registerDefaults();
 		BogeySizes.init();
 		AllBogeyStyles.init();
 		// ----
@@ -141,7 +136,7 @@ public class Create implements ModInitializer {
 		CopperRegistries.inject();
 
 		Create.init();
-//		modEventBus.addListener(EventPriority.LOW, CreateDatagen::gatherData); // CreateData entrypoint
+		Create.onRegister();
 		AllSoundEvents.register();
 
 		// causes class loading issues or something
@@ -164,15 +159,30 @@ public class Create implements ModInitializer {
 			// TODO: custom registration should all happen in one place
 			// Most registration happens in the constructor.
 			// These registrations use Create's registered objects directly so they must run after registration has finished.
-			BuiltinPotatoProjectileTypes.register();
 			BoilerHeaters.registerDefaults();
+			AllPortalTracks.registerDefaults();
+			BlockSpoutingBehaviour.registerDefaults();
+			AllMovementBehaviours.registerDefaults();
+			AllInteractionBehaviours.registerDefaults();
+			AllContraptionMovementSettings.registerDefaults();
+			AllOpenPipeEffectHandlers.registerDefaults();
+			AllMountedDispenseItemBehaviors.registerDefaults();
 			AllFluids.registerFluidInteractions();
-//		--
+			// --
 
-			// fabric: AttachedRegistry.unwrapAll moved to RegistryMixin
 			AllAdvancements.register();
 			AllTriggers.register();
 //		});
+	}
+
+	public static void onRegister(final RegisterEvent event) {
+		AllArmInteractionPointTypes.init();
+		AllFanProcessingTypes.init();
+		AllItemAttributeTypes.init();
+		AllContraptionTypes.init();
+		AllPotatoProjectileRenderModes.init();
+		AllPotatoProjectileEntityHitActions.init();
+		AllPotatoProjectileBlockHitActions.init();
 	}
 
 	public static LangBuilder lang() {

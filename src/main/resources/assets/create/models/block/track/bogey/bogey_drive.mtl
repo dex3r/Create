@@ -1,8 +1,5 @@
-# Blender MTL File: 'Bogey.blend'
-# Material Count: 4
-
-newmtl Belts
-map_Kd #belt
+# Blender 4.3.2 MTL File: 'Bogey.blend'
+# www.blender.org
 
 newmtl Bogey_Body
 map_Kd #bogey

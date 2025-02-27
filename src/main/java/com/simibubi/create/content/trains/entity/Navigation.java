@@ -749,7 +749,7 @@ public class Navigation {
 							if (station.canApproachFrom(newNode) && stationTest.test(newDistance, newDistance + newPenalty, reachedVia,
 									Pair.of(Couple.create(node2, newNode), newEdge), station)) {
 								hasDestination = true;
-								continue;
+								break;
 							}
 							if (!isOwnStation)
 								newPenalty += Train.Penalties.STATION;

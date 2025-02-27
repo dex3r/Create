@@ -3,7 +3,7 @@ package com.simibubi.create.content.contraptions.chassis;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.api.contraption.transformable.ITransformableBlock;
+import com.simibubi.create.api.contraption.transformable.TransformableBlock;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
@@ -29,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
 
 import io.github.fabricators_of_create.porting_lib.tags.Tags;
 
-public abstract class AbstractChassisBlock extends RotatedPillarBlock implements IWrenchable, IBE<ChassisBlockEntity>, ITransformableBlock {
+public abstract class AbstractChassisBlock extends RotatedPillarBlock implements IWrenchable, IBE<ChassisBlockEntity>, TransformableBlock {
 
 	public AbstractChassisBlock(Properties properties) {
 		super(properties);

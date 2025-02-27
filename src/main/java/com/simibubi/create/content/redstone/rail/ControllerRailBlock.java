@@ -64,15 +64,15 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
 
 	private static Direction getPointingTowards(BlockState state) {
 		switch (state.getValue(SHAPE)) {
-		case ASCENDING_WEST:
-		case EAST_WEST:
-			return Direction.WEST;
-		case ASCENDING_EAST:
-			return Direction.EAST;
-		case ASCENDING_SOUTH:
-			return Direction.SOUTH;
-		default:
-			return Direction.NORTH;
+			case ASCENDING_WEST:
+			case EAST_WEST:
+				return Direction.WEST;
+			case ASCENDING_EAST:
+				return Direction.EAST;
+			case ASCENDING_SOUTH:
+				return Direction.SOUTH;
+			default:
+				return Direction.NORTH;
 		}
 	}
 
@@ -112,8 +112,7 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
 			.subtract(cart.position());
 		cart.setDeltaMovement(diff.x / 16f, 0, diff.z / 16f);
 
-		if (cart instanceof MinecartFurnace) {
-			MinecartFurnace fme = (MinecartFurnace) cart;
+		if (cart instanceof MinecartFurnace fme) {
 			fme.xPush = fme.zPush = 0;
 		}
 	}
@@ -148,8 +147,7 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
 		Vec3 accelerationVec = Vec3.atLowerCornerOf(getAccelerationVector(state));
 		double targetSpeed = MinecartAndRailUtil.getMaximumSpeed(cart) * state.getValue(POWER) / 15f;
 
-		if (cart instanceof MinecartFurnace) {
-			MinecartFurnace fme = (MinecartFurnace) cart;
+		if (cart instanceof MinecartFurnace fme) {
 			fme.xPush = accelerationVec.x;
 			fme.zPush = accelerationVec.z;
 		}
@@ -219,8 +217,8 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
 		if (world.isClientSide)
 			return InteractionResult.SUCCESS;
 		BlockPos pos = context.getClickedPos();
-		for (Rotation testRotation : new Rotation[] { Rotation.CLOCKWISE_90, Rotation.CLOCKWISE_180,
-			Rotation.COUNTERCLOCKWISE_90 }) {
+		for (Rotation testRotation : new Rotation[]{Rotation.CLOCKWISE_90, Rotation.CLOCKWISE_180,
+			Rotation.COUNTERCLOCKWISE_90}) {
 			BlockState testState = rotate(state, testRotation);
 			if (isStableWith(testState, world, pos)) {
 				placeAndNotify(testState, pos, world);

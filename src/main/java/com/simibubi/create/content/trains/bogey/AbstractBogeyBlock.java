@@ -8,6 +8,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllBogeyStyles;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.content.trains.entity.Carriage;
@@ -28,8 +30,8 @@ import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -54,7 +56,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> extends Block implements IBE<T>, ProperWaterloggedBlock, ISpecialBlockItemRequirement, IWrenchable {
+public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> extends Block implements IBE<T>, ProperWaterloggedBlock, SpecialBlockItemRequirement, IWrenchable {
 	public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 	static final List<ResourceLocation> BOGEYS = new ArrayList<>();
 	public BogeySizes.BogeySize size;

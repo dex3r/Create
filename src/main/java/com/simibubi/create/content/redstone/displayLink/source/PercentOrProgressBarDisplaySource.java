@@ -18,9 +18,11 @@ public abstract class PercentOrProgressBarDisplaySource extends NumericSingleLin
 
 	@Override
 	protected MutableComponent provideLine(DisplayLinkContext context, DisplayTargetStats stats) {
-		Float currentLevel = getProgress(context);
-		if (currentLevel == null)
+		Float rawProgress = this.getProgress(context);
+		if (rawProgress == null)
 			return EMPTY_LINE;
+		// clamp just in case - #7371
+		float currentLevel = Mth.clamp(rawProgress, 0, 1);
 		if (!progressBarActive(context))
 			return formatNumeric(context, currentLevel);
 

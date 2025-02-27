@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllRegistries;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.BeltBlock;
 import com.simibubi.create.content.kinetics.belt.BeltBlockEntity;
@@ -82,10 +82,10 @@ public class AllArmInteractionPointTypes {
 	}
 
 	private static <T extends ArmInteractionPointType> void register(String name, T type) {
-		Registry.register(AllRegistries.ARM_INTERACTION_POINT_TYPES, Create.asResource(name), type);
+		Registry.register(CreateBuiltInRegistries.ARM_INTERACTION_POINT_TYPE, Create.asResource(name), type);
 	}
 
-	public static void register() {
+	public static void init() {
 	}
 
 	//
@@ -194,7 +194,7 @@ public class AllArmInteractionPointTypes {
 			return state.getBlock() instanceof AbstractFunnelBlock
 				&& !(state.hasProperty(FunnelBlock.EXTRACTING) && state.getValue(FunnelBlock.EXTRACTING))
 				&& !(state.hasProperty(BeltFunnelBlock.SHAPE)
-					&& state.getValue(BeltFunnelBlock.SHAPE) == Shape.PUSHING);
+				&& state.getValue(BeltFunnelBlock.SHAPE) == Shape.PUSHING);
 		}
 
 		@Override
@@ -292,12 +292,13 @@ public class AllArmInteractionPointTypes {
 
 	public static class DepositOnlyArmInteractionPoint extends ArmInteractionPoint {
 		public DepositOnlyArmInteractionPoint(ArmInteractionPointType type, Level level, BlockPos pos,
-			BlockState state) {
+											  BlockState state) {
 			super(type, level, pos, state);
 		}
 
 		@Override
-		public void cycleMode() {}
+		public void cycleMode() {
+		}
 
 		@Override
 		public ItemStack extract(int amount, TransactionContext ctx) {
@@ -393,9 +394,8 @@ public class AllArmInteractionPointTypes {
 		@Override
 		public ItemStack extract(int amount, TransactionContext ctx) {
 			BlockEntity be = level.getBlockEntity(pos);
-			if (!(be instanceof MechanicalCrafterBlockEntity))
+			if (!(be instanceof MechanicalCrafterBlockEntity crafter))
 				return ItemStack.EMPTY;
-			MechanicalCrafterBlockEntity crafter = (MechanicalCrafterBlockEntity) be;
 			SmartInventory inventory = crafter.getInventory();
 			inventory.allowExtraction();
 			ItemStack extract = super.extract(amount, ctx);
@@ -487,8 +487,7 @@ public class AllArmInteractionPointTypes {
 			ItemStack insert = inserter.insert(stack);
 			if (insert.getCount() != stack.getCount()) {
 				BlockEntity blockEntity = level.getBlockEntity(pos);
-				if (blockEntity instanceof FunnelBlockEntity) {
-					FunnelBlockEntity funnelBlockEntity = (FunnelBlockEntity) blockEntity;
+				if (blockEntity instanceof FunnelBlockEntity funnelBlockEntity) {
 					TransactionCallback.onSuccess(ctx, () -> {
 						funnelBlockEntity.onTransfer(stack);
 						if (funnelBlockEntity.hasFlap())
@@ -586,24 +585,20 @@ public class AllArmInteractionPointTypes {
 
 		@Override
 		public ItemStack insert(ItemStack stack, TransactionContext ctx) {
-			Item item = stack.getItem();
-			if (!(item instanceof RecordItem))
+			if (!(stack.getItem() instanceof RecordItem))
 				return stack;
-			if (cachedState.getOptionalValue(JukeboxBlock.HAS_RECORD)
-				.orElse(true))
+			if (cachedState.getOptionalValue(JukeboxBlock.HAS_RECORD).orElse(true))
 				return stack;
-			BlockEntity blockEntity = level.getBlockEntity(pos);
-			if (!(blockEntity instanceof JukeboxBlockEntity jukeboxBE))
+			if (!(level.getBlockEntity(pos) instanceof JukeboxBlockEntity jukeboxBE))
 				return stack;
-			if (!jukeboxBE.getFirstItem()
-				.isEmpty())
+			if (!jukeboxBE.getFirstItem().isEmpty())
 				return stack;
 			ItemStack remainder = stack.copy();
 			ItemStack toInsert = remainder.split(1);
 			level.updateSnapshots(ctx);
 			level.setBlock(pos, cachedState.setValue(JukeboxBlock.HAS_RECORD, true), 2);
 			TransactionCallback.onSuccess(ctx, () -> {
-				jukeboxBE.setFirstItem(toInsert);
+				jukeboxBE.setItem(0, toInsert);
 				level.levelEvent(null, 1010, pos, Item.getId(item));
 			});
 			return remainder;
@@ -611,11 +606,9 @@ public class AllArmInteractionPointTypes {
 
 		@Override
 		public ItemStack extract(int amount, TransactionContext ctx) {
-			if (!cachedState.getOptionalValue(JukeboxBlock.HAS_RECORD)
-				.orElse(false))
+			if (!cachedState.getOptionalValue(JukeboxBlock.HAS_RECORD).orElse(false))
 				return ItemStack.EMPTY;
-			BlockEntity blockEntity = level.getBlockEntity(pos);
-			if (!(blockEntity instanceof JukeboxBlockEntity jukeboxBE))
+			if (!(level.getBlockEntity(pos) instanceof JukeboxBlockEntity jukeboxBE))
 				return ItemStack.EMPTY;
 			ItemStack record = jukeboxBE.getFirstItem();
 			if (record.isEmpty())
@@ -663,7 +656,7 @@ public class AllArmInteractionPointTypes {
 		@Override
 		protected Vec3 getInteractionPositionVector() {
 			return Vec3.atLowerCornerOf(pos)
-					.add(.5f, 1, .5f);
+				.add(.5f, 1, .5f);
 		}
 	}
 }

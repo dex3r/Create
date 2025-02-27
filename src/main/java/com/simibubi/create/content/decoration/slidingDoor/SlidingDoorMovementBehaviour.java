@@ -3,8 +3,8 @@ package com.simibubi.create.content.decoration.slidingDoor;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.contraptions.elevator.ElevatorColumn;
 import com.simibubi.create.content.contraptions.elevator.ElevatorColumn.ColumnCoords;

@@ -58,13 +58,13 @@ public class PumpBlock extends DirectionalKineticBlock
 
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter p_220053_2_, BlockPos p_220053_3_,
-		CollisionContext p_220053_4_) {
+							   CollisionContext p_220053_4_) {
 		return AllShapes.PUMP.get(state.getValue(FACING));
 	}
 
 	@Override
 	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block otherBlock, BlockPos neighborPos,
-		boolean isMoving) {
+								boolean isMoving) {
 		DebugPackets.sendNeighborsUpdatePacket(world, pos);
 		Direction d = FluidPropagator.validateNeighbourChange(state, world, pos, otherBlock, neighborPos, isMoving);
 		if (d == null)
@@ -88,7 +88,7 @@ public class PumpBlock extends DirectionalKineticBlock
 
 	@Override
 	public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, LevelAccessor world,
-		BlockPos pos, BlockPos neighbourPos) {
+								  BlockPos pos, BlockPos neighbourPos) {
 		if (state.getValue(BlockStateProperties.WATERLOGGED))
 			world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
 		return state;
@@ -146,9 +146,8 @@ public class PumpBlock extends DirectionalKineticBlock
 		if (isPump(state) && isPump(oldState) && state.getValue(FACING) == oldState.getValue(FACING)
 			.getOpposite()) {
 			BlockEntity blockEntity = world.getBlockEntity(pos);
-			if (!(blockEntity instanceof PumpBlockEntity))
+			if (!(blockEntity instanceof PumpBlockEntity pump))
 				return;
-			PumpBlockEntity pump = (PumpBlockEntity) blockEntity;
 			pump.pressureUpdate = true;
 		}
 	}

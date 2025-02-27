@@ -10,9 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import com.mojang.serialization.Codec;
 import com.simibubi.create.api.contraption.storage.item.menu.MountedStorageMenus;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.MountedStorageManager;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
-import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.core.BlockPos;
@@ -48,26 +45,6 @@ public abstract class MountedItemStorage implements SlottedStackStorage {
 	 * block has already been checked to make sure it matches this storage's type.
 	 */
 	public abstract void unmount(Level level, BlockState state, BlockPos pos, @Nullable BlockEntity be);
-
-	/**
-	 * Internal mounted storages are not exposed to the larger contraption inventory.
-	 * They are only for internal use, such as access from a {@link MovementBehaviour}.
-	 * Internal storages are still accessible through {@link MovementContext#getItemStorage()}
-	 * as well as {@link MountedStorageManager#getAllItemStorages()}.
-	 * A storage being internal implies that it does not provide fuel either.
-	 * This is only called once on assembly.
-	 */
-	public boolean isInternal() {
-		return false;
-	}
-
-	/**
-	 * Contraptions may search storage for fuel, such as for powering furnace minecarts
-	 * and trains. Return false if this storage should
-	 */
-	public boolean providesFuel() {
-		return true;
-	}
 
 	/**
 	 * Handle a player clicking on this mounted storage. This is always called on the server.

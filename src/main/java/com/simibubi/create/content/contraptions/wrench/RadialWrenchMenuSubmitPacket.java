@@ -38,6 +38,9 @@ public class RadialWrenchMenuSubmitPacket extends SimplePacketBase {
 			ServerPlayer player = context.getSender();
 			Level level = player.level();
 
+			if (!level.getBlockState(blockPos).is(newState.getBlock()))
+				return;
+			
 			BlockState updatedState = Block.updateFromNeighbourShapes(newState, level, blockPos);
 			KineticBlockEntity.switchToBlockState(level, blockPos, updatedState);
 

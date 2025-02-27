@@ -117,7 +117,7 @@ public class AllItems {
 
 	public static final ItemEntry<SequencedAssemblyItem>
 
-	INCOMPLETE_PRECISION_MECHANISM = sequencedIngredient("incomplete_precision_mechanism"),
+		INCOMPLETE_PRECISION_MECHANISM = sequencedIngredient("incomplete_precision_mechanism"),
 		INCOMPLETE_REINFORCED_SHEET = sequencedIngredient("unprocessed_obsidian_sheet"),
 		INCOMPLETE_TRACK = sequencedIngredient("incomplete_track");
 
@@ -226,7 +226,7 @@ public class AllItems {
 		IRON_SHEET = taggedIngredient("iron_sheet", forgeItemTag("iron_plates"), PLATES.tag),
 		GOLDEN_SHEET = taggedIngredient("golden_sheet", forgeItemTag("gold_plates"), PLATES.tag, ItemTags.PIGLIN_LOVED),
 
-		CRUSHED_IRON = taggedIngredient("crushed_raw_iron", CRUSHED_RAW_MATERIALS.tag),
+	CRUSHED_IRON = taggedIngredient("crushed_raw_iron", CRUSHED_RAW_MATERIALS.tag),
 		CRUSHED_GOLD = taggedIngredient("crushed_raw_gold", CRUSHED_RAW_MATERIALS.tag, ItemTags.PIGLIN_LOVED),
 		CRUSHED_COPPER = taggedIngredient("crushed_raw_copper", CRUSHED_RAW_MATERIALS.tag),
 		CRUSHED_ZINC = taggedIngredient("crushed_raw_zinc", CRUSHED_RAW_MATERIALS.tag);
@@ -297,7 +297,7 @@ public class AllItems {
 
 	public static final ItemEntry<? extends BacktankItem>
 
-	COPPER_BACKTANK =
+		COPPER_BACKTANK =
 		REGISTRATE
 			.item("copper_backtank",
 				p -> new BacktankItem(AllArmorMaterials.COPPER, p, Create.asResource("copper_diving"),
@@ -308,79 +308,79 @@ public class AllItems {
 			.tag(forgeItemTag("chestplates"))
 			.register(),
 
-		NETHERITE_BACKTANK = REGISTRATE
-			.item("netherite_backtank",
-				p -> new BacktankItem.Layered(ArmorMaterials.NETHERITE, p, Create.asResource("netherite_diving"),
-					NETHERITE_BACKTANK_PLACEABLE))
-			.model(AssetLookup.customGenericItemModel("_", "item"))
-			.properties(p -> p.fireResistant().durability(-1)) // fabric: Item#canBeDepleted() isn't enough to disable durability, so we need to set its maxDamage to -1 as well
-			.tag(AllItemTags.PRESSURIZED_AIR_SOURCES.tag)
-			.tag(forgeItemTag("chestplates"))
-			.register();
+	NETHERITE_BACKTANK = REGISTRATE
+		.item("netherite_backtank",
+			p -> new BacktankItem.Layered(ArmorMaterials.NETHERITE, p, Create.asResource("netherite_diving"),
+				NETHERITE_BACKTANK_PLACEABLE))
+		.model(AssetLookup.customGenericItemModel("_", "item"))
+		.properties(p -> p.fireResistant().durability(-1)) // fabric: Item#canBeDepleted() isn't enough to disable durability, so we need to set its maxDamage to -1 as well
+		.tag(AllItemTags.PRESSURIZED_AIR_SOURCES.tag)
+		.tag(forgeItemTag("chestplates"))
+		.register();
 
 	public static final ItemEntry<? extends DivingHelmetItem>
 
-	COPPER_DIVING_HELMET =
+		COPPER_DIVING_HELMET =
 		REGISTRATE
 			.item("copper_diving_helmet",
 				p -> new DivingHelmetItem(AllArmorMaterials.COPPER, p, Create.asResource("copper_diving")))
 			.tag(forgeItemTag("helmets"))
 			.register(),
 
-		NETHERITE_DIVING_HELMET = REGISTRATE
-			.item("netherite_diving_helmet",
-				p -> new DivingHelmetItem(ArmorMaterials.NETHERITE, p, Create.asResource("netherite_diving")))
-			.properties(p -> p.fireResistant())
-			.tag(forgeItemTag("helmets"))
-			.register();
+	NETHERITE_DIVING_HELMET = REGISTRATE
+		.item("netherite_diving_helmet",
+			p -> new DivingHelmetItem(ArmorMaterials.NETHERITE, p, Create.asResource("netherite_diving")))
+		.properties(p -> p.fireResistant())
+		.tag(forgeItemTag("helmets"))
+		.register();
 
 	public static final ItemEntry<? extends DivingBootsItem>
 
-	COPPER_DIVING_BOOTS =
+		COPPER_DIVING_BOOTS =
 		REGISTRATE
 			.item("copper_diving_boots",
 				p -> new DivingBootsItem(AllArmorMaterials.COPPER, p, Create.asResource("copper_diving")))
 			.tag(forgeItemTag("boots"))
 			.register(),
 
-		NETHERITE_DIVING_BOOTS = REGISTRATE
-			.item("netherite_diving_boots",
-				p -> new DivingBootsItem(ArmorMaterials.NETHERITE, p, Create.asResource("netherite_diving")))
-			.properties(p -> p.fireResistant())
-			.tag(forgeItemTag("boots"))
-			.register();
+	NETHERITE_DIVING_BOOTS = REGISTRATE
+		.item("netherite_diving_boots",
+			p -> new DivingBootsItem(ArmorMaterials.NETHERITE, p, Create.asResource("netherite_diving")))
+		.properties(p -> p.fireResistant())
+		.tag(forgeItemTag("boots"))
+		.register();
 
 	public static final ItemEntry<? extends BaseArmorItem>
 
-	CARDBOARD_HELMET = REGISTRATE.item("cardboard_helmet", p -> new CardboardHelmetItem(ArmorItem.Type.HELMET, p))
+		CARDBOARD_HELMET = REGISTRATE.item("cardboard_helmet", p -> new CardboardHelmetItem(ArmorItem.Type.HELMET, p))
 		.tag(forgeItemTag("armors/helmet"), ItemTags.TRIMMABLE_ARMOR)
 		.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
 		.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
 		.model(TrimmableArmorModelGenerator::generate)
 		.register(),
 
-		CARDBOARD_CHESTPLATE =
-			REGISTRATE.item("cardboard_chestplate", p -> new CardboardArmorItem(ArmorItem.Type.CHESTPLATE, p))
-				.tag(forgeItemTag("armors/chestplate"), ItemTags.TRIMMABLE_ARMOR)
-				.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
-				.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
-				.model(TrimmableArmorModelGenerator::generate)
-				.register(),
-
-		CARDBOARD_LEGGINGS =
-			REGISTRATE.item("cardboard_leggings", p -> new CardboardArmorItem(ArmorItem.Type.LEGGINGS, p))
-				.tag(forgeItemTag("armors/leggings"), ItemTags.TRIMMABLE_ARMOR)
-				.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
-				.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
-				.model(TrimmableArmorModelGenerator::generate)
-				.register(),
-
-		CARDBOARD_BOOTS = REGISTRATE.item("cardboard_boots", p -> new CardboardArmorItem(ArmorItem.Type.BOOTS, p))
-			.tag(forgeItemTag("armors/boots"), ItemTags.TRIMMABLE_ARMOR)
+	CARDBOARD_CHESTPLATE =
+		REGISTRATE.item("cardboard_chestplate", p -> new CardboardArmorItem(ArmorItem.Type.CHESTPLATE, p))
+			.tag(forgeItemTag("armors/chestplate"), ItemTags.TRIMMABLE_ARMOR)
 			.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
-			.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
+				.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
 			.model(TrimmableArmorModelGenerator::generate)
-			.register();
+			.register(),
+
+	CARDBOARD_LEGGINGS =
+		REGISTRATE.item("cardboard_leggings", p -> new CardboardArmorItem(ArmorItem.Type.LEGGINGS, p))
+			.tag(forgeItemTag("armors/leggings"), ItemTags.TRIMMABLE_ARMOR)
+			.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
+				.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
+			.model(TrimmableArmorModelGenerator::generate)
+			.register(),
+
+	CARDBOARD_BOOTS = REGISTRATE.item("cardboard_boots", p -> new CardboardArmorItem(ArmorItem.Type.BOOTS, p))
+		.tag(forgeItemTag("armors/boots"), ItemTags.TRIMMABLE_ARMOR)
+		.onRegister(i -> FuelRegistry.INSTANCE.add(i, 1000))
+			.onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "item.create.cardboard_armor"))
+		.model(TrimmableArmorModelGenerator::generate)
+		.register();
 
 	public static final ItemEntry<SandPaperItem> SAND_PAPER = REGISTRATE.item("sand_paper", SandPaperItem::new)
 		.transform(CreateRegistrate.customRenderedItem(() -> SandPaperItemRenderer::new))
@@ -474,11 +474,11 @@ public class AllItems {
 		.lang("List Filter")
 		.register(),
 
-		ATTRIBUTE_FILTER = REGISTRATE.item("attribute_filter", FilterItem::attribute)
-			.register(),
+	ATTRIBUTE_FILTER = REGISTRATE.item("attribute_filter", FilterItem::attribute)
+		.register(),
 
-		PACKAGE_FILTER = REGISTRATE.item("package_filter", FilterItem::address)
-			.register();
+	PACKAGE_FILTER = REGISTRATE.item("package_filter", FilterItem::address)
+		.register();
 
 	public static final ItemEntry<ScheduleItem> SCHEDULE = REGISTRATE.item("schedule", ScheduleItem::new)
 		.lang("Train Schedule")
@@ -539,6 +539,7 @@ public class AllItems {
 
 	// Load this class
 
-	public static void register() {}
+	public static void register() {
+	}
 
 }

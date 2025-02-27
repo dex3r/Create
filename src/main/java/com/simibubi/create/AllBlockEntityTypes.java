@@ -1,7 +1,6 @@
 package com.simibubi.create;
 
 import static com.simibubi.create.Create.REGISTRATE;
-import static com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours.assignDataBehaviourBE;
 
 import com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionControlsBlockEntity;
 import com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionControlsRenderer;
@@ -203,8 +202,6 @@ import com.simibubi.create.content.redstone.diodes.PulseRepeaterBlockEntity;
 import com.simibubi.create.content.redstone.diodes.PulseTimerBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.LinkBulbRenderer;
-import com.simibubi.create.content.redstone.displayLink.source.NixieTubeDisplaySource;
-import com.simibubi.create.content.redstone.displayLink.target.NixieTubeDisplayTarget;
 import com.simibubi.create.content.redstone.link.RedstoneLinkBlockEntity;
 import com.simibubi.create.content.redstone.link.controller.LecternControllerBlockEntity;
 import com.simibubi.create.content.redstone.link.controller.LecternControllerRenderer;
@@ -821,11 +818,11 @@ public class AllBlockEntityTypes {
 
 	public static final BlockEntityEntry<NixieTubeBlockEntity> NIXIE_TUBE = REGISTRATE
 		.blockEntity("nixie_tube", NixieTubeBlockEntity::new)
+		.displaySource(AllDisplaySources.NIXIE_TUBE)
+		.displayTarget(AllDisplayTargets.NIXIE_TUBE)
 		.validBlocks(AllBlocks.ORANGE_NIXIE_TUBE)
 		.validBlocks(AllBlocks.NIXIE_TUBES.toArray())
 		.renderer(() -> NixieTubeRenderer::new)
-		.onRegister(assignDataBehaviourBE(new NixieTubeDisplayTarget()))
-		.onRegister(assignDataBehaviourBE(new NixieTubeDisplaySource()))
 		.register();
 
 	public static final BlockEntityEntry<DisplayLinkBlockEntity> DISPLAY_LINK = REGISTRATE

@@ -22,7 +22,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -49,8 +48,8 @@ public class DumpRailwaysCommand {
 				CommandSourceStack source = ctx.getSource();
 				fillReport(source.getLevel(), source.getPosition(),
 					(s, f) -> source.sendSuccess(() -> {
-                        return Component.literal(s).withStyle(st -> st.withColor(f));
-                    }, false),
+						return Component.literal(s).withStyle(st -> st.withColor(f));
+					}, false),
 					(c) -> source.sendSuccess(() -> c, false));
 				return 1;
 			});
@@ -58,7 +57,7 @@ public class DumpRailwaysCommand {
 
 	// https://www.compart.com/en/unicode/search?q=box+drawings+light#characters ┬ ├ └ ─
 	static void fillReport(ServerLevel level, Vec3 location, BiConsumer<String, Integer> chat,
-		Consumer<Component> chatRaw) {
+						   Consumer<Component> chatRaw) {
 		GlobalRailwayManager railways = Create.RAILWAYS;
 
 
@@ -85,7 +84,7 @@ public class DumpRailwaysCommand {
 				chat.accept(graph.id.toString()
 					.substring(0, 5) + " with "
 					+ graph.getNodes()
-						.size()
+					.size()
 					+ " Nodes", white);
 				Collection<SignalBoundary> signals = graph.getPoints(EdgePointType.SIGNAL);
 				if (!signals.isEmpty())
@@ -113,9 +112,9 @@ public class DumpRailwaysCommand {
 			chat.accept("", white);
 			for (Train train : nearestTrains) {
 				chat.accept(String.format("┬%1$s: %2$s, %3$d Wagons",
-						train.id.toString().substring(0, 5),
-						train.name.getString(),
-						train.carriages.size()
+					train.id.toString().substring(0, 5),
+					train.name.getString(),
+					train.carriages.size()
 				), bright);
 				if (train.derailed)
 					chat.accept("├─Derailed", orange);
@@ -135,9 +134,9 @@ public class DumpRailwaysCommand {
 				ScheduleRuntime runtime = train.runtime;
 				if (runtime.getSchedule() != null) {
 					chat.accept("├─Schedule, Entry " + runtime.currentEntry + ", "
-						+ (runtime.paused ? "Paused"
+							+ (runtime.paused ? "Paused"
 							: runtime.state.name()
-								.replaceAll("_", " ")),
+							.replaceAll("_", " ")),
 						runtime.paused ? darkBlue : blue);
 				} else
 					chat.accept("├─Idle, No Schedule", darkBlue);
@@ -163,29 +162,29 @@ public class DumpRailwaysCommand {
 	}
 
 	private static Component createDeleteButton(Train train) {
-        return Component.literal("└─").withStyle(style -> style.withColor(blue)).append(
+		return Component.literal("└─").withStyle(style -> style.withColor(blue)).append(
 			ComponentUtils.wrapInSquareBrackets(
-					Component.literal("Remove").withStyle(style -> style.withColor(orange))
+				Component.literal("Remove").withStyle(style -> style.withColor(orange))
 			).withStyle(style -> {
-                        return style
-                            .withColor(blue)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/c train remove " + train.id.toString()))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to remove ").append(train.name)));
-                    }
+					return style
+						.withColor(blue)
+						.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/c train remove " + train.id.toString()))
+						.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to remove ").append(train.name)));
+				}
 			)
 		);
 	}
 
 	private static Component createTeleportButton(Train train) {
-        return Component.literal("├─").withStyle(style -> style.withColor(darkBlue)).append(
+		return Component.literal("├─").withStyle(style -> style.withColor(darkBlue)).append(
 			ComponentUtils.wrapInSquareBrackets(
 				Component.literal("Teleport").withStyle(style -> style.withColor(orange))
 			).withStyle(style -> {
-                        return style
-                            .withColor(darkBlue)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/c train tp " + train.id.toString()))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to teleport to ").append(train.name)));
-                    }
+					return style
+						.withColor(darkBlue)
+						.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/c train tp " + train.id.toString()))
+						.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to teleport to ").append(train.name)));
+				}
 			)
 		);
 	}

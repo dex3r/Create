@@ -13,8 +13,6 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.simibubi.create.foundation.gui.widget.Indicator;
-import com.simibubi.create.foundation.gui.widget.Indicator.State;
 import com.simibubi.create.foundation.item.TooltipHelper;
 
 import net.createmod.catnip.gui.element.GuiGameElement;
@@ -121,24 +119,16 @@ public abstract class AbstractFilterScreen<F extends AbstractFilterMenu> extends
 
 	public void handleIndicators() {
 		for (IconButton button : getTooltipButtons())
-			button.active = isButtonEnabled(button);
-		for (Indicator indicator : getIndicators())
-			indicator.state = isIndicatorOn(indicator) ? State.ON : State.OFF;
+			button.green = !isButtonEnabled(button);
 	}
 
 	protected abstract boolean isButtonEnabled(IconButton button);
-
-	protected abstract boolean isIndicatorOn(Indicator indicator);
 
 	protected List<IconButton> getTooltipButtons() {
 		return Collections.emptyList();
 	}
 
 	protected List<MutableComponent> getTooltipDescriptions() {
-		return Collections.emptyList();
-	}
-
-	protected List<Indicator> getIndicators() {
 		return Collections.emptyList();
 	}
 

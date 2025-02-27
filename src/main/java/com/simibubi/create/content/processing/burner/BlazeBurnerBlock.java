@@ -14,7 +14,16 @@ import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+
 import net.createmod.catnip.lang.Lang;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
@@ -83,9 +92,8 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 		if (world.isClientSide)
 			return;
 		BlockEntity blockEntity = world.getBlockEntity(pos.above());
-		if (!(blockEntity instanceof BasinBlockEntity))
+		if (!(blockEntity instanceof BasinBlockEntity basin))
 			return;
-		BasinBlockEntity basin = (BasinBlockEntity) blockEntity;
 		basin.notifyChangeOfContents();
 	}
 
@@ -109,7 +117,7 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 
 	@Override
 	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult blockRayTraceResult) {
+								 BlockHitResult blockRayTraceResult) {
 		ItemStack heldItem = player.getItemInHand(hand);
 		HeatLevel heat = state.getValue(HEAT_LEVEL);
 
@@ -176,14 +184,13 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 	}
 
 	public static InteractionResultHolder<ItemStack> tryInsert(BlockState state, Level world, BlockPos pos,
-		ItemStack stack, boolean doNotConsume, boolean forceOverflow, TransactionContext ctx) {
+															   ItemStack stack, boolean doNotConsume, boolean forceOverflow, TransactionContext ctx) {
 		if (!state.hasBlockEntity())
 			return InteractionResultHolder.fail(ItemStack.EMPTY);
 
 		BlockEntity be = world.getBlockEntity(pos);
-		if (!(be instanceof BlazeBurnerBlockEntity))
+		if (!(be instanceof BlazeBurnerBlockEntity burnerBE))
 			return InteractionResultHolder.fail(ItemStack.EMPTY);
-		BlazeBurnerBlockEntity burnerBE = (BlazeBurnerBlockEntity) be;
 
 		if (burnerBE.isCreativeFuel(stack)) {
 			TransactionCallback.onSuccess(ctx, burnerBE::applyCreativeFuel);
@@ -223,7 +230,7 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 
 	@Override
 	public VoxelShape getCollisionShape(BlockState p_220071_1_, BlockGetter p_220071_2_, BlockPos p_220071_3_,
-		CollisionContext p_220071_4_) {
+										CollisionContext p_220071_4_) {
 		if (p_220071_4_ == CollisionContext.empty())
 			return AllShapes.HEATER_BLOCK_SPECIAL_COLLISION_SHAPE;
 		return getShape(p_220071_1_, p_220071_2_, p_220071_3_, p_220071_4_);
@@ -265,9 +272,9 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 	public static int getLight(BlockState state) {
 		HeatLevel level = state.getValue(HEAT_LEVEL);
 		return switch (level) {
-		case NONE -> 0;
-		case SMOULDERING -> 8;
-		default -> 15;
+			case NONE -> 0;
+			case SMOULDERING -> 8;
+			default -> 15;
 		};
 	}
 
@@ -289,7 +296,8 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 	}
 
 	public enum HeatLevel implements StringRepresentable {
-		NONE, SMOULDERING, FADING, KINDLED, SEETHING,;
+		NONE, SMOULDERING, FADING, KINDLED, SEETHING,
+		;
 
 		public static HeatLevel byIndex(int index) {
 			return values()[index];

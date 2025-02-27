@@ -4,8 +4,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.AllPackets;
@@ -29,6 +27,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 
 public class StationPeripheral extends SyncedPeripheral<StationBlockEntity> {
 
@@ -209,8 +208,8 @@ public class StationPeripheral extends SyncedPeripheral<StationBlockEntity> {
 
 			for (String compoundKey : compoundTag.getAllKeys()) {
 				table.put(
-						StringHelper.camelCaseToSnakeCase(compoundKey),
-						fromNBTTag(compoundKey, compoundTag.get(compoundKey))
+					StringHelper.camelCaseToSnakeCase(compoundKey),
+					fromNBTTag(compoundKey, compoundTag.get(compoundKey))
 				);
 			}
 
@@ -254,11 +253,11 @@ public class StationPeripheral extends SyncedPeripheral<StationBlockEntity> {
 					throw new LuaException("table key is not of type string");
 
 				compound.put(
-						// Items serialize their resource location as "id" and not as "Id".
-						// This check is needed to see if the 'i' should be left lowercase or not.
-						// Items store "count" in the same compound tag, so we can check for its presence to see if this is a serialized item
-						compoundKey.equals("id") && v.containsKey("count") ? "id" : StringHelper.snakeCaseToCamelCase(compoundKey),
-						toNBTTag(compoundKey, v.get(compoundKey))
+					// Items serialize their resource location as "id" and not as "Id".
+					// This check is needed to see if the 'i' should be left lowercase or not.
+					// Items store "count" in the same compound tag, so we can check for its presence to see if this is a serialized item
+					compoundKey.equals("id") && v.containsKey("count") ? "id" : StringHelper.snakeCaseToCamelCase(compoundKey),
+					toNBTTag(compoundKey, v.get(compoundKey))
 				);
 			}
 

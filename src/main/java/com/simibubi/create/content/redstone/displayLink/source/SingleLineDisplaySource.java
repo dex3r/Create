@@ -3,6 +3,7 @@ package com.simibubi.create.content.redstone.displayLink.source;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 import com.simibubi.create.content.trains.display.FlapDisplayBlockEntity;
@@ -10,6 +11,9 @@ import com.simibubi.create.content.trains.display.FlapDisplayLayout;
 import com.simibubi.create.content.trains.display.FlapDisplaySection;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

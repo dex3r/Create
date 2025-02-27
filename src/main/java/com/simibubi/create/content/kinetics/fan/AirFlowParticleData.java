@@ -22,14 +22,14 @@ public class AirFlowParticleData implements ParticleOptions, ICustomParticleData
 
 	public static final Codec<AirFlowParticleData> CODEC = RecordCodecBuilder.create(i ->
 		i.group(
-			Codec.INT.fieldOf("x").forGetter(p -> p.posX),
-			Codec.INT.fieldOf("y").forGetter(p -> p.posY),
-			Codec.INT.fieldOf("z").forGetter(p -> p.posZ))
-		.apply(i, AirFlowParticleData::new));
+				Codec.INT.fieldOf("x").forGetter(p -> p.posX),
+				Codec.INT.fieldOf("y").forGetter(p -> p.posY),
+				Codec.INT.fieldOf("z").forGetter(p -> p.posZ))
+			.apply(i, AirFlowParticleData::new));
 
-	public static final ParticleOptions.Deserializer<AirFlowParticleData> DESERIALIZER = new ParticleOptions.Deserializer<AirFlowParticleData>() {
+	public static final ParticleOptions.Deserializer<AirFlowParticleData> DESERIALIZER = new ParticleOptions.Deserializer<>() {
 		public AirFlowParticleData fromCommand(ParticleType<AirFlowParticleData> particleTypeIn, StringReader reader)
-				throws CommandSyntaxException {
+			throws CommandSyntaxException {
 			reader.expect(' ');
 			int x = reader.readInt();
 			reader.expect(' ');

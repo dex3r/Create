@@ -3,8 +3,8 @@ package com.simibubi.create.content.contraptions.actors.seat;
 import java.util.Map;
 import java.util.UUID;
 
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 
 import net.createmod.catnip.math.VecHelper;

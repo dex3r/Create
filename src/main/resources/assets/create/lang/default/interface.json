@@ -980,7 +980,7 @@
 	"create.train_assembly.no_controls": "Attach at least one forward-facing Train Controls block (Are you missing Super Glue?)",
 	"create.train_assembly.sideways_controls": "Train Controls cannot face sideways",
 	"create.train_assembly.bogey_created": "Bogey created. Click again to cycle type",
-	"create.train_assembly.requires_casing": "Use Railway Casing to create bogeys on tracks",
+	"create.train_assembly.requires_casing": "Use Train Casing to create bogeys on tracks",
 
 	"create.track_target.set": "Targeted track selected",
 	"create.track_target.success": "Successfully bound to targeted track",
@@ -1048,6 +1048,8 @@
 	"create.contraption.door_control.none.short": "None",
 	"create.contraption.door_control.player_facing": "You are facing: %1$s",
 
+	"create.packager.no_portable_storage": "Packagers cannot interface with Portable Storage directly",
+	
 	"create.packager_link.set": "Target selected",
 	"create.packager_link.success": "Successfully bound to target",
 	"create.packager_link.clear": "Cleared selection",
@@ -1069,7 +1071,7 @@
 	"create.display_link.display_on": "Write data to:",
 	"create.display_link.display_on_multiline": "Start writing at:",
 
-	"create.logistically_linked.tuned": "Tuned to this link",
+	"create.logistically_linked.tuned": "Tuned to this network",
 	"create.logistically_linked.new_network_started": "New link network started",
 	"create.logistically_linked.connected": "Connected to existing network successfully",
 	"create.logistically_linked.tooltip": "Frequency configured",
@@ -1119,6 +1121,7 @@
 	"create.gui.factory_panel.address_missing": "Inactive: missing a target address",
 	"create.gui.factory_panel.no_target_amount_set": "Inactive: no target amount set",
 	"create.gui.factory_panel.has_link_connections": "Gauge has connected links",
+	"create.gui.factory_panel.place_item_to_monitor": "Place Item to Monitor",
 
 	"create.gui.redstone_requester.allow_partial": "Allow partial orders",
 	"create.gui.redstone_requester.dont_allow_partial": "Must send all items",
@@ -1165,6 +1168,7 @@
   "create.display_source.fluid_amount.droplets": "Droplets",
   "create.display_source.fluid_amount.display": "Display Unit",
 	"create.display_source.list_fluids": "List matching Fluids",
+	"create.display_source.read_package_address": "Read Package Address",
 	"create.display_source.nixie_tube": "Copy Nixie Tubes",
 	"create.display_source.fill_level": "Container Fill Level",
 	"create.display_source.fill_level.display": "Display Format",

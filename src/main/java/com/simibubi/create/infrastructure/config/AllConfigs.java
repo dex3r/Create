@@ -7,12 +7,12 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.simibubi.create.Create;
-import com.simibubi.create.content.kinetics.BlockStressValues;
+import com.simibubi.create.api.stress.BlockStressValues;
 
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import net.createmod.catnip.config.ConfigBase;
+
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 
@@ -61,10 +61,9 @@ public class AllConfigs {
 		for (Entry<ModConfig.Type, ConfigBase> pair : CONFIGS.entrySet())
 			ForgeConfigRegistry.INSTANCE.register(Create.ID, pair.getKey(), pair.getValue().specification);
 
-		BlockStressValues.registerProvider(Create.ID, server().kinetics.stressValues);
-
-		ModConfigEvents.loading(Create.ID).register(AllConfigs::onLoad);
-		ModConfigEvents.reloading(Create.ID).register(AllConfigs::onReload);
+		CStress stress = server().kinetics.stressValues;
+		BlockStressValues.IMPACTS.registerProvider(stress::getImpact);
+		BlockStressValues.CAPACITIES.registerProvider(stress::getCapacity);
 	}
 
 	public static void onLoad(ModConfig modConfig) {

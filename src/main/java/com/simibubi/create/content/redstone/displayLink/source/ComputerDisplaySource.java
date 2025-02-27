@@ -3,6 +3,7 @@ package com.simibubi.create.content.redstone.displayLink.source;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 

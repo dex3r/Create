@@ -18,9 +18,9 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.animatedContainer.AnimatedContainerBehaviour;
 import com.simibubi.create.foundation.utility.ResetableLazy;
 
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -120,7 +120,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 		boolean update = false;
 
 		for (Iterator<Entry<Integer, WeakHashMap<Player, Integer>>> toolboxSlots = connectedPlayers.entrySet()
-			.iterator(); toolboxSlots.hasNext();) {
+			.iterator(); toolboxSlots.hasNext(); ) {
 
 			Entry<Integer, WeakHashMap<Player, Integer>> toolboxSlotEntry = toolboxSlots.next();
 			WeakHashMap<Player, Integer> set = toolboxSlotEntry.getValue();
@@ -130,7 +130,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 			boolean clear = referenceItem.isEmpty();
 
 			for (Iterator<Entry<Player, Integer>> playerEntries = set.entrySet()
-				.iterator(); playerEntries.hasNext();) {
+				.iterator(); playerEntries.hasNext(); ) {
 				Entry<Player, Integer> playerEntry = playerEntries.next();
 
 				Player player = playerEntry.getKey();
@@ -176,7 +176,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 							update = true;
 							ItemStack template = playerStack.isEmpty() ? extracted : playerStack;
 							playerInv.setItem(hotbarSlot,
-									ItemHandlerHelper.copyStackWithSize(template, count + extracted.getCount()));
+									io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper.copyStackWithSize(template, count + extracted.getCount()));
 							t.commit();
 						}
 					}
@@ -205,7 +205,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 						if (deposited > 0) {
 							update = true;
 							playerInv.setItem(hotbarSlot,
-									ItemHandlerHelper.copyStackWithSize(playerStack, count - deposited));
+									io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper.copyStackWithSize(playerStack, count - deposited));
 							t.commit();
 						}
 					}
@@ -233,16 +233,11 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 
 		Set<ServerPlayer> affected = new HashSet<>();
 
-		for (Iterator<Entry<Integer, WeakHashMap<Player, Integer>>> toolboxSlots = connectedPlayers.entrySet()
-			.iterator(); toolboxSlots.hasNext();) {
+		for (Entry<Integer, WeakHashMap<Player, Integer>> toolboxSlotEntry : connectedPlayers.entrySet()) {
 
-			Entry<Integer, WeakHashMap<Player, Integer>> toolboxSlotEntry = toolboxSlots.next();
 			WeakHashMap<Player, Integer> set = toolboxSlotEntry.getValue();
 
-			for (Iterator<Entry<Player, Integer>> playerEntries = set.entrySet()
-				.iterator(); playerEntries.hasNext();) {
-				Entry<Player, Integer> playerEntry = playerEntries.next();
-
+			for (Entry<Player, Integer> playerEntry : set.entrySet()) {
 				Player player = playerEntry.getKey();
 				int hotbarSlot = playerEntry.getValue();
 
@@ -378,8 +373,8 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 	public Component getDisplayName() {
 		return customName != null ? customName
 			: AllBlocks.TOOLBOXES.get(getColor())
-				.get()
-				.getName();
+			.get()
+			.getName();
 	}
 
 	@Override

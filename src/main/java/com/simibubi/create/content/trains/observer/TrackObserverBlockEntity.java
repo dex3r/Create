@@ -5,7 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.api.contraption.transformable.ITransformableBlockEntity;
+import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlock;
 import com.simibubi.create.content.trains.graph.EdgePointType;
@@ -20,12 +20,13 @@ import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class TrackObserverBlockEntity extends SmartBlockEntity implements ITransformableBlockEntity {
+public class TrackObserverBlockEntity extends SmartBlockEntity implements TransformableBlockEntity {
 
 	public TrackTargetingBehaviour<TrackObserver> edgePoint;
 
@@ -90,8 +91,8 @@ public class TrackObserverBlockEntity extends SmartBlockEntity implements ITrans
 	}
 
 	@Override
-	public void transform(StructureTransform transform) {
-		edgePoint.transform(transform);
+	public void transform(BlockEntity be, StructureTransform transform) {
+		edgePoint.transform(be, transform);
 	}
 
 	public FilteringBehaviour createFilter() {

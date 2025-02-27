@@ -37,7 +37,7 @@ public class ControlsHandler {
 	}
 
 	public static void startControlling(AbstractContraptionEntity entity, BlockPos controllerLocalPos) {
-		entityRef = new WeakReference<AbstractContraptionEntity>(entity);
+		entityRef = new WeakReference<>(entity);
 		controlsPos = controllerLocalPos;
 
 		Minecraft.getInstance().player.displayClientMessage(
@@ -108,9 +108,9 @@ public class ControlsHandler {
 		// Keepalive Pressed Keys
 		if (packetCooldown == 0) {
 //			if (!pressedKeys.isEmpty()) {
-				AllPackets.getChannel()
-					.sendToServer(new ControlsInputPacket(pressedKeys, true, entity.getId(), controlsPos, false));
-				packetCooldown = PACKET_RATE;
+			AllPackets.getChannel()
+				.sendToServer(new ControlsInputPacket(pressedKeys, true, entity.getId(), controlsPos, false));
+			packetCooldown = PACKET_RATE;
 //			}
 		}
 

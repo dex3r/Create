@@ -156,8 +156,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 				&& blockState.getValue(BlockStateProperties.WATERLOGGED)) {
 				emptied = blockState.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(false));
 				fluid = Fluids.WATER;
-			} else if (blockState.getBlock() instanceof LiquidBlock) {
-				LiquidBlock flowingFluid = (LiquidBlock) blockState.getBlock();
+			} else if (blockState.getBlock() instanceof LiquidBlock flowingFluid) {
 				emptied = Blocks.AIR.defaultBlockState();
 				if (blockState.getValue(LiquidBlock.LEVEL) == 0)
 					fluid = ((LiquidBlockAccessor) flowingFluid).port_lib$getFluid().getSource();
@@ -174,7 +173,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 				}
 			} else if (blockState.getFluidState()
 				.getType() != Fluids.EMPTY && blockState.getCollisionShape(world, currentPos, CollisionContext.empty())
-					.isEmpty()) {
+				.isEmpty()) {
 				fluid = blockState.getFluidState()
 					.getType();
 				emptied = Blocks.AIR.defaultBlockState();
@@ -200,13 +199,14 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 					blockEntity.award(AllAdvancements.HOSE_PULLEY_LAVA);
 			});
 
-			if (infinite) {
-				return true;
-			}
-
 			if (!blockEntity.isVirtual()) {
 				world.updateSnapshots(ctx);
 				world.setBlock(currentPos, emptied, 2 | 16);
+
+				BlockState stateAbove = world.getBlockState(currentPos.above());
+				if (stateAbove.getFluidState()
+					.getType() == Fluids.EMPTY && !stateAbove.canSurvive(world, currentPos.above()))
+					world.setBlock(currentPos.above(), Blocks.AIR.defaultBlockState(), 2 | 16);
 			}
 			affectedArea = BBHelper.encapsulate(affectedArea, currentPos);
 
@@ -281,7 +281,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 			return blockState.getValue(LiquidBlock.LEVEL) == 0 ? FluidBlockType.SOURCE : FluidBlockType.FLOWING;
 		if (blockState.getFluidState()
 			.getType() != Fluids.EMPTY && blockState.getCollisionShape(getWorld(), pos, CollisionContext.empty())
-				.isEmpty())
+			.isEmpty())
 			return FluidBlockType.SOURCE;
 		return FluidBlockType.NONE;
 	}

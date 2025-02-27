@@ -27,7 +27,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
@@ -92,9 +91,9 @@ public class ServerSchematicLoader {
 
 	public void handleNewUpload(ServerPlayer player, String schematic, long size, BlockPos pos) {
 		String playerPath = getSchematicPath() + "/" + player.getGameProfile()
-				.getName();
+			.getName();
 		String playerSchematicId = player.getGameProfile()
-				.getName() + "/" + schematic;
+			.getName() + "/" + schematic;
 		FilesHelper.createFolderIfMissing(playerPath);
 
 		// Unsupported Format
@@ -104,11 +103,11 @@ public class ServerSchematicLoader {
 		}
 
 		Path playerSchematicsPath = Paths.get(getSchematicPath(), player.getGameProfile()
-						.getName())
-				.toAbsolutePath();
+				.getName())
+			.toAbsolutePath();
 
 		Path uploadPath = playerSchematicsPath.resolve(schematic)
-				.normalize();
+			.normalize();
 		if (!uploadPath.startsWith(playerSchematicsPath)) {
 			Create.LOGGER.warn("Attempted Schematic Upload with directory escape: {}", playerSchematicId);
 			return;
@@ -140,8 +139,8 @@ public class ServerSchematicLoader {
 			if (count >= getConfig().maxSchematics.get()) {
 				Stream<Path> list2 = Files.list(Paths.get(playerPath));
 				Optional<Path> lastFilePath = list2.filter(f -> !Files.isDirectory(f))
-						.min(Comparator.comparingLong(f -> f.toFile()
-								.lastModified()));
+					.min(Comparator.comparingLong(f -> f.toFile()
+						.lastModified()));
 				list2.close();
 				if (lastFilePath.isPresent()) {
 					Files.deleteIfExists(lastFilePath.get());
@@ -164,9 +163,9 @@ public class ServerSchematicLoader {
 	protected boolean validateSchematicSizeOnServer(ServerPlayer player, long size) {
 		Integer maxFileSize = getConfig().maxTotalSchematicSize.get();
 		if (size > maxFileSize * 1000) {
-            player.sendSystemMessage(CreateLang.translateDirect("schematics.uploadTooLarge")
+			player.sendSystemMessage(CreateLang.translateDirect("schematics.uploadTooLarge")
 				.append(Component.literal(" (" + size / 1000 + " KB).")));
-            player.sendSystemMessage(CreateLang.translateDirect("schematics.maxAllowedSize")
+			player.sendSystemMessage(CreateLang.translateDirect("schematics.maxAllowedSize")
 				.append(Component.literal(" " + maxFileSize + " KB")));
 			return false;
 		}
@@ -179,7 +178,7 @@ public class ServerSchematicLoader {
 
 	public void handleWriteRequest(ServerPlayer player, String schematic, byte[] data) {
 		String playerSchematicId = player.getGameProfile()
-				.getName() + "/" + schematic;
+			.getName() + "/" + schematic;
 
 		if (activeUploads.containsKey(playerSchematicId)) {
 			SchematicUploadEntry entry = activeUploads.get(playerSchematicId);
@@ -249,7 +248,7 @@ public class ServerSchematicLoader {
 
 	public void handleFinishedUpload(ServerPlayer player, String schematic) {
 		String playerSchematicId = player.getGameProfile()
-				.getName() + "/" + schematic;
+			.getName() + "/" + schematic;
 
 		if (activeUploads.containsKey(playerSchematicId)) {
 			try {
@@ -294,10 +293,10 @@ public class ServerSchematicLoader {
 		}
 
 		Path schematicPath = Paths.get(getSchematicPath())
-				.toAbsolutePath();
+			.toAbsolutePath();
 
 		Path path = schematicPath.resolve(playerSchematicId)
-				.normalize();
+			.normalize();
 		if (!path.startsWith(schematicPath)) {
 			Create.LOGGER.warn("Attempted Schematic Upload with directory escape: {}", playerSchematicId);
 			return;
@@ -314,8 +313,8 @@ public class ServerSchematicLoader {
 			return;
 
 		SchematicExportResult result = SchematicExport.saveSchematic(
-				playerSchematics, schematic, true,
-				world, pos, pos.offset(bounds).offset(-1, -1, -1)
+			playerSchematics, schematic, true,
+			world, pos, pos.offset(bounds).offset(-1, -1, -1)
 		);
 		if (result != null)
 			player.setItemInHand(InteractionHand.MAIN_HAND,

@@ -1,18 +1,24 @@
 package com.simibubi.create.content.logistics.vault;
 
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
 import com.simibubi.create.AllMountedStorageTypes;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageType;
 import com.simibubi.create.api.contraption.storage.item.WrapperMountedItemStorage;
+import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.foundation.utility.CreateCodecs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 
@@ -37,7 +43,8 @@ public class ItemVaultMountedStorage extends WrapperMountedItemStorage<ItemStack
 	}
 
 	@Override
-	public boolean providesFuel() {
+	public boolean handleInteraction(ServerPlayer player, Contraption contraption, StructureBlockInfo info) {
+		// vaults should never be opened.
 		return false;
 	}
 

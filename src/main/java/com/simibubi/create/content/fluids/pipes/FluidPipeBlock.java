@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.api.contraption.transformable.ITransformableBlock;
+import com.simibubi.create.api.contraption.transformable.TransformableBlock;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.decoration.bracket.BracketedBlockEntityBehaviour;
 import com.simibubi.create.content.decoration.encasing.EncasableBlock;
@@ -55,7 +55,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.TickPriority;
 
 public class FluidPipeBlock extends PipeBlock implements SimpleWaterloggedBlock, IWrenchableWithBracket,
-	IBE<FluidPipeBlockEntity>, EncasableBlock, ITransformableBlock {
+	IBE<FluidPipeBlockEntity>, EncasableBlock, TransformableBlock {
 
 	private static final VoxelShape OCCLUSION_BOX = Block.box(4, 4, 4, 12, 12, 12);
 

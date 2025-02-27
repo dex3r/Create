@@ -16,7 +16,6 @@ import net.minecraft.world.entity.LivingEntity;
 
 @Mixin(HumanoidModel.class)
 public class HumanoidModelMixin<T extends LivingEntity> {
-
 	@Shadow
 	@Final
 	public ModelPart body;
@@ -36,5 +35,4 @@ public class HumanoidModelMixin<T extends LivingEntity> {
 
 		PlayerSkyhookRenderer.beforeSetupAnim(player, (HumanoidModel<?>) (Object) this);
 	}
-
 }

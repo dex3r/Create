@@ -15,7 +15,6 @@ import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.ChatFormatting;
@@ -24,6 +23,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -54,7 +54,7 @@ public class BeltSlicer {
 	}
 
 	public static InteractionResult useWrench(BlockState state, Level world, BlockPos pos, Player player,
-		InteractionHand handIn, BlockHitResult hit, Feedback feedBack) {
+											  InteractionHand handIn, BlockHitResult hit, Feedback feedBack) {
 		BeltBlockEntity controllerBE = BeltHelper.getControllerBE(world, pos);
 		if (controllerBE == null)
 			return InteractionResult.PASS;
@@ -163,7 +163,8 @@ public class BeltSlicer {
 
 			int amountRetrieved = 0;
 			boolean beltFound = false;
-			Search: while (true) {
+			Search:
+			while (true) {
 				for (int i = 0; i < player.getInventory().getContainerSize(); ++i) {
 					if (amountRetrieved == requiredShafts && beltFound)
 						break Search;
@@ -221,7 +222,7 @@ public class BeltSlicer {
 				newController.inventory = null;
 				newController.setController(newController.getBlockPos());
 				for (Iterator<TransportedItemStack> iterator = inventory.getTransportedItems()
-					.iterator(); iterator.hasNext();) {
+					.iterator(); iterator.hasNext(); ) {
 					TransportedItemStack transportedItemStack = iterator.next();
 					float newPosition = transportedItemStack.beltPosition - hitSegment - (towardPositive ? 1 : 0);
 					if (newPosition <= 0)
@@ -238,7 +239,7 @@ public class BeltSlicer {
 	}
 
 	public static InteractionResult useConnector(BlockState state, Level world, BlockPos pos, Player player,
-		InteractionHand handIn, BlockHitResult hit, Feedback feedBack) {
+												 InteractionHand handIn, BlockHitResult hit, Feedback feedBack) {
 		BeltBlockEntity controllerBE = BeltHelper.getControllerBE(world, pos);
 		if (controllerBE == null)
 			return InteractionResult.PASS;
@@ -400,16 +401,16 @@ public class BeltSlicer {
 		BeltSlope slope2 = nextState.getValue(BeltBlock.SLOPE);
 
 		switch (slope1) {
-		case UPWARD:
-			if (slope2 == BeltSlope.DOWNWARD)
-				return facing1 == facing2.getOpposite();
-			return slope2 == slope1 && facing1 == facing2;
-		case DOWNWARD:
-			if (slope2 == BeltSlope.UPWARD)
-				return facing1 == facing2.getOpposite();
-			return slope2 == slope1 && facing1 == facing2;
-		default:
-			return slope2 == slope1 && facing2.getAxis() == facing1.getAxis();
+			case UPWARD:
+				if (slope2 == BeltSlope.DOWNWARD)
+					return facing1 == facing2.getOpposite();
+				return slope2 == slope1 && facing1 == facing2;
+			case DOWNWARD:
+				if (slope2 == BeltSlope.UPWARD)
+					return facing1 == facing2.getOpposite();
+				return slope2 == slope1 && facing1 == facing2;
+			default:
+				return slope2 == slope1 && facing2.getAxis() == facing1.getAxis();
 		}
 	}
 
@@ -448,10 +449,9 @@ public class BeltSlicer {
 	public static void tickHoveringInformation() {
 		Minecraft mc = Minecraft.getInstance();
 		HitResult target = mc.hitResult;
-		if (target == null || !(target instanceof BlockHitResult))
+		if (target == null || !(target instanceof BlockHitResult result))
 			return;
 
-		BlockHitResult result = (BlockHitResult) target;
 		ClientLevel world = mc.level;
 		BlockPos pos = result.getBlockPos();
 		BlockState state = world.getBlockState(pos);
@@ -477,7 +477,7 @@ public class BeltSlicer {
 			mc.player.displayClientMessage(CreateLang.translateDirect(feedback.langKey)
 				.withStyle(feedback.formatting), true);
 		else
-			mc.player.displayClientMessage(Lang.IMMUTABLE_EMPTY, true);
+			mc.player.displayClientMessage(CommonComponents.EMPTY, true);
 
 		if (feedback.bb != null)
 			Outliner.getInstance().chaseAABB("BeltSlicer", feedback.bb)

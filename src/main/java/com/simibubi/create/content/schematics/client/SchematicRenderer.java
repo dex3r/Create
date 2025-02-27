@@ -53,20 +53,17 @@ public class SchematicRenderer {
 		changed = true;
 	}
 
-	public void tick() {
-		if (!active)
-			return;
-		Minecraft mc = Minecraft.getInstance();
-		if (mc.level == null || mc.player == null || !changed)
-			return;
-
-		redraw();
-		changed = false;
-	}
-
 	public void render(PoseStack ms, SuperRenderTypeBuffer buffers) {
 		if (!active)
 			return;
+		
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.level == null || mc.player == null)
+			return;
+		if (changed)
+			redraw();
+		changed = false;
+		
 		bufferCache.forEach((layer, buffer) -> {
 			buffer.renderInto(ms, buffers.getBuffer(layer));
 		});

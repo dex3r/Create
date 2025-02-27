@@ -38,7 +38,6 @@ import com.simibubi.create.content.equipment.blueprint.BlueprintAssignCompleteRe
 import com.simibubi.create.content.equipment.clipboard.ClipboardEditPacket;
 import com.simibubi.create.content.equipment.extendoGrip.ExtendoGripInteractionPacket;
 import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonPacket;
-import com.simibubi.create.content.equipment.potatoCannon.PotatoProjectileTypeManager;
 import com.simibubi.create.content.equipment.symmetryWand.ConfigureSymmetryWandPacket;
 import com.simibubi.create.content.equipment.symmetryWand.SymmetryEffectPacket;
 import com.simibubi.create.content.equipment.tool.KnockbackPacket;
@@ -186,7 +185,7 @@ public enum AllPackets {
 	CONTRAPTION_COLLIDER_LOCK_REQUEST(ContraptionColliderLockPacketRequest.class,
 		ContraptionColliderLockPacketRequest::new, PLAY_TO_SERVER),
 	RADIAL_WRENCH_MENU_SUBMIT(RadialWrenchMenuSubmitPacket.class, RadialWrenchMenuSubmitPacket::new,
-			PLAY_TO_SERVER),
+		PLAY_TO_SERVER),
 	LOGISTICS_STOCK_REQUEST(LogisticalStockRequestPacket.class, LogisticalStockRequestPacket::new, PLAY_TO_SERVER),
 	LOGISTICS_PACKAGE_REQUEST(PackageOrderRequestPacket.class, PackageOrderRequestPacket::new, PLAY_TO_SERVER),
 	CHAIN_CONVEYOR_CONNECT(ChainConveyorConnectionPacket.class, ChainConveyorConnectionPacket::new, PLAY_TO_SERVER),
@@ -223,8 +222,6 @@ public enum AllPackets {
 	SOUL_PULSE(SoulPulseEffectPacket.class, SoulPulseEffectPacket::new, PLAY_TO_CLIENT),
 	PERSISTENT_DATA(ISyncPersistentData.PersistentDataPacket.class, ISyncPersistentData.PersistentDataPacket::new,
 		PLAY_TO_CLIENT),
-	SYNC_POTATO_PROJECTILE_TYPES(PotatoProjectileTypeManager.SyncPacket.class,
-		PotatoProjectileTypeManager.SyncPacket::new, PLAY_TO_CLIENT),
 	SYNC_RAIL_GRAPH(TrackGraphSyncPacket.class, TrackGraphSyncPacket::new, PLAY_TO_CLIENT),
 	SYNC_EDGE_GROUP(SignalEdgeGroupPacket.class, SignalEdgeGroupPacket::new, PLAY_TO_CLIENT),
 	SYNC_TRAIN(TrainPacket.class, TrainPacket::new, PLAY_TO_CLIENT),
@@ -279,7 +276,7 @@ public enum AllPackets {
 	private PacketType<?> packetType;
 
 	<T extends SimplePacketBase> AllPackets(Class<T> type, Function<FriendlyByteBuf, T> factory,
-		NetworkDirection direction) {
+											NetworkDirection direction) {
 		packetType = new PacketType<>(type, factory, direction);
 	}
 

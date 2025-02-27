@@ -35,10 +35,9 @@ public class LinkRenderer {
 	public static void tick() {
 		Minecraft mc = Minecraft.getInstance();
 		HitResult target = mc.hitResult;
-		if (target == null || !(target instanceof BlockHitResult))
+		if (target == null || !(target instanceof BlockHitResult result))
 			return;
 
-		BlockHitResult result = (BlockHitResult) target;
 		ClientLevel world = mc.level;
 		BlockPos pos = result.getBlockPos();
 
@@ -79,7 +78,7 @@ public class LinkRenderer {
 	}
 
 	public static void renderOnBlockEntity(SmartBlockEntity be, float partialTicks, PoseStack ms,
-		MultiBufferSource buffer, int light, int overlay) {
+										   MultiBufferSource buffer, int light, int overlay) {
 
 		if (be == null || be.isRemoved())
 			return;

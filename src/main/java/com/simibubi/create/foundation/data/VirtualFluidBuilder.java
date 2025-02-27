@@ -17,10 +17,11 @@ public class VirtualFluidBuilder<T extends SimpleFlowableFluid, P> extends Fluid
 
 	public VirtualFluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
 		ResourceLocation stillTexture, ResourceLocation flowingTexture,
-//		FluidBuilder.FluidTypeFactory typeFactory,
-		NonNullFunction<Properties, T> factory) {
-		super(owner, parent, name, callback, stillTexture, flowingTexture, /*typeFactory, */factory);
-		source(factory);
+		NonNullFunction<Properties, T> sourceFactory,
+	    NonNullFunction<Properties, T> flowingFactory
+   ) {
+		super(owner, parent, name, callback, stillTexture, flowingTexture, flowingFactory);
+		source(sourceFactory);
 	}
 
 	@Override

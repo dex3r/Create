@@ -101,7 +101,7 @@ public class FrogportRenderer extends SmartBlockEntityRenderer<FrogportBlockEnti
 			.overlay(overlay)
 			.renderInto(ms, buffer.getBuffer(RenderType.cutoutMipped()));
 
-		SuperByteBuffer head = CachedBuffers.partial(AllPartialModels.FROGPORT_HEAD, blockEntity.getBlockState());
+		SuperByteBuffer head = CachedBuffers.partial(blockEntity.goggles ? AllPartialModels.FROGPORT_HEAD_GOGGLES : AllPartialModels.FROGPORT_HEAD, blockEntity.getBlockState());
 
 		head.center()
 			.rotateYDegrees(yaw)

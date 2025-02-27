@@ -34,6 +34,7 @@ import com.simibubi.create.content.equipment.blueprint.BlueprintOverlayRenderer;
 import com.simibubi.create.content.equipment.clipboard.ClipboardValueSettingsHandler;
 import com.simibubi.create.content.equipment.extendoGrip.ExtendoGripRenderHandler;
 import com.simibubi.create.content.equipment.hats.CreateHatArmorLayer;
+import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonItemRenderer;
 import com.simibubi.create.content.equipment.symmetryWand.SymmetryHandler;
 import com.simibubi.create.content.equipment.toolbox.ToolboxHandlerClient;
 import com.simibubi.create.content.equipment.zapper.ZapperItem;
@@ -81,11 +82,10 @@ import com.simibubi.create.foundation.utility.TickBasedCache;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.gui.OpenCreateMenuButton;
 
-import dev.engine_room.flywheel.api.event.ReloadLevelRendererCallback;
 import net.createmod.catnip.animation.AnimationTickHolder;
+import net.createmod.catnip.config.ui.BaseConfigScreen;
 import net.createmod.catnip.levelWrappers.WrappedClientLevel;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
-import net.createmod.catnip.render.StitchedSprite;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.createmod.ponder.foundation.PonderTooltipHandler;
 import net.minecraft.client.Camera;
@@ -113,11 +113,13 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 
+
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -409,6 +411,11 @@ public class ClientEvents {
 											   RegistrationHelper registrationHelper, EntityRendererProvider.Context context) {
 		BacktankArmorLayer.registerOn(entityRenderer, registrationHelper);
 		CreateHatArmorLayer.registerOn(entityRenderer, registrationHelper);
+	}
+
+	@SubscribeEvent
+	public static void registerItemDecorations(RegisterItemDecorationsEvent event) {
+		event.register(AllItems.POTATO_CANNON, PotatoCannonItemRenderer.DECORATOR);
 	}
 
 	public static void register() {

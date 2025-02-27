@@ -70,8 +70,8 @@ public class AttributeFilterMenu extends AbstractFilterMenu {
 
 	@Override
 	protected void addFilterSlots() {
-		this.addSlot(new SlotItemHandler(ghostInventory, 0, 16, 24));
-		this.addSlot(new SlotItemHandler(ghostInventory, 1, 22, 59) {
+		this.addSlot(new SlotItemHandler(ghostInventory, 0, 16, 27));
+		this.addSlot(new SlotItemHandler(ghostInventory, 1, 16, 62) {
 			@Override
 			public boolean mayPickup(Player playerIn) {
 				return false;

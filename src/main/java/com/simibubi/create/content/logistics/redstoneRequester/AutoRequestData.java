@@ -14,6 +14,7 @@ import net.minecraft.world.level.Level;
 public class AutoRequestData {
 
 	public PackageOrder encodedRequest = PackageOrder.empty();
+	public PackageOrder encodedRequestContext = PackageOrder.empty();
 	public String encodedTargetAdress = "";
 	public BlockPos targetOffset = BlockPos.ZERO;
 	public String targetDim = "";
@@ -26,6 +27,7 @@ public class AutoRequestData {
 		requestData.isValid = tag.getBoolean("Valid");
 		requestData.encodedTargetAdress = tag.getString("EncodedAddress");
 		requestData.encodedRequest = PackageOrder.read(tag.getCompound("EncodedRequest"));
+		requestData.encodedRequestContext = PackageOrder.read(tag.getCompound("EncodedRequestContext"));
 		return requestData;
 	}
 
@@ -35,6 +37,7 @@ public class AutoRequestData {
 		tag.putBoolean("Valid", isValid);
 		tag.putString("EncodedAddress", encodedTargetAdress);
 		tag.put("EncodedRequest", encodedRequest.write());
+		tag.put("EncodedRequestContext", encodedRequestContext.write());
 	}
 
 	public void writeToItem(BlockPos position, ItemStack itemStack) {

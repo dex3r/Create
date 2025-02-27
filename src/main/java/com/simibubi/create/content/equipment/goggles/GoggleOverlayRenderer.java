@@ -8,6 +8,10 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
+import com.simibubi.create.api.equipment.goggles.IHaveCustomOverlayIcon;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
+import com.simibubi.create.api.equipment.goggles.IProxyHoveringInformation;
 import com.simibubi.create.compat.Mods;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
 import com.simibubi.create.content.contraptions.piston.MechanicalPistonBlock;
@@ -23,7 +27,6 @@ import com.simibubi.create.infrastructure.config.CClient;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.gui.element.BoxElement;
 import net.createmod.catnip.gui.element.GuiGameElement;
-import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.outliner.Outline;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.outliner.Outliner.OutlineEntry;
@@ -34,6 +37,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.Mth;
@@ -58,7 +62,7 @@ public class GoggleOverlayRenderer {
 			return;
 
 		HitResult objectMouseOver = mc.hitResult;
-		if (!(objectMouseOver instanceof BlockHitResult)) {
+		if (!(objectMouseOver instanceof BlockHitResult result)) {
 			lastHovered = null;
 			hoverTicks = 0;
 			return;
@@ -72,7 +76,6 @@ public class GoggleOverlayRenderer {
 				return;
 		}
 
-		BlockHitResult result = (BlockHitResult) objectMouseOver;
 		ClientLevel world = mc.level;
 		BlockPos pos = result.getBlockPos();
 
@@ -94,11 +97,10 @@ public class GoggleOverlayRenderer {
 		boolean hoverAddedInformation = false;
 
 		ItemStack item = AllItems.GOGGLES.asStack();
+		List<Component> tooltip = new ArrayList<>();
 
 		if (be instanceof IHaveCustomOverlayIcon customOverlayIcon)
 			item = customOverlayIcon.getIcon(isShifting);
-
-		List<Component> tooltip = new ArrayList<>();
 
 		if (hasGoggleInformation && wearingGoggles) {
 			IHaveGoggleInformation gte = (IHaveGoggleInformation) be;
@@ -107,7 +109,7 @@ public class GoggleOverlayRenderer {
 
 		if (hasHoveringInformation) {
 			if (!tooltip.isEmpty())
-				tooltip.add(Lang.IMMUTABLE_EMPTY);
+				tooltip.add(CommonComponents.EMPTY);
 			IHaveHoveringInformation hte = (IHaveHoveringInformation) be;
 			hoverAddedInformation = hte.addToTooltip(tooltip, isShifting);
 
@@ -154,7 +156,7 @@ public class GoggleOverlayRenderer {
 				return;
 			}
 			if (!tooltip.isEmpty())
-				tooltip.add(Lang.IMMUTABLE_EMPTY);
+				tooltip.add(CommonComponents.EMPTY);
 
 			CreateLang.translate("gui.goggles.pole_length")
 				.text(" " + poles)

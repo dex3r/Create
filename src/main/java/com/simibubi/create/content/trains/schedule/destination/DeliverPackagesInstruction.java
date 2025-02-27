@@ -27,7 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-
+import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandlerModifiable;
 
 public class DeliverPackagesInstruction extends ScheduleInstruction {
@@ -66,7 +66,7 @@ public class DeliverPackagesInstruction extends ScheduleInstruction {
 
 	@Override
 	@Nullable
-	public DiscoveredPath start(ScheduleRuntime runtime) {
+	public DiscoveredPath start(ScheduleRuntime runtime, Level level) {
 		boolean anyMatch = false;
 		String firstPackage = null;
 		ArrayList<GlobalStation> validStations = new ArrayList<>();

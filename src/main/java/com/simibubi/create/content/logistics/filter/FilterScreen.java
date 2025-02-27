@@ -7,10 +7,8 @@ import com.simibubi.create.content.logistics.filter.FilterScreenPacket.Option;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.simibubi.create.foundation.gui.widget.Indicator;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import net.createmod.catnip.lang.Lang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
@@ -31,8 +29,6 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu> {
 
 	private IconButton whitelist, blacklist;
 	private IconButton respectNBT, ignoreNBT;
-	private Indicator whitelistIndicator, blacklistIndicator;
-	private Indicator respectNBTIndicator, ignoreNBTIndicator;
 
 	public FilterScreen(FilterMenu menu, Inventory inv, Component title) {
 		super(menu, inv, title, AllGuiTextures.FILTER);
@@ -58,9 +54,7 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu> {
 			sendOptionUpdate(Option.WHITELIST);
 		});
 		whitelist.setToolTip(allowN);
-		blacklistIndicator = new Indicator(x + 18, y + 69, Lang.IMMUTABLE_EMPTY);
-		whitelistIndicator = new Indicator(x + 36, y + 69, Lang.IMMUTABLE_EMPTY);
-		addRenderableWidgets(blacklist, whitelist, blacklistIndicator, whitelistIndicator);
+		addRenderableWidgets(blacklist, whitelist);
 
 		respectNBT = new IconButton(x + 60, y + 75, AllIcons.I_RESPECT_NBT);
 		respectNBT.withCallback(() -> {
@@ -74,9 +68,7 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu> {
 			sendOptionUpdate(Option.IGNORE_DATA);
 		});
 		ignoreNBT.setToolTip(ignoreDataN);
-		respectNBTIndicator = new Indicator(x + 60, y + 69, Lang.IMMUTABLE_EMPTY);
-		ignoreNBTIndicator = new Indicator(x + 78, y + 69, Lang.IMMUTABLE_EMPTY);
-		addRenderableWidgets(respectNBT, ignoreNBT, respectNBTIndicator, ignoreNBTIndicator);
+		addRenderableWidgets(respectNBT, ignoreNBT);
 
 		handleIndicators();
 	}
@@ -92,11 +84,6 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu> {
 	}
 
 	@Override
-	protected List<Indicator> getIndicators() {
-		return Arrays.asList(blacklistIndicator, whitelistIndicator, respectNBTIndicator, ignoreNBTIndicator);
-	}
-
-	@Override
 	protected boolean isButtonEnabled(IconButton button) {
 		if (button == blacklist)
 			return !menu.blacklist;
@@ -107,19 +94,6 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu> {
 		if (button == ignoreNBT)
 			return menu.respectNBT;
 		return true;
-	}
-
-	@Override
-	protected boolean isIndicatorOn(Indicator indicator) {
-		if (indicator == blacklistIndicator)
-			return menu.blacklist;
-		if (indicator == whitelistIndicator)
-			return !menu.blacklist;
-		if (indicator == respectNBTIndicator)
-			return menu.respectNBT;
-		if (indicator == ignoreNBTIndicator)
-			return !menu.respectNBT;
-		return false;
 	}
 
 }

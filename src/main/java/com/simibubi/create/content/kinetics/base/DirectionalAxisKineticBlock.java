@@ -1,6 +1,6 @@
 package com.simibubi.create.content.kinetics.base;
 
-import com.simibubi.create.api.contraption.transformable.ITransformableBlock;
+import com.simibubi.create.api.contraption.transformable.TransformableBlock;
 import com.simibubi.create.content.contraptions.StructureTransform;
 
 import net.createmod.catnip.data.Iterate;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
-public abstract class DirectionalAxisKineticBlock extends DirectionalKineticBlock implements ITransformableBlock {
+public abstract class DirectionalAxisKineticBlock extends DirectionalKineticBlock implements TransformableBlock {
 
 	public static final BooleanProperty AXIS_ALONG_FIRST_COORDINATE = BooleanProperty.create("axis_along_first");
 

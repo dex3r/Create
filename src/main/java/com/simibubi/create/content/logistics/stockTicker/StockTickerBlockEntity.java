@@ -15,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSoundEvents;
+import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.contraptions.actors.seat.SeatEntity;
-import com.simibubi.create.content.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
@@ -95,8 +95,8 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 
 	@Override
 	public boolean broadcastPackageRequest(RequestType type, PackageOrder order, IItemHandler ignoredHandler,
-		String address) {
-		boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
+										   String address, @Nullable PackageOrder orderContext) {
+		boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address, orderContext);
 		previouslyUsedAddress = address;
 		notifyUpdate();
 		return result;
@@ -176,7 +176,7 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 			List<BigItemStack> inCategory = new ArrayList<>();
 			if (!filter.isEmpty()) {
 				FilterItemStack filterItemStack = FilterItemStack.of(filter);
-				for (Iterator<BigItemStack> iterator = newlyReceivedStockSnapshot.iterator(); iterator.hasNext();) {
+				for (Iterator<BigItemStack> iterator = newlyReceivedStockSnapshot.iterator(); iterator.hasNext(); ) {
 					BigItemStack bigStack = iterator.next();
 					if (!filterItemStack.test(level, bigStack.stack))
 						continue;
@@ -265,8 +265,8 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 
 		@Override
 		public Component getDisplayName() {
-            return Component.empty();
-        }
+			return Component.empty();
+		}
 
 	}
 
@@ -279,8 +279,8 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 
 		@Override
 		public Component getDisplayName() {
-            return Component.empty();
-        }
+			return Component.empty();
+		}
 
 	}
 

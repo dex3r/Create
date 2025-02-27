@@ -1,7 +1,5 @@
 package com.simibubi.create.content.equipment.symmetryWand;
 
-import net.createmod.catnip.lang.Lang;
-
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -23,6 +21,7 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -65,9 +64,9 @@ public class SymmetryWandScreen extends AbstractSimiScreen {
 		int x = guiLeft;
 		int y = guiTop;
 
-		labelType = new Label(x + 51, y + 28, Lang.IMMUTABLE_EMPTY).colored(0xFFFFFFFF)
+		labelType = new Label(x + 51, y + 28, CommonComponents.EMPTY).colored(0xFFFFFFFF)
 			.withShadow();
-		labelAlign = new Label(x + 51, y + 50, Lang.IMMUTABLE_EMPTY).colored(0xFFFFFFFF)
+		labelAlign = new Label(x + 51, y + 50, CommonComponents.EMPTY).colored(0xFFFFFFFF)
 			.withShadow();
 
 		int state =
@@ -79,17 +78,17 @@ public class SymmetryWandScreen extends AbstractSimiScreen {
 
 		areaType.calling(position -> {
 			switch (position) {
-			case 0:
-				currentElement = new PlaneMirror(currentElement.getPosition());
-				break;
-			case 1:
-				currentElement = new CrossPlaneMirror(currentElement.getPosition());
-				break;
-			case 2:
-				currentElement = new TriplePlaneMirror(currentElement.getPosition());
-				break;
-			default:
-				break;
+				case 0:
+					currentElement = new PlaneMirror(currentElement.getPosition());
+					break;
+				case 1:
+					currentElement = new CrossPlaneMirror(currentElement.getPosition());
+					break;
+				case 2:
+					currentElement = new TriplePlaneMirror(currentElement.getPosition());
+					break;
+				default:
+					break;
 			}
 			initAlign(currentElement, x, y);
 		});
@@ -131,10 +130,10 @@ public class SymmetryWandScreen extends AbstractSimiScreen {
 
 		renderBlock(graphics, x, y);
 		GuiGameElement.of(wand)
-				.scale(4)
-				.rotate(-70, 20, 20)
-				.at(x + 178, y + 448, -150)
-				.render(graphics);
+			.scale(4)
+			.rotate(-70, 20, 20)
+			.at(x + 178, y + 448, -150)
+			.render(graphics);
 	}
 
 	protected void renderBlock(GuiGraphics graphics, int x, int y) {

@@ -3,7 +3,7 @@ package com.simibubi.create.content.trains.bogey;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllBogeyStyles;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.trains.track.TrackMaterial;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class StandardBogeyBlock extends AbstractBogeyBlock<StandardBogeyBlockEntity>
-	implements IBE<StandardBogeyBlockEntity>, ProperWaterloggedBlock, ISpecialBlockItemRequirement {
+	implements IBE<StandardBogeyBlockEntity>, ProperWaterloggedBlock, SpecialBlockItemRequirement {
 
 	public StandardBogeyBlock(Properties props, BogeySizes.BogeySize size) {
 		super(props, size);

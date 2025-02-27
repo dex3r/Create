@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 
 import net.minecraft.client.Minecraft;
@@ -52,9 +51,9 @@ public class ContraptionSeatMappingPacket extends SimplePacketBase {
 	public boolean handle(Context context) {
 		context.enqueueWork(() -> {
 				Entity entityByID = Minecraft.getInstance().level.getEntity(entityID);
-				if (!(entityByID instanceof AbstractContraptionEntity))
+				if (!(entityByID instanceof AbstractContraptionEntitycontraptionEntity))
 					return;
-				AbstractContraptionEntity contraptionEntity = (AbstractContraptionEntity) entityByID;
+
 
 				if (dismountedID != -1) {
 					Entity dismountedByID = Minecraft.getInstance().level.getEntity(dismountedID);

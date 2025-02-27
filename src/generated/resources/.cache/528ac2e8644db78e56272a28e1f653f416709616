@@ -1,4 +1,29 @@
-// 1.20.1	2024-10-18T15:46:50.5800917	Create's Generated Registry Entries
+// 1.20.1	2025-02-24T12:59:18.4372587	Create's Generated Registry Entries
+abb9dd2c98388abb430343d4ac02d460e5edc086 data/create/create/potato_projectile/type/apple.json
+1a20cb4e64dc07918a28fbccc73102bca3560f16 data/create/create/potato_projectile/type/baked_potato.json
+8450576952f7723d22250da6f554dd0fda4e9fce data/create/create/potato_projectile/type/beetroot.json
+9d927ec9c8b76a093e7ff8ff8f81be3a438d4aba data/create/create/potato_projectile/type/blaze_cake.json
+46ccaf468caaa4faaca4f1494f60e99cd00785c9 data/create/create/potato_projectile/type/cake.json
+22e0f5befe5835c7a9a6448e17e73e6fb7d0fb9c data/create/create/potato_projectile/type/carrot.json
+af17d72549ee9421d2643a215ffc2291874fff93 data/create/create/potato_projectile/type/chocolate_berry.json
+8cb4811601d46db5fdc0291edce3ec2f3a64e902 data/create/create/potato_projectile/type/chorus_fruit.json
+9dd1298993a4657d69a9d2ac4de3ad7879d9aa8d data/create/create/potato_projectile/type/enchanted_golden_apple.json
+e3ab3c4bd70ad742d37091ae05774aadffb1d1d5 data/create/create/potato_projectile/type/fallback.json
+98bf0ce51484c5a9709fc69d046d0c70d987cfdd data/create/create/potato_projectile/type/fish.json
+afe4e7cc87110d6f045f6672fb312a09290ca04a data/create/create/potato_projectile/type/glistering_melon.json
+050c9333d41efd2577e1e597c7c68b00436b0963 data/create/create/potato_projectile/type/glow_berry.json
+52046463af1abc92c5257992c302d7ab26c63e28 data/create/create/potato_projectile/type/golden_apple.json
+c6234751ccad5111857b0ae9e297e42f529ad32a data/create/create/potato_projectile/type/golden_carrot.json
+583b75978a4f920c2969473e5353fcc89886b612 data/create/create/potato_projectile/type/honeyed_apple.json
+7a269ded36d1397f86f23c4c431c7a99fea74446 data/create/create/potato_projectile/type/melon_block.json
+352402ba2fff3f23af178d15d61b0ba0a151097a data/create/create/potato_projectile/type/melon_slice.json
+cbfd3028ad878bddbdaeb0eec0cd5a1c50d4c901 data/create/create/potato_projectile/type/poison_potato.json
+b58e779803d29d4b36ecf79fde4e918577c71748 data/create/create/potato_projectile/type/potato.json
+d15070ca23129e7d4025d86cb4be5701a466e593 data/create/create/potato_projectile/type/pufferfish.json
+0c099b5f1bd7ba3832ea2d29e8c1c22c83ed1c3d data/create/create/potato_projectile/type/pumpkin_block.json
+7d58a0671c55e40cdb728c60152665c89209fb91 data/create/create/potato_projectile/type/pumpkin_pie.json
+0e73e50b02e9afe5f170729935ae5921d22d7091 data/create/create/potato_projectile/type/suspicious_stew.json
+b4a7c10bd9cdcfe67df2a5766e5ec2e35a3f9b24 data/create/create/potato_projectile/type/sweet_berry.json
 030ede1044384c4117ac1e491bf5c78bbd2842f5 data/create/damage_type/crush.json
 92b0416950ffeb3ba68811e587177c2f8811c2c5 data/create/damage_type/cuckoo_surprise.json
 d2a4fdb64f4ba817e13a7b20c73fd1ca34b825fc data/create/damage_type/fan_fire.json

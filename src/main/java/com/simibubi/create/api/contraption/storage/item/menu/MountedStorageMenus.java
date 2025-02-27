@@ -34,6 +34,10 @@ public class MountedStorageMenus {
 		if (rows < 1 || rows > 6)
 			return null;
 
+		// make sure rows are full
+		if (handler.getSlots() % 9 != 0)
+			return null;
+
 		MenuType<?> type = GENERIC_CHEST_MENUS.get(rows - 1);
 		Container wrapper = new StorageInteractionWrapper(handler, stillValid, onClose);
 		MenuConstructor constructor = (id, inv, player) -> new ChestMenu(type, id, inv, wrapper, rows);

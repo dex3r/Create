@@ -3,12 +3,15 @@ package com.simibubi.create.compat.jei;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -56,6 +59,7 @@ import com.simibubi.create.content.kinetics.fan.processing.SplashingRecipe;
 import com.simibubi.create.content.kinetics.press.MechanicalPressBlockEntity;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import com.simibubi.create.content.kinetics.saw.CuttingRecipe;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelSetItemScreen;
 import com.simibubi.create.content.logistics.filter.AbstractFilterScreen;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterScreen;
 import com.simibubi.create.content.processing.basin.BasinRecipe;
@@ -77,6 +81,7 @@ import mezz.jei.api.fabric.constants.FabricTypes;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IPlatformFluidHelper;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.api.registration.IExtraIngredientRegistration;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
@@ -89,8 +94,10 @@ import net.createmod.catnip.config.ConfigBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
@@ -368,6 +375,30 @@ public class CreateJEI implements IModPlugin {
 		registration.registerSubtypeInterpreter(FabricTypes.FLUID_STACK, potionFluid.getFlowing(), interpreter);
 	}
 
+	@Override
+	public void registerExtraIngredients(IExtraIngredientRegistration registration) {
+		Collection<Potion> potions = ForgeRegistries.POTIONS.getValues();
+		Collection<FluidStack> potionFluids = new ArrayList<>(potions.size() * 3);
+		Set<Set<MobEffect>> visitedEffects = new HashSet<>();
+		for (Potion potion : potions) {
+			// @goshante: Ingame potion fluids always have Bottle tag that specifies
+			// to what bottle type this potion belongs
+			// Potion fluid without this tag wouldn't be recognized by other mods
+
+//			for (PotionFluid.BottleType bottleType : PotionFluid.BottleType.values()) {
+//				FluidStack potionFluid = PotionFluid.of(1000, potion, bottleType);
+//				potionFluids.add(potionFluid);
+//			}
+
+			if (!potion.getEffects().isEmpty())
+				if (!visitedEffects.add(potion.getEffects().stream().map(mei -> mei.getEffect()).collect(Collectors.toSet())))
+					continue;
+
+			potionFluids.add(PotionFluid.of(1000, potion, PotionFluid.BottleType.REGULAR));
+		}
+		registration.addExtraIngredients(ForgeTypes.FLUID_STACK, potionFluids);
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void registerGuiHandlers(IGuiHandlerRegistration registration) {
@@ -378,6 +409,7 @@ public class CreateJEI implements IModPlugin {
 		registration.addGhostIngredientHandler(LinkedControllerScreen.class, new GhostIngredientHandler());
 		registration.addGhostIngredientHandler(ScheduleScreen.class, new GhostIngredientHandler());
 		registration.addGhostIngredientHandler(RedstoneRequesterScreen.class, new GhostIngredientHandler());
+		registration.addGhostIngredientHandler(FactoryPanelSetItemScreen.class, new GhostIngredientHandler());
 	}
 
 	private class CategoryBuilder<T extends Recipe<?>> {

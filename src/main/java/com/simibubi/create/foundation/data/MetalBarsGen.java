@@ -9,7 +9,6 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 import java.util.function.Supplier;
 
 import com.simibubi.create.AllTags.AllBlockTags;
-import com.simibubi.create.Create;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.util.DataIngredient;
@@ -113,7 +112,7 @@ public class MetalBarsGen {
 	}
 
 	private static ModelFile barsSubModel(RegistrateBlockstateProvider p, String name, String suffix,
-		boolean specialEdge) {
+										  boolean specialEdge) {
 		ResourceLocation barsTexture = p.modLoc("block/bars/" + name + "_bars");
 		ResourceLocation edgeTexture = specialEdge ? p.modLoc("block/bars/" + name + "_bars_edge") : barsTexture;
 		return p.models()
@@ -124,7 +123,7 @@ public class MetalBarsGen {
 	}
 
 	public static BlockEntry<IronBarsBlock> createBars(String name, boolean specialEdge,
-		Supplier<DataIngredient> ingredient, MapColor color) {
+													   Supplier<DataIngredient> ingredient, MapColor color) {
 		return REGISTRATE.block(name + "_bars", IronBarsBlock::new)
 			.addLayer(() -> RenderType::cutoutMipped)
 			.initialProperties(() -> Blocks.IRON_BARS)

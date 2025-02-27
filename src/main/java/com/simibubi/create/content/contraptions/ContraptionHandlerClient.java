@@ -45,9 +45,8 @@ public class ContraptionHandlerClient {
 	public static void preventRemotePlayersWalkingAnimations(Player player) {
 //		if (event.phase == Phase.START)
 //			return;
-		if (!(player instanceof RemotePlayer))
+		if (!(player instanceof RemotePlayer remotePlayer))
 			return;
-		RemotePlayer remotePlayer = (RemotePlayer) player;
 		CompoundTag data = remotePlayer.getCustomData();
 		if (!data.contains("LastOverrideLimbSwingUpdate"))
 			return;
@@ -92,6 +91,10 @@ public class ContraptionHandlerClient {
 			ContraptionHandler.loadedContraptions.get(mc.level)
 				.values();
 
+		double bestDistance = Double.MAX_VALUE;
+		BlockHitResult bestResult = null;
+		AbstractContraptionEntity bestEntity = null;
+
 		for (WeakReference<AbstractContraptionEntity> ref : contraptions) {
 			AbstractContraptionEntity contraptionEntity = ref.get();
 			if (contraptionEntity == null)
@@ -104,22 +107,32 @@ public class ContraptionHandlerClient {
 			if (rayTraceResult == null)
 				continue;
 
-			Direction face = rayTraceResult.getDirection();
-			BlockPos pos = rayTraceResult.getBlockPos();
-
-			if (contraptionEntity.handlePlayerInteraction(player, pos, face, hand)) {
-				AllPackets.getChannel().sendToServer(new ContraptionInteractionPacket(contraptionEntity, hand, pos, face));
-			} else if (handleSpecialInteractions(contraptionEntity, player, pos, face, hand)) {
-			} else
+			double distance = contraptionEntity.toGlobalVector(rayTraceResult.getLocation(), 1).distanceTo(origin);
+			if (distance > bestDistance)
 				continue;
 
-			return InteractionResult.FAIL;
+			bestResult = rayTraceResult;
+			bestDistance = distance;
+			bestEntity = contraptionEntity;
 		}
-		return InteractionResult.PASS;
+
+		if (bestResult == null)
+			return InteractionResult.PASS;
+
+		Direction face = bestResult.getDirection();
+		BlockPos pos = bestResult.getBlockPos();
+
+		if (bestEntity.handlePlayerInteraction(player, pos, face, hand)) {
+			AllPackets.getChannel()
+				.sendToServer(new ContraptionInteractionPacket(bestEntity, hand, pos, face));
+		} else
+			handleSpecialInteractions(bestEntity, player, pos, face, hand);
+
+		return InteractionResult.FAIL;
 	}
 
 	private static boolean handleSpecialInteractions(AbstractContraptionEntity contraptionEntity, Player player,
-		BlockPos localPos, Direction side, InteractionHand interactionHand) {
+													 BlockPos localPos, Direction side, InteractionHand interactionHand) {
 		if (AllItems.WRENCH.isIn(player.getItemInHand(interactionHand))
 			&& contraptionEntity instanceof CarriageContraptionEntity car)
 			return TrainRelocator.carriageWrenched(car.toGlobalVector(VecHelper.getCenterOf(localPos), 1), car);
@@ -140,7 +153,7 @@ public class ContraptionHandlerClient {
 
 	@Nullable
 	public static BlockHitResult rayTraceContraption(Vec3 origin, Vec3 target,
-		AbstractContraptionEntity contraptionEntity) {
+													 AbstractContraptionEntity contraptionEntity) {
 		Vec3 localOrigin = contraptionEntity.toLocalVector(origin, 1);
 		Vec3 localTarget = contraptionEntity.toLocalVector(target, 1);
 		Contraption contraption = contraptionEntity.getContraption();

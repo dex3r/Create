@@ -6,7 +6,8 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import com.mojang.blaze3d.platform.InputConstants;
+import org.lwjgl.glfw.GLFW;
+
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 
 import net.createmod.catnip.gui.TickableGuiEventListener;
@@ -144,9 +145,8 @@ public abstract class AbstractSimiContainerScreen<T extends AbstractContainerMen
 
 	@Override
 	public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-		InputConstants.Key mouseKey = InputConstants.getKey(pKeyCode, pScanCode);
-		if (getFocused() instanceof EditBox && KeyBindingHelper.getBoundKeyOf(Minecraft.getInstance().options.keyInventory) == mouseKey)
-			return false;
+		if (getFocused() instanceof EditBox && pKeyCode != GLFW.GLFW_KEY_ESCAPE)
+			return getFocused().keyPressed(pKeyCode, pScanCode, pModifiers);
 		return super.keyPressed(pKeyCode, pScanCode, pModifiers);
 	}
 @Override

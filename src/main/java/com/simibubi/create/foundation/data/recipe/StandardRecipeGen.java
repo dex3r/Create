@@ -201,6 +201,7 @@ public class StandardRecipeGen extends CreateRecipeProvider {
 			.pattern(" L ")),
 
 		TOOLBOX_DYEING = createSpecial(AllRecipeTypes.TOOLBOX_DYEING::getSerializer, "crafting", "toolbox_dyeing"),
+		ITEM_COPYING = createSpecial(AllRecipeTypes.ITEM_COPYING::getSerializer, "crafting", "item_copying"),
 
 		MINECART_COUPLING = create(AllItems.MINECART_COUPLING).unlockedBy(I::andesiteAlloy)
 			.viaShaped(b -> b.define('E', I.andesiteAlloy())
@@ -857,6 +858,12 @@ public class StandardRecipeGen extends CreateRecipeProvider {
 				.requires(I.ironNugget())
 				.requires(I.ironNugget())
 				.requires(I.ironNugget())),
+			
+		ENCASED_CHAIN_DRIVE_ZINC = create(AllBlocks.ENCASED_CHAIN_DRIVE).withSuffix("_from_zinc").unlockedBy(I::andesiteCasing)
+			.viaShapeless(b -> b.requires(I.andesiteCasing())
+				.requires(I.zincNugget())
+				.requires(I.zincNugget())
+				.requires(I.zincNugget())),
 
 		FLYWHEEL = create(AllBlocks.FLYWHEEL).unlockedByTag(I::brass)
 			.viaShaped(b -> b.define('C', I.brass())
@@ -1056,9 +1063,10 @@ public class StandardRecipeGen extends CreateRecipeProvider {
 		PACKAGER = create(AllBlocks.PACKAGER).unlockedBy(I::cardboard)
 			.viaShaped(b -> b.define('C', I.iron())
 				.define('A', AllBlocks.CARDBOARD_BLOCK)
+				.define('R', I.redstone())
 				.pattern(" C ")
 				.pattern("CAC")
-				.pattern(" C ")),
+				.pattern("RCR")),
 
 		PACKAGER_CYCLE = conversionCycle(ImmutableList.of(AllBlocks.PACKAGER, AllBlocks.REPACKAGER)),
 

@@ -9,6 +9,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.foundation.particle.ICustomParticleDataWithSprite;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.particle.ParticleEngine.SpriteParticleRegistration;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -25,16 +28,16 @@ public class SteamJetParticleData implements ParticleOptions, ICustomParticleDat
 		.apply(i, SteamJetParticleData::new));
 
 	public static final ParticleOptions.Deserializer<SteamJetParticleData> DESERIALIZER =
-		new ParticleOptions.Deserializer<SteamJetParticleData>() {
+		new ParticleOptions.Deserializer<>() {
 			public SteamJetParticleData fromCommand(ParticleType<SteamJetParticleData> particleTypeIn,
-				StringReader reader) throws CommandSyntaxException {
+													StringReader reader) throws CommandSyntaxException {
 				reader.expect(' ');
 				float speed = reader.readFloat();
 				return new SteamJetParticleData(speed);
 			}
 
 			public SteamJetParticleData fromNetwork(ParticleType<SteamJetParticleData> particleTypeIn,
-				FriendlyByteBuf buffer) {
+													FriendlyByteBuf buffer) {
 				return new SteamJetParticleData(buffer.readFloat());
 			}
 		};

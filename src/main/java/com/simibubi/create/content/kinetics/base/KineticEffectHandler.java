@@ -76,10 +76,9 @@ public class KineticEffectHandler {
 
 		BlockState state = kte.getBlockState();
 		Block block = state.getBlock();
-		if (!(block instanceof KineticBlock))
+		if (!(block instanceof KineticBlock kb))
 			return;
 
-		KineticBlock kb = (KineticBlock) block;
 		float radius1 = kb.getParticleInitialRadius();
 		float radius2 = kb.getParticleTargetRadius();
 

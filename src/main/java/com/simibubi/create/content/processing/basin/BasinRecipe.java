@@ -16,12 +16,20 @@ import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringB
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour.TankSegment;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
-import com.simibubi.create.foundation.item.SmartInventory;
 import com.simibubi.create.foundation.recipe.DummyCraftingContainer;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -38,7 +46,7 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
-public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
+public class BasinRecipe extends ProcessingRecipe<Container> {
 
 	public static boolean match(BasinBlockEntity basin, Recipe<?> recipe) {
 		FilteringBehaviour filter = basin.getFilter();
@@ -47,12 +55,11 @@ public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
 
 		boolean filterTest = filter.test(recipe.getResultItem(basin.getLevel()
 			.registryAccess()));
-		if (recipe instanceof BasinRecipe) {
-			BasinRecipe basinRecipe = (BasinRecipe) recipe;
+		if (recipe instanceof BasinRecipe basinRecipe) {
 			if (basinRecipe.getRollableResults()
 				.isEmpty()
 				&& !basinRecipe.getFluidResults()
-					.isEmpty())
+				.isEmpty())
 				filterTest = filter.test(basinRecipe.getFluidResults()
 					.get(0));
 		}
@@ -140,21 +147,24 @@ public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
 				});
 			}
 
+			CraftingContainer remainderContainer = new DummyCraftingContainer(availableItems, extractedItemsFromSlot);
+
 			if (recipe instanceof BasinRecipe basinRecipe) {
 				recipeOutputItems.addAll(basinRecipe.rollResults());
+
 				for (FluidStack fluidStack : basinRecipe.getFluidResults())
 					if (!fluidStack.isEmpty())
 						recipeOutputFluids.add(fluidStack);
-				for (ItemStack stack : basinRecipe.getRemainingItems(basin.getInputInventory()))
+				for (ItemStack stack : basinRecipe.getRemainingItems(remainderContainer))
 					if (!stack.isEmpty())
 						recipeOutputItems.add(stack);
+
 			} else {
 				recipeOutputItems.add(recipe.getResultItem(basin.getLevel()
-						.registryAccess()));
+					.registryAccess()));
 
 				if (recipe instanceof CraftingRecipe craftingRecipe) {
-					for (ItemStack stack : craftingRecipe
-							.getRemainingItems(new DummyCraftingContainer(consumedItems)))
+					for (ItemStack stack : craftingRecipe.getRemainingItems(remainderContainer))
 						if (!stack.isEmpty())
 							recipeOutputItems.add(stack);
 				}
@@ -219,7 +229,7 @@ public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
 	}
 
 	@Override
-	public boolean matches(SmartInventory inv, @Nonnull Level worldIn) {
+	public boolean matches(Container inv, @Nonnull Level worldIn) {
 		return false;
 	}
 

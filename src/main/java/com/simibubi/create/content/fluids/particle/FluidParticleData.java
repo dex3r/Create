@@ -26,7 +26,8 @@ public class FluidParticleData implements ParticleOptions, ICustomParticleData<F
 	private ParticleType<FluidParticleData> type;
 	private FluidStack fluid;
 
-	public FluidParticleData() {}
+	public FluidParticleData() {
+	}
 
 	@SuppressWarnings("unchecked")
 	public FluidParticleData(ParticleType<?> type, FluidStack fluid) {
@@ -77,7 +78,7 @@ public class FluidParticleData implements ParticleOptions, ICustomParticleData<F
 		.apply(i, fs -> new FluidParticleData(AllParticleTypes.FLUID_DRIP.get(), fs)));
 
 	public static final ParticleOptions.Deserializer<FluidParticleData> DESERIALIZER =
-		new ParticleOptions.Deserializer<FluidParticleData>() {
+		new ParticleOptions.Deserializer<>() {
 
 			// TODO Fluid particles on command
 			public FluidParticleData fromCommand(ParticleType<FluidParticleData> particleTypeIn, StringReader reader)

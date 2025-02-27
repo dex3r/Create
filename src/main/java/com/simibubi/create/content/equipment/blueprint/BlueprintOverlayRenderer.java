@@ -96,10 +96,9 @@ public class BlueprintOverlayRenderer {
 			return;
 
 		EntityHitResult entityRay = (EntityHitResult) mouseOver;
-		if (!(entityRay.getEntity() instanceof BlueprintEntity))
+		if (!(entityRay.getEntity() instanceof BlueprintEntity blueprintEntity))
 			return;
 
-		BlueprintEntity blueprintEntity = (BlueprintEntity) entityRay.getEntity();
 		BlueprintSection sectionAt = blueprintEntity.getSectionAt(entityRay.getLocation()
 			.subtract(blueprintEntity.position()));
 
@@ -155,7 +154,7 @@ public class BlueprintOverlayRenderer {
 		shopContext = new BlueprintOverlayShopContext(false, dce.getStockLevelForTrade(list), alreadyPurchased);
 
 		ingredients.add(Pair.of(dce.getPaymentItem()
-			.copyWithCount(dce.getPaymentAmount()),
+				.copyWithCount(dce.getPaymentAmount()),
 			!dce.getPaymentItem()
 				.isEmpty() && shopContext.stockLevel() > shopContext.purchases()));
 		for (BigItemStack entry : dce.requestData.encodedRequest.stacks())
@@ -350,7 +349,7 @@ public class BlueprintOverlayRenderer {
 			AllGuiTextures.TRADE_OVERLAY.render(graphics, window.getGuiScaledWidth() / 2 - 48, y - 19);
 			if (shopContext.purchases() > 0) {
 				graphics.renderItem(AllItems.SHOPPING_LIST.asStack(), window.getGuiScaledWidth() / 2 + 20, y - 20);
-                graphics.drawString(mc.font, Component.literal("x" + shopContext.purchases()), window.getGuiScaledWidth() / 2 + 20 + 16,
+				graphics.drawString(mc.font, Component.literal("x" + shopContext.purchases()), window.getGuiScaledWidth() / 2 + 20 + 16,
 					y - 20 + 4, 0xff_eeeeee, true);
 			}
 		}
@@ -410,7 +409,7 @@ public class BlueprintOverlayRenderer {
 					if ((gui.getGuiTicks() / 40) % cycle != i)
 						continue;
 					graphics.renderComponentTooltip(gui.getFont(), tooltipLines, mc.getWindow()
-						.getGuiScaledWidth(),
+							.getGuiScaledWidth(),
 						mc.getWindow()
 							.getGuiScaledHeight());
 				}
@@ -420,7 +419,7 @@ public class BlueprintOverlayRenderer {
 	}
 
 	public static void drawItemStack(GuiGraphics graphics, Minecraft mc, int x, int y, ItemStack itemStack,
-		String count) {
+									 String count) {
 		if (itemStack.getItem() instanceof FilterItem) {
 			int step = AnimationTickHolder.getTicks(mc.level) / 10;
 			ItemStack[] itemsMatchingFilter = getItemsMatchingFilter(itemStack);

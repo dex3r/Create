@@ -7,9 +7,10 @@ import java.util.Queue;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllContraptionTypes;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.ContraptionType;
 import com.simibubi.create.content.contraptions.mounted.CartAssemblerBlockEntity.CartMovementMode;
 
 import net.createmod.catnip.data.Iterate;
@@ -48,7 +49,7 @@ public class MountedContraption extends Contraption {
 
 	@Override
 	public ContraptionType getType() {
-		return ContraptionType.MOUNTED;
+		return AllContraptionTypes.MOUNTED.get();
 	}
 
 	@Override

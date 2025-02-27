@@ -29,12 +29,11 @@ public class BlueprintAssignCompleteRecipePacket extends SimplePacketBase {
 			ServerPlayer player = context.getSender();
 			if (player == null)
 				return;
-			if (player.containerMenu instanceof BlueprintMenu) {
-				BlueprintMenu c = (BlueprintMenu) player.containerMenu;
+			if (player.containerMenu instanceof BlueprintMenu c) {
 				player.level()
-						.getRecipeManager()
-						.byKey(recipeID)
-						.ifPresent(r -> BlueprintItem.assignCompleteRecipe(c.player.level(), c.ghostInventory, r));
+					.getRecipeManager()
+					.byKey(recipeID)
+					.ifPresent(r -> BlueprintItem.assignCompleteRecipe(c.player.level(), c.ghostInventory, r));
 			}
 		});
 		return true;

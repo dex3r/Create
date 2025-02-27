@@ -28,8 +28,7 @@ public abstract class KineticBlock extends Block implements IRotate {
 		// we can prevent a major re-propagation here
 
 		BlockEntity blockEntity = worldIn.getBlockEntity(pos);
-		if (blockEntity instanceof KineticBlockEntity) {
-			KineticBlockEntity kineticBlockEntity = (KineticBlockEntity) blockEntity;
+		if (blockEntity instanceof KineticBlockEntity kineticBlockEntity) {
 			kineticBlockEntity.preventSpeedUpdate = 0;
 
 			if (oldState.getBlock() != state.getBlock())
@@ -42,7 +41,7 @@ public abstract class KineticBlock extends Block implements IRotate {
 			kineticBlockEntity.preventSpeedUpdate = 2;
 		}
 	}
-	
+
 	@Override
 	public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pIsMoving) {
 		IBE.onRemove(pState, pLevel, pPos, pNewState);
@@ -61,14 +60,13 @@ public abstract class KineticBlock extends Block implements IRotate {
 
 	@Override
 	public void updateIndirectNeighbourShapes(BlockState stateIn, LevelAccessor worldIn, BlockPos pos, int flags,
-		int count) {
+											  int count) {
 		if (worldIn.isClientSide())
 			return;
 
 		BlockEntity blockEntity = worldIn.getBlockEntity(pos);
-		if (!(blockEntity instanceof KineticBlockEntity))
+		if (!(blockEntity instanceof KineticBlockEntity kbe))
 			return;
-		KineticBlockEntity kbe = (KineticBlockEntity) blockEntity;
 
 		if (kbe.preventSpeedUpdate > 0)
 			return;
@@ -86,10 +84,9 @@ public abstract class KineticBlock extends Block implements IRotate {
 			return;
 
 		BlockEntity blockEntity = worldIn.getBlockEntity(pos);
-		if (!(blockEntity instanceof KineticBlockEntity))
+		if (!(blockEntity instanceof KineticBlockEntity kbe))
 			return;
 
-		KineticBlockEntity kbe = (KineticBlockEntity) blockEntity;
 		kbe.effects.queueRotationIndicators();
 	}
 

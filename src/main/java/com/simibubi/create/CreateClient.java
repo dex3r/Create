@@ -30,12 +30,12 @@ import com.simibubi.create.content.trains.TrainHUD;
 import com.simibubi.create.content.trains.track.TrackPlacementOverlay;
 import com.simibubi.create.foundation.ClientResourceReloadListener;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsClient;
+import com.simibubi.create.foundation.model.ModelSwapper;
 import com.simibubi.create.foundation.events.ClientEvents;
 import com.simibubi.create.foundation.events.InputEvents;
 import com.simibubi.create.foundation.ponder.CreatePonderPlugin;
 import com.simibubi.create.foundation.render.AllInstanceTypes;
 import com.simibubi.create.foundation.render.RenderTypes;
-import com.simibubi.create.foundation.utility.ModelSwapper;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.gui.CreateMainMenuScreen;
 

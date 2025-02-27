@@ -27,7 +27,7 @@ public class FactoryPanelSupportBehaviour extends BlockEntityBehaviour {
 	private Runnable onNotify;
 
 	public FactoryPanelSupportBehaviour(SmartBlockEntity be, Supplier<Boolean> isOutput, Supplier<Boolean> outputPower,
-		Runnable onNotify) {
+										Runnable onNotify) {
 		super(be);
 		this.isOutput = isOutput;
 		this.outputPower = outputPower;
@@ -49,8 +49,7 @@ public class FactoryPanelSupportBehaviour extends BlockEntityBehaviour {
 
 	@Override
 	public void destroy() {
-		for (Iterator<FactoryPanelPosition> iterator = linkedPanels.iterator(); iterator.hasNext();) {
-			FactoryPanelPosition panelPos = iterator.next();
+		for (FactoryPanelPosition panelPos : linkedPanels) {
 			if (!getWorld().isLoaded(panelPos.pos()))
 				continue;
 			FactoryPanelBehaviour behaviour = FactoryPanelBehaviour.at(getWorld(), panelPos);
@@ -63,7 +62,7 @@ public class FactoryPanelSupportBehaviour extends BlockEntityBehaviour {
 	public void notifyPanels() {
 		if (getWorld().isClientSide())
 			return;
-		for (Iterator<FactoryPanelPosition> iterator = linkedPanels.iterator(); iterator.hasNext();) {
+		for (Iterator<FactoryPanelPosition> iterator = linkedPanels.iterator(); iterator.hasNext(); ) {
 			FactoryPanelPosition panelPos = iterator.next();
 			if (!getWorld().isLoaded(panelPos.pos()))
 				continue;
@@ -79,7 +78,7 @@ public class FactoryPanelSupportBehaviour extends BlockEntityBehaviour {
 
 	@Nullable
 	public Boolean shouldBePoweredTristate() {
-		for (Iterator<FactoryPanelPosition> iterator = linkedPanels.iterator(); iterator.hasNext();) {
+		for (Iterator<FactoryPanelPosition> iterator = linkedPanels.iterator(); iterator.hasNext(); ) {
 			FactoryPanelPosition panelPos = iterator.next();
 			if (!getWorld().isLoaded(panelPos.pos()))
 				return null;

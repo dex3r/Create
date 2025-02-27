@@ -3,9 +3,15 @@ package com.simibubi.create.content.logistics.item.filter.attribute;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.Nullable;
 
-import com.simibubi.create.AllRegistries;
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
+import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.nbt.CompoundTag;
@@ -20,10 +26,10 @@ import net.fabricmc.api.Environment;
 public interface ItemAttribute {
 	static CompoundTag saveStatic(ItemAttribute attribute) {
 		CompoundTag nbt = new CompoundTag();
-		ResourceLocation id = AllRegistries.ITEM_ATTRIBUTE_TYPES.get().getKey(attribute.getType());
+		ResourceLocation id = CreateBuiltInRegistries.ITEM_ATTRIBUTE_TYPE.getKey(attribute.getType());
 
 		if (id == null)
-			throw new IllegalArgumentException("Cannot get " + attribute.getType() + "as it does not exist in AllRegistries.ITEM_ATTRIBUTE_TYPES");
+			throw new IllegalArgumentException("Cannot get " + attribute.getType() + " as it does not exist in AllRegistries.ITEM_ATTRIBUTE_TYPES");
 
 		nbt.putString("attributeId", id.toString());
 		attribute.save(nbt);
@@ -42,10 +48,10 @@ public interface ItemAttribute {
 		if (id == null)
 			return null;
 
-		ItemAttributeType type = AllRegistries.ITEM_ATTRIBUTE_TYPES.get().getValue(id);
-		if (type == null) {
+		ItemAttributeType type = CreateBuiltInRegistries.ITEM_ATTRIBUTE_TYPE.get(id);
+		if (type == null)
 			return null;
-		}
+
 		ItemAttribute attribute = type.createAttribute();
 		attribute.load(nbt);
 		return attribute;
@@ -53,7 +59,7 @@ public interface ItemAttribute {
 
 	static List<ItemAttribute> getAllAttributes(ItemStack stack, Level level) {
 		List<ItemAttribute> attributes = new ArrayList<>();
-		for (ItemAttributeType type : AllRegistries.ITEM_ATTRIBUTE_TYPES.get()) {
+		for (ItemAttributeType type : CreateBuiltInRegistries.ITEM_ATTRIBUTE_TYPE) {
 			attributes.addAll(type.getAllAttributes(stack, level));
 		}
 		return attributes;

@@ -20,6 +20,7 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -127,7 +128,7 @@ public class ScheduleRuntime {
 			return;
 		}
 
-		DiscoveredPath nextPath = startCurrentInstruction();
+		DiscoveredPath nextPath = startCurrentInstruction(level);
 		if (nextPath == null)
 			return;
 
@@ -180,10 +181,10 @@ public class ScheduleRuntime {
 			carriage.storage.tickIdleCargoTracker();
 	}
 
-	public DiscoveredPath startCurrentInstruction() {
+	public DiscoveredPath startCurrentInstruction(Level level) {
 		ScheduleEntry entry = schedule.entries.get(currentEntry);
 		ScheduleInstruction instruction = entry.instruction;
-		return instruction.start(this);
+		return instruction.start(this, level);
 	}
 
 	public void setSchedule(Schedule schedule, boolean auto) {
@@ -286,7 +287,7 @@ public class ScheduleRuntime {
 	}
 
 	private int predictForEntry(int index, String currentTitle, int accumulatedTime,
-		Collection<TrainDeparturePrediction> predictions) {
+								Collection<TrainDeparturePrediction> predictions) {
 		ScheduleEntry entry = schedule.entries.get(index);
 		if (!(entry.instruction instanceof DestinationInstruction filter))
 			return accumulatedTime;
@@ -325,7 +326,8 @@ public class ScheduleRuntime {
 		}
 
 		ScheduleEntry scheduleEntry = schedule.entries.get(index);
-		Columns: for (List<ScheduleWaitCondition> list : scheduleEntry.conditions) {
+		Columns:
+		for (List<ScheduleWaitCondition> list : scheduleEntry.conditions) {
 			int total = 0;
 			for (ScheduleWaitCondition condition : list) {
 				if (!(condition instanceof ScheduledDelay wait))
@@ -345,7 +347,7 @@ public class ScheduleRuntime {
 		int size = schedule.entries.size();
 		if (index >= size) {
 			if (!schedule.cyclic) {
-				return new TrainDeparturePrediction(train, time, Component.literal(" "), destination);
+				return new TrainDeparturePrediction(train, time, CommonComponents.space(), destination);
 			}
 			index %= size;
 		}

@@ -15,14 +15,17 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -71,7 +74,7 @@ public class FactoryPanelBlockEntity extends SmartBlockEntity {
 			return;
 
 		if (activePanels() == 0)
-			level.destroyBlock(worldPosition, false);
+			level.setBlockAndUpdate(worldPosition, Blocks.AIR.defaultBlockState());
 
 		if (AllBlocks.FACTORY_GAUGE.has(getBlockState())) {
 			boolean shouldBeRestocker = AllBlocks.PACKAGER
@@ -133,6 +136,13 @@ public class FactoryPanelBlockEntity extends SmartBlockEntity {
 			behaviour.setNetwork(frequency);
 			redraw = true;
 			lastShape = null;
+			
+			if (activePanels() > 1) {
+				SoundType soundType = getBlockState().getSoundType();
+				level.playSound(null, worldPosition, soundType.getPlaceSound(), SoundSource.BLOCKS,
+					(soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
+			}
+			
 			return true;
 		}
 		return false;
@@ -144,6 +154,13 @@ public class FactoryPanelBlockEntity extends SmartBlockEntity {
 			behaviour.disable();
 			redraw = true;
 			lastShape = null;
+			
+			if (activePanels() > 0) {
+				SoundType soundType = getBlockState().getSoundType();
+				level.playSound(null, worldPosition, soundType.getBreakSound(), SoundSource.BLOCKS,
+					(soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
+			}
+			
 			return true;
 		}
 		return false;

@@ -31,11 +31,10 @@ public class WrenchEventHandler {
 			.getBlockState(hitVec.getBlockPos());
 		Block block = state.getBlock();
 
-		if (!(block instanceof IWrenchable))
+		if (!(block instanceof IWrenchable actor))
 			return InteractionResult.PASS;
 
 		UseOnContext context = new UseOnContext(player, hand, hitVec);
-		IWrenchable actor = (IWrenchable) block;
 
 		return player.isShiftKeyDown() ? actor.onSneakWrenched(state, context) : actor.onWrenched(state, context);
 	}

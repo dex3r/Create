@@ -1,6 +1,7 @@
 package com.simibubi.create.content.contraptions.behaviour;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.elevator.ElevatorContraption;
 import com.simibubi.create.content.equipment.bell.AbstractBellBlock;

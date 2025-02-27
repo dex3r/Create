@@ -4,6 +4,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
+
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
 import net.createmod.catnip.data.Couple;
@@ -19,6 +20,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -165,9 +167,4 @@ public class LargeWaterWheelBlock extends RotatedPillarKineticBlock implements I
 	public float getParticleInitialRadius() {
 		return 2.25f;
 	}
-
-	public static Couple<Integer> getSpeedRange() {
-		return Couple.create(4, 4);
-	}
-
 }

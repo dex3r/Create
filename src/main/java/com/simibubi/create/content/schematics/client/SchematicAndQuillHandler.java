@@ -63,9 +63,12 @@ public class SchematicAndQuillHandler {
 		if (bb.contains(projectedView))
 			delta *= -1;
 
-		int x = (int) (vec.getX() * delta);
-		int y = (int) (vec.getY() * delta);
-		int z = (int) (vec.getZ() * delta);
+		// Round away from zero to avoid an implicit floor
+		int intDelta = (int) (delta > 0 ? Math.ceil(delta) : Math.floor(delta));
+
+		int x = vec.getX() * intDelta;
+		int y = vec.getY() * intDelta;
+		int z = vec.getZ() * intDelta;
 
 		AxisDirection axisDirection = selectedFace.getAxisDirection();
 		if (axisDirection == AxisDirection.NEGATIVE)

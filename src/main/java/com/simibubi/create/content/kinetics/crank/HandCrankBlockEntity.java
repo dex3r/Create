@@ -48,9 +48,8 @@ public class HandCrankBlockEntity extends GeneratingKineticBlockEntity {
 	@Override
 	public float getGeneratedSpeed() {
 		Block block = getBlockState().getBlock();
-		if (!(block instanceof HandCrankBlock))
+		if (!(block instanceof HandCrankBlock crank))
 			return 0;
-		HandCrankBlock crank = (HandCrankBlock) block;
 		int speed = (inUse == 0 ? 0 : clockwise() ? -1 : 1) * crank.getRotationSpeed();
 		return convertToDirection(speed, getBlockState().getValue(HandCrankBlock.FACING));
 	}

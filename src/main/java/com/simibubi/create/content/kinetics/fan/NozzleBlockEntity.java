@@ -39,7 +39,8 @@ public class NozzleBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
+	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+	}
 
 	@Override
 	protected void write(CompoundTag compound, boolean clientPacket) {
@@ -86,10 +87,10 @@ public class NozzleBlockEntity extends SmartBlockEntity {
 			}
 		}
 
-		for (Iterator<Entity> iterator = pushingEntities.iterator(); iterator.hasNext();) {
+		for (Iterator<Entity> iterator = pushingEntities.iterator(); iterator.hasNext(); ) {
 			Entity entity = iterator.next();
 			Vec3 diff = entity.position()
-					.subtract(center);
+				.subtract(center);
 
 			if (!(entity instanceof Player) && level.isClientSide)
 				continue;
@@ -105,7 +106,7 @@ public class NozzleBlockEntity extends SmartBlockEntity {
 
 			float factor = (entity instanceof ItemEntity) ? 1 / 128f : 1 / 32f;
 			Vec3 pushVec = diff.normalize()
-					.scale((range - distance) * (pushing ? 1 : -1));
+				.scale((range - distance) * (pushing ? 1 : -1));
 			entity.setDeltaMovement(entity.getDeltaMovement()
 				.add(pushVec.scale(factor)));
 			entity.fallDistance = 0;
@@ -123,10 +124,9 @@ public class NozzleBlockEntity extends SmartBlockEntity {
 
 	private float calcRange() {
 		BlockEntity be = level.getBlockEntity(fanPos);
-		if (!(be instanceof IAirCurrentSource))
+		if (!(be instanceof IAirCurrentSource source))
 			return 0;
 
-		IAirCurrentSource source = (IAirCurrentSource) be;
 		if (source.getAirCurrent() == null)
 			return 0;
 		if (source.getSpeed() == 0)
@@ -147,7 +147,7 @@ public class NozzleBlockEntity extends SmartBlockEntity {
 
 		for (Entity entity : level.getEntitiesOfClass(Entity.class, bb)) {
 			Vec3 diff = entity.position()
-					.subtract(center);
+				.subtract(center);
 
 			double distance = diff.length();
 			if (distance > range || entity.isShiftKeyDown() || AirCurrent.isPlayerCreativeFlying(entity))
@@ -163,7 +163,7 @@ public class NozzleBlockEntity extends SmartBlockEntity {
 				pushingEntities.add(entity);
 		}
 
-		for (Iterator<Entity> iterator = pushingEntities.iterator(); iterator.hasNext();) {
+		for (Iterator<Entity> iterator = pushingEntities.iterator(); iterator.hasNext(); ) {
 			Entity entity = iterator.next();
 			if (entity.isAlive())
 				continue;
@@ -172,7 +172,7 @@ public class NozzleBlockEntity extends SmartBlockEntity {
 
 		if (!pushing && pushingEntities.size() > 256 && !level.isClientSide) {
 			level.explode(null, center.x, center.y, center.z, 2, ExplosionInteraction.NONE);
-			for (Iterator<Entity> iterator = pushingEntities.iterator(); iterator.hasNext();) {
+			for (Iterator<Entity> iterator = pushingEntities.iterator(); iterator.hasNext(); ) {
 				Entity entity = iterator.next();
 				entity.discard();
 				iterator.remove();

@@ -14,8 +14,8 @@ import javax.annotation.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.api.contraption.transformable.ITransformableBlock;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.contraption.transformable.TransformableBlock;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.decoration.encasing.EncasedBlock;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
@@ -55,7 +55,7 @@ import net.minecraft.world.ticks.TickPriority;
 import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 
 public class EncasedPipeBlock extends Block
-	implements IWrenchable, ISpecialBlockItemRequirement, IBE<FluidPipeBlockEntity>, BlockPickInteractionAware, EncasedBlock, ITransformableBlock {
+	implements IWrenchable, SpecialBlockItemRequirement, IBE<FluidPipeBlockEntity>, BlockPickInteractionAware, EncasedBlock, TransformableBlock {
 	public static final Map<Direction, BooleanProperty> FACING_TO_PROPERTY_MAP = PipeBlock.PROPERTY_BY_DIRECTION;
 
 	private final Supplier<Block> casing;

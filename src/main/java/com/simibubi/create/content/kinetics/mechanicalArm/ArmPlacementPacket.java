@@ -55,10 +55,9 @@ public class ArmPlacementPacket extends SimplePacketBase {
 			if (world == null || !world.isLoaded(pos))
 				return;
 			BlockEntity blockEntity = world.getBlockEntity(pos);
-			if (!(blockEntity instanceof ArmBlockEntity))
+			if (!(blockEntity instanceof ArmBlockEntity arm))
 				return;
 
-			ArmBlockEntity arm = (ArmBlockEntity) blockEntity;
 			arm.interactionPointTag = receivedTag;
 		});
 		return true;

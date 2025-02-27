@@ -23,7 +23,6 @@ import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -121,10 +120,10 @@ public class ArmVisual extends SingleAxisRotatingVisual<ArmBlockEntity> implemen
 		int color = Color.rainbowColor(ticks * 100)
 			.getRGB();
 		updateAngles(baseAngle, lowerArmAngle, upperArmAngle, headAngle, color);
-    }
+	}
 
 	private void animateArm() {
-        updateAngles(this.baseAngle, this.lowerArmAngle - 135, this.upperArmAngle - 90, this.headAngle, 0xFFFFFF);
+		updateAngles(this.baseAngle, this.lowerArmAngle - 135, this.upperArmAngle - 90, this.headAngle, 0xFFFFFF);
 	}
 
 	private void updateAngles(float baseAngle, float lowerArmAngle, float upperArmAngle, float headAngle, int color) {
@@ -163,7 +162,7 @@ public class ArmVisual extends SingleAxisRotatingVisual<ArmBlockEntity> implemen
 		boolean hasItem = !item.isEmpty();
 		boolean isBlockItem = hasItem && (item.getItem() instanceof BlockItem)
 			&& itemRenderer.getModel(item, Minecraft.getInstance().level, null, 0)
-				.isGui3d();
+			.isGui3d();
 
 		for (int index : Iterate.zeroAndOne) {
 			poseStack.pushPose();
@@ -182,7 +181,7 @@ public class ArmVisual extends SingleAxisRotatingVisual<ArmBlockEntity> implemen
 	public void update(float pt) {
 		super.update(pt);
 		instancerProvider().instancer(InstanceTypes.TRANSFORMED, Models.partial(blockEntity.goggles ? AllPartialModels.ARM_CLAW_BASE_GOGGLES : AllPartialModels.ARM_CLAW_BASE))
-				.stealInstance(claw);
+			.stealInstance(claw);
 	}
 
 	@Override
@@ -193,7 +192,7 @@ public class ArmVisual extends SingleAxisRotatingVisual<ArmBlockEntity> implemen
 	}
 
 	@Override
-    protected void _delete() {
+	protected void _delete() {
 		super._delete();
 		models.forEach(AbstractInstance::delete);
 	}

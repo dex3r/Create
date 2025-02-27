@@ -3,8 +3,6 @@ package com.simibubi.create.content.kinetics.steamEngine;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 
@@ -27,18 +25,18 @@ public class SteamEngineVisual extends AbstractBlockEntityVisual<SteamEngineBloc
 	protected final TransformedInstance linkage;
 	protected final TransformedInstance connector;
 
-	@Nullable
-	private Float lastAngle = null;
+	private Float lastAngle = Float.NaN;
+	private Axis lastAxis = null;
 
 	public SteamEngineVisual(VisualizationContext context, SteamEngineBlockEntity blockEntity, float partialTick) {
 		super(context, blockEntity, partialTick);
 
 		piston = instancerProvider().instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.ENGINE_PISTON))
-				.createInstance();
+			.createInstance();
 		linkage = instancerProvider().instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.ENGINE_LINKAGE))
-				.createInstance();
+			.createInstance();
 		connector = instancerProvider().instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.ENGINE_CONNECTOR))
-				.createInstance();
+			.createInstance();
 
 		animate();
 	}
@@ -50,11 +48,18 @@ public class SteamEngineVisual extends AbstractBlockEntityVisual<SteamEngineBloc
 
 	private void animate() {
 		Float angle = blockEntity.getTargetAngle();
+		Axis axis = Axis.Y;
 
-		if (Objects.equals(angle, lastAngle)) {
+		PoweredShaftBlockEntity shaft = blockEntity.getShaft();
+		if (shaft != null)
+			axis = KineticBlockEntityRenderer.getRotationAxisOf(shaft);
+
+		if (Objects.equals(angle, lastAngle) && lastAxis == axis) {
 			return;
 		}
+		
 		lastAngle = angle;
+		lastAxis = axis;
 
 		if (angle == null) {
 			piston.setVisible(false);
@@ -69,11 +74,6 @@ public class SteamEngineVisual extends AbstractBlockEntityVisual<SteamEngineBloc
 
 		Direction facing = SteamEngineBlock.getFacing(blockState);
 		Axis facingAxis = facing.getAxis();
-		Axis axis = Axis.Y;
-
-		PoweredShaftBlockEntity shaft = blockEntity.getShaft();
-		if (shaft != null)
-			axis = KineticBlockEntityRenderer.getRotationAxisOf(shaft);
 
 		boolean roll90 = facingAxis.isHorizontal() && axis == Axis.Y || facingAxis.isVertical() && axis == Axis.Z;
 		float sine = Mth.sin(angle);

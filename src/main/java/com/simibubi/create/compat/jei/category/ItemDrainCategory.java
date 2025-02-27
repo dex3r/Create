@@ -12,6 +12,7 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.item.ItemHelper;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.fabric.constants.FabricTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -23,6 +24,7 @@ import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackLinkedSet;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -47,6 +49,7 @@ public class ItemDrainCategory extends CreateRecipeCategory<EmptyingRecipe> {
 	}
 
 	public static void consumeRecipes(Consumer<EmptyingRecipe> consumer, IIngredientManager ingredientManager) {
+		ObjectOpenCustomHashSet<ItemStack> emptiedItems = new ObjectOpenCustomHashSet<>(ItemStackLinkedSet.TYPE_AND_TAG);
 		for (ItemStack stack : ingredientManager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
 			if (PotionFluidHandler.isPotionItem(stack)) {
 				FluidStack fluidFromPotionItem = PotionFluidHandler.getFluidFromPotionItem(stack);
@@ -74,6 +77,11 @@ public class ItemDrainCategory extends CreateRecipeCategory<EmptyingRecipe> {
 			if (result.isBlank())
 				continue;
 
+			// There can be a lot of duplicate empty tanks (e.g. from emptying tanks with different fluids). Merge
+			// them to reduce memory usage. If the item is exactly the same as the input, just use the input stack
+			// instead of the copy.
+			result = ItemHelper.sameItem(stack, result) ? stack : emptiedItems.addOrGet(result);
+
 			Ingredient ingredient = Ingredient.of(stack);
 			ResourceLocation itemName = CatnipServices.REGISTRIES.getKeyOrThrow(stack.getItem());
 			ResourceLocation fluidName = CatnipServices.REGISTRIES.getKeyOrThrow(extracted.getFluid());
@@ -97,7 +105,7 @@ public class ItemDrainCategory extends CreateRecipeCategory<EmptyingRecipe> {
 				.addSlot(RecipeIngredientRole.OUTPUT, 132, 8)
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addIngredient(FabricTypes.FLUID_STACK, toJei(withImprovedVisibility(recipe.getResultingFluid())))
-				.addTooltipCallback(addFluidTooltip(recipe.getResultingFluid().getAmount()));
+				.addRichTooltipCallback(addFluidTooltip(recipe.getResultingFluid().getAmount()));
 		builder
 				.addSlot(RecipeIngredientRole.OUTPUT, 132, 27)
 				.setBackground(getRenderedSlot(), -1, -1)

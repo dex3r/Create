@@ -8,12 +8,16 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
+import net.fabricmc.api.EnvType;
+
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllTags;
-import com.simibubi.create.api.contraption.transformable.ITransformableBlockEntity;
+import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.trains.graph.TrackNodeLocation;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
@@ -49,7 +53,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
 
-public class TrackBlockEntity extends SmartBlockEntity implements ITransformableBlockEntity, IMergeableBE, RenderDataBlockEntity {
+public class TrackBlockEntity extends SmartBlockEntity implements TransformableBlockEntity, IMergeableBE, RenderDataBlockEntity {
 
 	Map<BlockPos, BezierConnection> connections;
 	boolean cancelDrops;
@@ -266,7 +270,7 @@ public class TrackBlockEntity extends SmartBlockEntity implements ITransformable
 	}
 
 	@Override
-	public void transform(StructureTransform transform) {
+	public void transform(BlockEntity be, StructureTransform transform) {
 		Map<BlockPos, BezierConnection> restoredConnections = new HashMap<>();
 		for (Entry<BlockPos, BezierConnection> entry : connections.entrySet())
 			restoredConnections.put(entry.getKey(),

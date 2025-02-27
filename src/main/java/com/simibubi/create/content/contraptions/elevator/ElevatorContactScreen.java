@@ -17,11 +17,11 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.element.GuiGameElement;
-import net.createmod.catnip.lang.Lang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 
@@ -107,7 +107,7 @@ public class ElevatorContactScreen extends AbstractSimiScreen {
 	}
 
 	private EditBox editBox(int x, int width, int chars) {
-		EditBox editBox = new EditBox(font, guiLeft + x, guiTop + 30, width, 10, Lang.IMMUTABLE_EMPTY);
+		EditBox editBox = new EditBox(font, guiLeft + x, guiTop + 30, width, 10, CommonComponents.EMPTY);
 		editBox.setTextColor(-1);
 		editBox.setTextColorUneditable(-1);
 		editBox.setBordered(false);
@@ -130,7 +130,7 @@ public class ElevatorContactScreen extends AbstractSimiScreen {
 			x + (background.getWidth() - 8) / 2 - font.width(formattedcharsequence) / 2, y + 6, 0x2F3738, false);
 
 		GuiGameElement.of(AllBlocks.ELEVATOR_CONTACT.asStack()).<GuiGameElement
-			.GuiRenderBuilder>at(x + background.getWidth() + 6, y + background.getHeight() - 56, -200)
+				.GuiRenderBuilder>at(x + background.getWidth() + 6, y + background.getHeight() - 56, -200)
 			.scale(5)
 			.render(graphics);
 

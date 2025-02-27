@@ -8,6 +8,7 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.item.CustomUseEffectsItem;
 import com.simibubi.create.foundation.mixin.accessor.LivingEntityAccessor;
 
+import net.createmod.catnip.data.TriState;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -75,9 +76,8 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 		}
 
 		HitResult raytraceresult = getPlayerPOVHitResult(worldIn, playerIn, ClipContext.Fluid.NONE);
-		if (!(raytraceresult instanceof BlockHitResult))
+		if (!(raytraceresult instanceof BlockHitResult ray))
 			return FAIL;
-		BlockHitResult ray = (BlockHitResult) raytraceresult;
 		Vec3 hitVec = ray.getLocation();
 
 		AABB bb = new AABB(hitVec, hitVec).inflate(1f);
@@ -118,9 +118,8 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 
 	@Override
 	public ItemStack finishUsingItem(ItemStack stack, Level worldIn, LivingEntity entityLiving) {
-		if (!(entityLiving instanceof Player))
+		if (!(entityLiving instanceof Player player))
 			return stack;
-		Player player = (Player) entityLiving;
 		CompoundTag tag = stack.getOrCreateTag();
 		if (tag.contains("Polishing")) {
 			ItemStack toPolish = ItemStack.of(tag.getCompound("Polishing"));
@@ -129,8 +128,8 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 
 			if (worldIn.isClientSide) {
 				spawnParticles(entityLiving.getEyePosition(1)
-					.add(entityLiving.getLookAngle()
-						.scale(.5f)),
+						.add(entityLiving.getLookAngle()
+							.scale(.5f)),
 					toPolish, worldIn);
 				return stack;
 			}
@@ -160,9 +159,8 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 
 	@Override
 	public void releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
-		if (!(entityLiving instanceof Player))
+		if (!(entityLiving instanceof Player player))
 			return;
-		Player player = (Player) entityLiving;
 		CompoundTag tag = stack.getOrCreateTag();
 		if (tag.contains("Polishing")) {
 			ItemStack toPolish = ItemStack.of(tag.getCompound("Polishing"));
@@ -213,9 +211,9 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 //	}
 
 	@Override
-	public Boolean shouldTriggerUseEffects(ItemStack stack, LivingEntity entity) {
+	public TriState shouldTriggerUseEffects(ItemStack stack, LivingEntity entity) {
 		// Trigger every tick so that we have more fine grain control over the animation
-		return true;
+		return TriState.TRUE;
 	}
 
 	@Override

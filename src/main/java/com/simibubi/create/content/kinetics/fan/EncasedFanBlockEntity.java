@@ -39,7 +39,7 @@ public class EncasedFanBlockEntity extends KineticBlockEntity implements IAirCur
 		super.addBehaviours(behaviours);
 		registerAwardables(behaviours, AllAdvancements.ENCASED_FAN, AllAdvancements.FAN_PROCESSING);
 	}
-	
+
 	@Override
 	protected void read(CompoundTag compound, boolean clientPacket) {
 		super.read(compound, clientPacket);
@@ -89,7 +89,7 @@ public class EncasedFanBlockEntity extends KineticBlockEntity implements IAirCur
 		super.remove();
 		updateChute();
 	}
-	
+
 	@Override
 	public boolean isSourceRemoved() {
 		return remove;
@@ -108,9 +108,8 @@ public class EncasedFanBlockEntity extends KineticBlockEntity implements IAirCur
 			.isVertical())
 			return;
 		BlockEntity poweredChute = level.getBlockEntity(worldPosition.relative(direction));
-		if (!(poweredChute instanceof ChuteBlockEntity))
+		if (!(poweredChute instanceof ChuteBlockEntity chuteBE))
 			return;
-		ChuteBlockEntity chuteBE = (ChuteBlockEntity) poweredChute;
 		if (direction == Direction.DOWN)
 			chuteBE.updatePull();
 		else

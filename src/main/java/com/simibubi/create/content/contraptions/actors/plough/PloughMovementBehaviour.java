@@ -41,7 +41,7 @@ public class PloughMovementBehaviour extends BlockBreakingMovementBehaviour {
 	public boolean isActive(MovementContext context) {
 		return super.isActive(context)
 			&& !VecHelper.isVecPointingTowards(context.relativeMotion, context.state.getValue(PloughBlock.FACING)
-				.getOpposite());
+			.getOpposite());
 	}
 
 	@Override
@@ -86,7 +86,7 @@ public class PloughMovementBehaviour extends BlockBreakingMovementBehaviour {
 	@Override
 	public Vec3 getActiveAreaOffset(MovementContext context) {
 		return Vec3.atLowerCornerOf(context.state.getValue(PloughBlock.FACING)
-			.getNormal())
+				.getNormal())
 			.scale(.45);
 	}
 
@@ -120,12 +120,11 @@ public class PloughMovementBehaviour extends BlockBreakingMovementBehaviour {
 	protected void onBlockBroken(MovementContext context, BlockPos pos, BlockState brokenState) {
 		super.onBlockBroken(context, pos, brokenState);
 
-		if (brokenState.getBlock() == Blocks.SNOW && context.world instanceof ServerLevel) {
-			ServerLevel world = (ServerLevel) context.world;
+		if (brokenState.getBlock() == Blocks.SNOW && context.world instanceof ServerLevel world) {
 			brokenState.getDrops(new LootParams.Builder(world).withParameter(LootContextParams.BLOCK_STATE, brokenState)
-				.withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
-				.withParameter(LootContextParams.THIS_ENTITY, getPlayer(context))
-				.withParameter(LootContextParams.TOOL, new ItemStack(Items.IRON_SHOVEL)))
+					.withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
+					.withParameter(LootContextParams.THIS_ENTITY, getPlayer(context))
+					.withParameter(LootContextParams.TOOL, new ItemStack(Items.IRON_SHOVEL)))
 				.forEach(s -> dropItem(context, s));
 		}
 	}

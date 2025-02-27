@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import com.simibubi.create.api.contraption.transformable.ITransformableBlockEntity;
+import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -28,9 +28,9 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.nbt.NBTHelper;
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -48,6 +48,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -55,7 +56,7 @@ import net.minecraft.world.phys.Vec3;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 
-public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITransformableBlockEntity {
+public class ChainConveyorBlockEntity extends KineticBlockEntity implements TransformableBlockEntity {
 
 	public record ConnectionStats(float tangentAngle, float chainLength, Vec3 start, Vec3 end) {
 	}
@@ -105,7 +106,7 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 			return false;
 		if (connection != null
 			&& (!(level.getBlockEntity(worldPosition.offset(connection)) instanceof ChainConveyorBlockEntity otherClbe)
-				|| !otherClbe.canAcceptMorePackages()))
+			|| !otherClbe.canAcceptMorePackages()))
 			return false;
 		return true;
 	}
@@ -173,7 +174,7 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 				if (!(level.getBlockEntity(worldPosition.offset(offset)) instanceof ChainConveyorBlockEntity otherLift))
 					continue;
 				for (Iterator<ChainConveyorPackage> iterator = entry.getValue()
-					.iterator(); iterator.hasNext();) {
+					.iterator(); iterator.hasNext(); ) {
 					ChainConveyorPackage box = iterator.next();
 					if (box.justFlipped)
 						continue;
@@ -194,8 +195,9 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 			if (stats == null)
 				continue;
 
-			Travelling: for (Iterator<ChainConveyorPackage> iterator = entry.getValue()
-				.iterator(); iterator.hasNext();) {
+			Travelling:
+			for (Iterator<ChainConveyorPackage> iterator = entry.getValue()
+				.iterator(); iterator.hasNext(); ) {
 				ChainConveyorPackage box = iterator.next();
 				box.justFlipped = false;
 
@@ -250,7 +252,8 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 			}
 		}
 
-		Looping: for (Iterator<ChainConveyorPackage> iterator = loopingPackages.iterator(); iterator.hasNext();) {
+		Looping:
+		for (Iterator<ChainConveyorPackage> iterator = loopingPackages.iterator(); iterator.hasNext(); ) {
 			ChainConveyorPackage box = iterator.next();
 			box.justFlipped = false;
 
@@ -312,7 +315,7 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 
 	public void removeInvalidConnections() {
 		boolean changed = false;
-		for (Iterator<BlockPos> iterator = connections.iterator(); iterator.hasNext();) {
+		for (Iterator<BlockPos> iterator = connections.iterator(); iterator.hasNext(); ) {
 			BlockPos next = iterator.next();
 			BlockPos target = worldPosition.offset(next);
 			if (!level.isLoaded(target))
@@ -583,7 +586,7 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 
 	private void spawnDestroyParticles(BlockPos blockPos) {
 		forPointsAlongChains(blockPos, (int) Math.round(Vec3.atLowerCornerOf(blockPos)
-			.length() * 8),
+				.length() * 8),
 			vec -> level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.CHAIN.defaultBlockState()),
 				vec.x, vec.y, vec.z, 0, 0, 0));
 	}
@@ -651,7 +654,7 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 
 	@Override
 	public float propagateRotationTo(KineticBlockEntity target, BlockState stateFrom, BlockState stateTo, BlockPos diff,
-		boolean connectedViaAxes, boolean connectedViaCogs) {
+									 boolean connectedViaAxes, boolean connectedViaCogs) {
 		if (connections.contains(target.getBlockPos()
 			.subtract(worldPosition))) {
 			if (!(target instanceof ChainConveyorBlockEntity))
@@ -773,7 +776,7 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 
 	@Override
 	public ItemRequirement getRequiredItems(BlockState state) {
-		// Uncomment when Schematicannon is able to print these with chains
+		// TODO: Uncomment when Schematicannon is able to print these with chains
 //		int totalCost = 0;
 //		for (BlockPos pos : connections)
 //			totalCost += getChainCost(pos);
@@ -783,7 +786,7 @@ public class ChainConveyorBlockEntity extends KineticBlockEntity implements ITra
 	}
 
 	@Override
-	public void transform(StructureTransform transform) {
+	public void transform(BlockEntity be, StructureTransform transform) {
 		if (connections == null || connections.isEmpty())
 			return;
 

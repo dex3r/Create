@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
+import com.simibubi.create.AllSpriteShifts;
 import com.simibubi.create.content.kinetics.simpleRelays.ShaftBlock;
 
 import net.createmod.catnip.render.CachedBuffers;
@@ -14,6 +15,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 
 public class StandardBogeyRenderer implements BogeyRenderer {
@@ -59,6 +61,9 @@ public class StandardBogeyRenderer implements BogeyRenderer {
 	}
 
 	public static class Large extends StandardBogeyRenderer {
+		public static final float BELT_RADIUS_PX = 5f;
+		public static final float BELT_RADIUS_IN_UV_SPACE = BELT_RADIUS_PX / 16f;
+
 		@Override
 		public void render(CompoundTag bogeyData, float wheelAngle, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay, boolean inContraption) {
 			super.render(bogeyData, wheelAngle, partialTick, poseStack, bufferSource, light, overlay, inContraption);
@@ -81,6 +86,22 @@ public class StandardBogeyRenderer implements BogeyRenderer {
 					.scale(1 - 1 / 512f)
 					.light(light)
 					.overlay(overlay)
+					.renderInto(poseStack, buffer);
+
+			float spriteSize = AllSpriteShifts.BOGEY_BELT.getTarget()
+				.getV1()
+				- AllSpriteShifts.BOGEY_BELT.getTarget()
+				.getV0();
+
+			float scroll = BELT_RADIUS_IN_UV_SPACE * Mth.DEG_TO_RAD * wheelAngle;
+			scroll = scroll - Mth.floor(scroll);
+			scroll = scroll * spriteSize * 0.5f;
+
+			CachedBuffers.partial(AllPartialModels.BOGEY_DRIVE_BELT, Blocks.AIR.defaultBlockState())
+					.scale(1 - 1 / 512f)
+					.light(light)
+					.overlay(overlay)
+					.shiftUVScrolling(AllSpriteShifts.BOGEY_BELT, scroll)
 					.renderInto(poseStack, buffer);
 
 			CachedBuffers.partial(AllPartialModels.BOGEY_PISTON, Blocks.AIR.defaultBlockState())

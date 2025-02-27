@@ -22,10 +22,10 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
-import net.createmod.catnip.math.BlockFace;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.Pair;
+import net.createmod.catnip.math.BlockFace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -275,8 +275,7 @@ public class PumpBlockEntity extends KineticBlockEntity implements PipeAttachmen
 
 		// facing a pump
 		if (PumpBlock.isPump(connectedState) && connectedState.getValue(PumpBlock.FACING)
-				.getAxis() == face.getAxis() && blockEntity instanceof PumpBlockEntity) {
-			PumpBlockEntity pumpBE = (PumpBlockEntity) blockEntity;
+			.getAxis() == face.getAxis() && blockEntity instanceof PumpBlockEntity pumpBE) {
 			return pumpBE.isPullingOnSide(pumpBE.isFront(blockFace.getOppositeFace())) != pull;
 		}
 

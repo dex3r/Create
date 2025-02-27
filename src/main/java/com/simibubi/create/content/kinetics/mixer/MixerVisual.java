@@ -5,11 +5,9 @@ import java.util.function.Consumer;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.RotatingInstance;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
-import com.simibubi.create.content.kinetics.simpleRelays.encased.EncasedCogVisual;
 import com.simibubi.create.foundation.render.AllInstanceTypes;
 
 import dev.engine_room.flywheel.api.instance.Instance;
-import dev.engine_room.flywheel.api.model.Model;
 import dev.engine_room.flywheel.api.visual.DynamicVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.InstanceTypes;
@@ -34,7 +32,7 @@ public class MixerVisual extends SingleAxisRotatingVisual<MechanicalMixerBlockEn
 		mixerHead.setRotationAxis(Direction.Axis.Y);
 
 		mixerPole = instancerProvider().instancer(InstanceTypes.ORIENTED, Models.partial(AllPartialModels.MECHANICAL_MIXER_POLE))
-				.createInstance();
+			.createInstance();
 
 		animate(partialTick);
 	}
@@ -55,15 +53,15 @@ public class MixerVisual extends SingleAxisRotatingVisual<MechanicalMixerBlockEn
 		float speed = mixer.getRenderedHeadRotationSpeed(pt);
 
 		mixerHead.setPosition(getVisualPosition())
-				.nudge(0, -renderedHeadOffset, 0)
-				.setRotationalSpeed(speed * 2 * RotatingInstance.SPEED_MULTIPLIER)
-				.setChanged();
+			.nudge(0, -renderedHeadOffset, 0)
+			.setRotationalSpeed(speed * 2 * RotatingInstance.SPEED_MULTIPLIER)
+			.setChanged();
 	}
 
 	private void transformPole(float renderedHeadOffset) {
 		mixerPole.position(getVisualPosition())
-				.translatePosition(0, -renderedHeadOffset, 0)
-				.setChanged();
+			.translatePosition(0, -renderedHeadOffset, 0)
+			.setChanged();
 	}
 
 	@Override

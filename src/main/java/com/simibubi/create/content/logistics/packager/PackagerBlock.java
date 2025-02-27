@@ -9,6 +9,7 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.block.WrenchableDirectionalBlock;
+import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -52,7 +53,7 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 		super.setPlacedBy(pLevel, pPos, pState, pPlacer, pStack);
 		AdvancementBehaviour.setPlacedBy(pLevel, pPos, pPlacer);
 	}
-	
+
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		Capability<IItemHandler> itemCap = ForgeCapabilities.ITEM_HANDLER;
@@ -70,10 +71,21 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 			}
 		}
 
+		Player player = context.getPlayer();
 		if (preferredFacing == null) {
 			Direction facing = context.getNearestLookingDirection();
-			preferredFacing = context.getPlayer() != null && context.getPlayer()
+			preferredFacing = player != null && player
 				.isShiftKeyDown() ? facing : facing.getOpposite();
+		}
+
+		if (player != null && !(player instanceof FakePlayer)) {
+			if (AllBlocks.PORTABLE_STORAGE_INTERFACE.has(context.getLevel()
+				.getBlockState(context.getClickedPos()
+					.relative(preferredFacing.getOpposite())))) {
+				CreateLang.translate("packager.no_portable_storage")
+					.sendStatus(player);
+				return null;
+			}
 		}
 
 		return super.getStateForPlacement(context).setValue(POWERED, context.getLevel()
@@ -91,6 +103,10 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 		if (AllItems.WRENCH.isIn(itemInHand))
 			return InteractionResult.PASS;
 		if (AllBlocks.FACTORY_GAUGE.isIn(itemInHand))
+			return InteractionResult.PASS;
+		if (AllBlocks.STOCK_LINK.isIn(itemInHand) && !state.getValue(LINKED))
+			return InteractionResult.PASS;
+		if (AllBlocks.PACKAGE_FROGPORT.isIn(itemInHand))
 			return InteractionResult.PASS;
 
 		if (onBlockEntityUse(worldIn, pos, be -> {
@@ -110,10 +126,10 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 						player.setItemInHand(handIn, ItemStack.EMPTY);
 					return InteractionResult.SUCCESS;
 				}
-				return InteractionResult.PASS;
+				return InteractionResult.SUCCESS;
 			}
 			if (be.animationTicks > 0)
-				return InteractionResult.PASS;
+				return InteractionResult.SUCCESS;
 			if (!worldIn.isClientSide()) {
 				player.getInventory()
 					.placeItemBackInInventory(be.heldBox.copy());
@@ -125,7 +141,7 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 		}).consumesAction())
 			return InteractionResult.SUCCESS;
 
-		return InteractionResult.PASS;
+		return InteractionResult.SUCCESS;
 	}
 
 	@Override

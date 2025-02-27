@@ -8,9 +8,8 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import io.github.fabricators_of_create.porting_lib.enchant.CustomEnchantingTableBehaviorEnchantment;
 
 public class PotatoRecoveryEnchantment extends Enchantment implements CustomEnchantingTableBehaviorEnchantment {
-
-	public PotatoRecoveryEnchantment(Rarity p_i46731_1_, EnchantmentCategory p_i46731_2_, EquipmentSlot[] p_i46731_3_) {
-		super(p_i46731_1_, p_i46731_2_, p_i46731_3_);
+	public PotatoRecoveryEnchantment(Rarity rarity, EnchantmentCategory category, EquipmentSlot[] slots) {
+		super(rarity, category, slots);
 	}
 
 	@Override
@@ -21,10 +20,5 @@ public class PotatoRecoveryEnchantment extends Enchantment implements CustomEnch
 	@Override
 	public boolean canApplyAtEnchantingTable(ItemStack stack) {
 		return stack.getItem() instanceof PotatoCannonItem;
-	}
-
-	@Override
-	public boolean canEnchant(ItemStack stack) {
-		return canApplyAtEnchantingTable(stack);
 	}
 }

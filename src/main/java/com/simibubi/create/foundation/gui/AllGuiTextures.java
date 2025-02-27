@@ -157,6 +157,7 @@ public enum AllGuiTextures implements ScreenElement, TextureSheetSegment {
 	FACTORY_GAUGE_RECIPE("factory_gauge", 32, 0, 192, 96),
 	FACTORY_GAUGE_RESTOCK("factory_gauge", 32, 112, 192, 40),
 	FACTORY_GAUGE_BOTTOM("factory_gauge", 32, 176, 200, 64),
+	FACTORY_GAUGE_SET_ITEM("requester", 16, 160, 184, 88),
 
 	STOCK_KEEPER_REQUEST_HEADER("stock_keeper", 0, 0, 256, 36),
 	STOCK_KEEPER_REQUEST_BODY("stock_keeper", 0, 48, 256, 20),

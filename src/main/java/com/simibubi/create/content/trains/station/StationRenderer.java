@@ -28,11 +28,12 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity> {
 
-	public StationRenderer(BlockEntityRendererProvider.Context context) {}
+	public StationRenderer(BlockEntityRendererProvider.Context context) {
+	}
 
 	@Override
 	protected void renderSafe(StationBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-		int light, int overlay) {
+							  int light, int overlay) {
 
 		BlockPos pos = be.getBlockPos();
 		TrackTargetingBehaviour<GlobalStation> target = be.edgePoint;
@@ -43,7 +44,7 @@ public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity>
 
 		BlockState trackState = level.getBlockState(targetPosition);
 		Block block = trackState.getBlock();
-		if (!(block instanceof ITrackBlock))
+		if (!(block instanceof ITrackBlock track))
 			return;
 
 		GlobalStation station = be.getStation();
@@ -65,7 +66,6 @@ public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity>
 
 		renderFlag(AllPartialModels.STATION_ASSEMBLE, be, partialTicks, ms, buffer, light, overlay);
 
-		ITrackBlock track = (ITrackBlock) block;
 		Direction direction = be.assemblyDirection;
 
 		if (be.isVirtual() && be.bogeyLocations == null)
@@ -112,7 +112,7 @@ public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity>
 	}
 
 	public static void renderFlag(PartialModel flag, StationBlockEntity be, float partialTicks, PoseStack ms,
-		MultiBufferSource buffer, int light, int overlay) {
+								  MultiBufferSource buffer, int light, int overlay) {
 		if (!be.resolveFlagAngle())
 			return;
 		SuperByteBuffer flagBB = CachedBuffers.partial(flag, be.getBlockState());
@@ -125,7 +125,7 @@ public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity>
 	}
 
 	public static void transformFlag(Transform<?> flag, StationBlockEntity be, float partialTicks, int yRot,
-		boolean flipped) {
+									 boolean flipped) {
 		float value = be.flag.getValue(partialTicks);
 		float progress = (float) (Math.pow(Math.min(value * 5, 1), 2));
 		if (be.flag.getChaseTarget() > 0 && !be.flag.settled() && progress == 1) {

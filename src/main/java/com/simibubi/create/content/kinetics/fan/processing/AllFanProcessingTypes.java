@@ -9,10 +9,10 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.AllRegistries;
 import com.simibubi.create.AllTags.AllBlockTags;
 import com.simibubi.create.AllTags.AllFluidTags;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.simibubi.create.content.kinetics.fan.processing.HauntingRecipe.HauntingWrapper;
 import com.simibubi.create.content.kinetics.fan.processing.SplashingRecipe.SplashingWrapper;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
@@ -60,7 +60,6 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
 import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
 
 public class AllFanProcessingTypes {
-	public static final NoneType NONE = register("none", new NoneType());
 	public static final BlastingType BLASTING = register("blasting", new BlastingType());
 	public static final HauntingType HAUNTING = register("haunting", new HauntingType());
 	public static final SmokingType SMOKING = register("smoking", new SmokingType());
@@ -70,7 +69,6 @@ public class AllFanProcessingTypes {
 
 	static {
 		Object2ReferenceOpenHashMap<String, FanProcessingType> map = new Object2ReferenceOpenHashMap<>();
-		map.put("NONE", NONE);
 		map.put("BLASTING", BLASTING);
 		map.put("HAUNTING", HAUNTING);
 		map.put("SMOKING", SMOKING);
@@ -80,11 +78,10 @@ public class AllFanProcessingTypes {
 	}
 
 	private static <T extends FanProcessingType> T register(String name, T type) {
-		Registry.register(AllRegistries.FAN_PROCESSING_TYPES, Create.asResource(name), type);
-		return type;
+		return Registry.register(CreateBuiltInRegistries.FAN_PROCESSING_TYPE, Create.asResource(name), type);
 	}
 
-	public static void register() {
+	public static void init() {
 	}
 
 	@Nullable
@@ -92,6 +89,7 @@ public class AllFanProcessingTypes {
 		return LEGACY_NAME_MAP.get(name);
 	}
 
+	@Nullable
 	public static FanProcessingType parseLegacy(String str) {
 		FanProcessingType type = ofLegacyName(str);
 		if (type != null) {

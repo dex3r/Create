@@ -3,10 +3,11 @@ package com.simibubi.create.content.contraptions.bearing;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllContraptionTypes;
 import com.simibubi.create.AllTags.AllBlockTags;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.ContraptionType;
 import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
@@ -48,7 +49,7 @@ public class BearingContraption extends Contraption {
 
 	@Override
 	public ContraptionType getType() {
-		return ContraptionType.BEARING;
+		return AllContraptionTypes.BEARING.get();
 	}
 
 	@Override

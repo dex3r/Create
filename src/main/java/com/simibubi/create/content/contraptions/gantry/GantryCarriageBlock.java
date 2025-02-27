@@ -3,7 +3,6 @@ package com.simibubi.create.content.contraptions.gantry;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
-import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.gantry.GantryShaftBlock;
 import com.simibubi.create.foundation.block.IBE;
 
@@ -54,7 +53,7 @@ public class GantryCarriageBlock extends DirectionalAxisKineticBlock implements 
 	}
 
 	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
+								 BlockHitResult hit) {
 		if (!player.mayBuild() || player.isShiftKeyDown())
 			return InteractionResult.PASS;
 		if (player.getItemInHand(handIn)
@@ -77,7 +76,7 @@ public class GantryCarriageBlock extends DirectionalAxisKineticBlock implements 
 
 	@Override
 	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block p_220069_4_, BlockPos updatePos,
-		boolean p_220069_6_) {
+								boolean p_220069_6_) {
 		if (updatePos.equals(pos.relative(state.getValue(FACING)
 			.getOpposite())) && !canSurvive(state, world, pos))
 			world.destroyBlock(pos, true);
@@ -85,7 +84,7 @@ public class GantryCarriageBlock extends DirectionalAxisKineticBlock implements 
 
 	@Override
 	public BlockState updateShape(BlockState state, Direction direction, BlockState otherState, LevelAccessor world,
-		BlockPos pos, BlockPos p_196271_6_) {
+								  BlockPos pos, BlockPos p_196271_6_) {
 		if (state.getValue(FACING) != direction.getOpposite())
 			return state;
 		return cycleAxisIfNecessary(state, direction, otherState);
@@ -108,9 +107,8 @@ public class GantryCarriageBlock extends DirectionalAxisKineticBlock implements 
 	}
 
 	public static Axis getValidGantryShaftAxis(BlockState state) {
-		if (!(state.getBlock() instanceof GantryCarriageBlock))
+		if (!(state.getBlock() instanceof GantryCarriageBlock block))
 			return Axis.Y;
-		IRotate block = (IRotate) state.getBlock();
 		Axis rotationAxis = block.getRotationAxis(state);
 		Axis facingAxis = state.getValue(FACING)
 			.getAxis();

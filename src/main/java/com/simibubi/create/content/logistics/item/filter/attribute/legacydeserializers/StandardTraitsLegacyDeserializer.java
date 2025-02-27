@@ -1,7 +1,6 @@
 package com.simibubi.create.content.logistics.item.filter.attribute.legacydeserializers;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableBiMap;
 import com.simibubi.create.content.logistics.item.filter.attribute.AllItemAttributeTypes;

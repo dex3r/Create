@@ -1,7 +1,7 @@
 package com.simibubi.create.content.redstone.contact;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.contraptions.elevator.ElevatorContraption;
 
@@ -47,7 +47,7 @@ public class ContactMovementBehaviour implements MovementBehaviour {
 
 		if (AllBlocks.REDSTONE_CONTACT.has(visitedState))
 			world.setBlockAndUpdate(pos, visitedState.setValue(RedstoneContactBlock.POWERED, true));
-		if (AllBlocks.ELEVATOR_CONTACT.has(visitedState) && context.contraption instanceof ElevatorContraption ec) 
+		if (AllBlocks.ELEVATOR_CONTACT.has(visitedState) && context.contraption instanceof ElevatorContraption ec)
 			ec.broadcastFloorData(world, pos);
 
 		context.data.put("lastContact", NbtUtils.writeBlockPos(pos));

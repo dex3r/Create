@@ -16,16 +16,6 @@ import com.simibubi.create.content.contraptions.minecart.CouplingHandler;
 import com.simibubi.create.content.contraptions.minecart.CouplingPhysics;
 import com.simibubi.create.content.contraptions.minecart.MinecartCouplingItem;
 import com.simibubi.create.content.contraptions.minecart.capability.CapabilityMinecartController;
-import com.simibubi.create.content.contraptions.mounted.MinecartContraptionItem;
-import com.simibubi.create.content.equipment.armor.CardboardArmorHandler;
-import com.simibubi.create.content.equipment.armor.DivingBootsItem;
-import com.simibubi.create.content.equipment.armor.DivingHelmetItem;
-import com.simibubi.create.content.equipment.armor.NetheriteDivingHandler;
-import com.simibubi.create.content.equipment.bell.HauntedBellPulser;
-import com.simibubi.create.content.equipment.clipboard.ClipboardValueSettingsHandler;
-import com.simibubi.create.content.equipment.extendoGrip.ExtendoGripItem;
-import com.simibubi.create.content.equipment.potatoCannon.PotatoProjectileTypeManager;
-import com.simibubi.create.content.equipment.symmetryWand.SymmetryHandler;
 import com.simibubi.create.content.equipment.toolbox.ToolboxHandler;
 import com.simibubi.create.content.equipment.wrench.WrenchEventHandler;
 import com.simibubi.create.content.equipment.wrench.WrenchItem;
@@ -47,6 +37,7 @@ import com.simibubi.create.content.redstone.displayLink.ClickToLinkBlockItem;
 import com.simibubi.create.content.redstone.link.LinkHandler;
 import com.simibubi.create.content.redstone.link.controller.LinkedControllerServerHandler;
 import com.simibubi.create.content.trains.entity.CarriageEntityHandler;
+import com.simibubi.create.foundation.data.RuntimeDataGenerator;
 import com.simibubi.create.content.trains.schedule.ScheduleItemEntityInteraction;
 import com.simibubi.create.foundation.block.ItemUseOverrides;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsInputHandler;
@@ -54,7 +45,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.edgeInteraction.Edge
 import com.simibubi.create.foundation.pack.DynamicPack;
 import com.simibubi.create.foundation.pack.DynamicPackSource;
 import com.simibubi.create.foundation.recipe.RecipeFinder;
-import com.simibubi.create.foundation.recipe.RuntimeDataGenerator;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
 import com.simibubi.create.foundation.utility.TickBasedCache;
 import com.simibubi.create.infrastructure.command.AllCommands;
@@ -169,12 +159,7 @@ public class CommonEvents {
 
 	public static void addReloadListeners() {
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(RecipeFinder.LISTENER);
-		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(PotatoProjectileTypeManager.ReloadListener.INSTANCE);
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(BeltHelper.LISTENER);
-	}
-
-	public static void onDatapackSync(ServerPlayer player, boolean joined) {
-		PotatoProjectileTypeManager.syncTo(player);
 	}
 
 	public static void serverStopping(MinecraftServer server) {
@@ -221,10 +206,10 @@ public class CommonEvents {
 	}
 
 	public static void addPackFinders() {
-		ModContainer create = FabricLoader.getInstance().getModContainer(Create.ID)
-				.orElseThrow(() -> new IllegalStateException("Create's ModContainer couldn't be found!"));
-		ResourceLocation packId = Create.asResource("legacy_copper");
-		ResourceManagerHelper.registerBuiltinResourcePack(packId, create, "Create Legacy Copper", ResourcePackActivationType.NORMAL);
+//		ModContainer create = FabricLoader.getInstance().getModContainer(Create.ID)
+//				.orElseThrow(() -> new IllegalStateException("Create's ModContainer couldn't be found!"));
+//		ResourceLocation packId = Create.asResource("legacy_copper");
+//		ResourceManagerHelper.registerBuiltinResourcePack(packId, create, "Create Legacy Copper", ResourcePackActivationType.NORMAL);
 
 		DynamicPack dynamicPack = new DynamicPack("create:dynamic_data", PackType.SERVER_DATA);
 		RuntimeDataGenerator.insertIntoPack(dynamicPack);

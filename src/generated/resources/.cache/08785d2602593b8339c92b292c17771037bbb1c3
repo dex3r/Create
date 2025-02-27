@@ -1,4 +1,4 @@
-// 1.20.1	2025-01-03T17:19:12.8387789	Create's Standard Recipes
+// 1.20.1	2025-02-12T10:49:57.1801346	Create's Standard Recipes
 a8cc4af26f6c7c45a9eef12e92af1452fe042454 data/create/advancements/recipes/combat/crafting/appliances/netherite_backtank.json
 2c2639c7b307ee7c7a4e97e5efebf496788998ad data/create/advancements/recipes/combat/crafting/appliances/netherite_backtank_from_netherite.json
 81dcf0cb1aa99e39bc7d1a386e07cad4cee7d8b9 data/create/advancements/recipes/combat/crafting/appliances/netherite_diving_boots.json
@@ -88,6 +88,7 @@ a85aecdec18802b97c23cf21f57e59bf71bfe690 data/create/advancements/recipes/misc/c
 5eddf6af005751b5628d8bc032d064861c7070e0 data/create/advancements/recipes/misc/crafting/kinetics/elevator_pulley.json
 df55f1a1e16f8a1771b617acfeb22cb5991dbab0 data/create/advancements/recipes/misc/crafting/kinetics/empty_blaze_burner.json
 b0ec44a665cfcc180f5f6a534ef963f431f252d1 data/create/advancements/recipes/misc/crafting/kinetics/encased_chain_drive.json
+dc29c1449cecf840e3c2db0f56884950cad7543c data/create/advancements/recipes/misc/crafting/kinetics/encased_chain_drive_from_zinc.json
 82d47f9b54917def4ed1a73b4d90d98071d30341 data/create/advancements/recipes/misc/crafting/kinetics/encased_fan.json
 aae73187c99468804f57403864846116745d04a0 data/create/advancements/recipes/misc/crafting/kinetics/filter.json
 8b85fc7d791aafac0b330d2a7820c71f80257cce data/create/advancements/recipes/misc/crafting/kinetics/fluid_pipe.json
@@ -335,6 +336,7 @@ bbf63119e3ee54afd49fe2ccfe2c06baaa9f6f41 data/create/recipes/crafting/appliances
 d0bad974476c54315e4b656c67dbf6165d183bbc data/create/recipes/crafting/appliances/tree_fertilizer.json
 5b499ce4eee741d17813f96274333abfa2de99a9 data/create/recipes/crafting/curiosities/brown_toolbox.json
 05eb422734dcdd4c499437ae564e73af5c2e4673 data/create/recipes/crafting/curiosities/cake.json
+b961ce60986ebfed1b0cc0f7053d6e558de13e86 data/create/recipes/crafting/curiosities/item_copying.json
 c3444000827e1f9553818dedec6d3dba4af9dfcd data/create/recipes/crafting/curiosities/minecart_coupling.json
 1323b7c6d30d4e343e010902b7ebbfa2590a4cf5 data/create/recipes/crafting/curiosities/peculiar_bell.json
 e54646485af774e490409e9912a3799f7ac44e01 data/create/recipes/crafting/curiosities/toolbox_dyeing.json
@@ -366,6 +368,7 @@ d26d0a2f3836bdc92f9c43913acac2a93d713976 data/create/recipes/crafting/kinetics/d
 03bf164f5332018731ac6b216b4f50baed3211bd data/create/recipes/crafting/kinetics/elevator_pulley.json
 59278e0e0e75eb1c0f926bc90e19edfda5993261 data/create/recipes/crafting/kinetics/empty_blaze_burner.json
 ca3e3063cdf135426e28d3474b5289ba1c5d9a1d data/create/recipes/crafting/kinetics/encased_chain_drive.json
+1b470cc502f95473da205218bcf7ea1a2354ded2 data/create/recipes/crafting/kinetics/encased_chain_drive_from_zinc.json
 7bb683f2398124b62595d6aa0afbdcde80acc028 data/create/recipes/crafting/kinetics/encased_fan.json
 6c3a8f04e52a82c675c76963701244c78553cd32 data/create/recipes/crafting/kinetics/filter.json
 871fae440820ae1145a86fe2d14a191b81bcd85f data/create/recipes/crafting/kinetics/fluid_pipe.json
@@ -463,7 +466,7 @@ d994ef262b16357984d3ed62f6563d2f37266193 data/create/recipes/crafting/logistics/
 4daadd2c67fe8bbf5594fb50dcf051dad7f9997a data/create/recipes/crafting/logistics/factory_gauge.json
 2fb7722137990b9b9be967a1f766e138678d0573 data/create/recipes/crafting/logistics/factory_gauge_clear.json
 f3ba21e8979256fb78cd618ac4f1082b0b2f9e0c data/create/recipes/crafting/logistics/item_hatch.json
-38c6236d7ac157a75ac5a98ab9b712eabb0c78c4 data/create/recipes/crafting/logistics/packager.json
+7d66c3b5d704f583e32617b37620e749462eaa1f data/create/recipes/crafting/logistics/packager.json
 6b51fa6a5bd1e9dc8e7387269d985cd622ab8ada data/create/recipes/crafting/logistics/packager_from_conversion.json
 6852cb8ff6916981920ab9c987c6e357e9236511 data/create/recipes/crafting/logistics/package_frogport.json
 dd28b63ceb46a1e9071549c4f8ff32f520c667f6 data/create/recipes/crafting/logistics/powered_latch.json

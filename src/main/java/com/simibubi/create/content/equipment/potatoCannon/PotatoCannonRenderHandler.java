@@ -1,7 +1,6 @@
 package com.simibubi.create.content.equipment.potatoCannon;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.AllItems;
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetRenderHandler;
 import com.simibubi.create.foundation.particle.AirParticleData;
 
@@ -26,8 +25,7 @@ public class PotatoCannonRenderHandler extends ShootableGadgetRenderHandler {
 
 	@Override
 	protected boolean appliesTo(ItemStack stack) {
-		return AllItems.POTATO_CANNON.get()
-			.isCannon(stack);
+		return stack.getItem() instanceof PotatoCannonItem;
 	}
 
 	public void beforeShoot(float nextPitch, Vec3 location, Vec3 motion, ItemStack stack) {

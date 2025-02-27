@@ -49,7 +49,7 @@ public class RollerBlockEntity extends SmartBlockEntity {
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		behaviours.add(filtering = new FilteringBehaviour(this, new RollerValueBox(3)));
-		behaviours.add(mode = new ScrollOptionBehaviour<RollingMode>(RollingMode.class,
+		behaviours.add(mode = new ScrollOptionBehaviour<>(RollingMode.class,
 			CreateLang.translateDirect("contraptions.roller_mode"), this, new RollerValueBox(-3)));
 
 		filtering.setLabel(CreateLang.translateDirect("contraptions.mechanical_roller.pave_material"));

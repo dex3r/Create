@@ -9,11 +9,11 @@ import com.simibubi.create.content.fluids.potion.PotionFluid.BottleType;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
 
-import net.createmod.catnip.lang.Lang;
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.data.Pair;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Tuple;
@@ -75,9 +75,8 @@ public class PotionFluidHandler {
 	public static FluidStack getFluidFromPotion(Potion potion, BottleType bottleType, long amount) {
 		if (potion == Potions.WATER && bottleType == BottleType.REGULAR)
 			return new FluidStack(Fluids.WATER, amount);
-		FluidStack fluid = PotionFluid.of(amount, potion);
-		NBTHelper.writeEnum(fluid.getOrCreateTag(), "Bottle", bottleType);
-		return new FluidStack(fluid.getFluid(), fluid.getAmount(), fluid.getTag());
+		FluidStack fluid = PotionFluid.of(amount, potion, bottleType);
+		return fluid;
 	}
 
 	public static BottleType bottleTypeFromItem(Item item) {
@@ -90,13 +89,13 @@ public class PotionFluidHandler {
 
 	public static ItemLike itemFromBottleType(BottleType type) {
 		switch (type) {
-		case LINGERING:
-			return Items.LINGERING_POTION;
-		case SPLASH:
-			return Items.SPLASH_POTION;
-		case REGULAR:
-		default:
-			return Items.POTION;
+			case LINGERING:
+				return Items.LINGERING_POTION;
+			case SPLASH:
+				return Items.SPLASH_POTION;
+			case REGULAR:
+			default:
+				return Items.POTION;
 		}
 	}
 
@@ -123,10 +122,10 @@ public class PotionFluidHandler {
 		List<MobEffectInstance> list = PotionUtils.getAllEffects(fs.getNbt());
 		List<Tuple<String, AttributeModifier>> list1 = Lists.newArrayList();
 		if (list.isEmpty()) {
-            tooltip.add((Component.translatable("effect.none")).withStyle(ChatFormatting.GRAY));
+			tooltip.add((Component.translatable("effect.none")).withStyle(ChatFormatting.GRAY));
 		} else {
 			for (MobEffectInstance effectinstance : list) {
-                MutableComponent textcomponent = Component.translatable(effectinstance.getDescriptionId());
+				MutableComponent textcomponent = Component.translatable(effectinstance.getDescriptionId());
 				MobEffect effect = effectinstance.getEffect();
 				Map<Attribute, AttributeModifier> map = effect.getAttributeModifiers();
 				if (!map.isEmpty()) {
@@ -142,7 +141,7 @@ public class PotionFluidHandler {
 				}
 
 				if (effectinstance.getAmplifier() > 0) {
-                    textcomponent.append(" ")
+					textcomponent.append(" ")
 						.append(Component.translatable("potion.potency." + effectinstance.getAmplifier()).getString());
 				}
 
@@ -158,8 +157,8 @@ public class PotionFluidHandler {
 		}
 
 		if (!list1.isEmpty()) {
-			tooltip.add(Lang.IMMUTABLE_EMPTY);
-            tooltip.add((Component.translatable("potion.whenDrank")).withStyle(ChatFormatting.DARK_PURPLE));
+			tooltip.add(CommonComponents.EMPTY);
+			tooltip.add((Component.translatable("potion.whenDrank")).withStyle(ChatFormatting.DARK_PURPLE));
 
 			for (Tuple<String, AttributeModifier> tuple : list1) {
 				AttributeModifier attributemodifier2 = tuple.getB();
@@ -176,13 +175,13 @@ public class PotionFluidHandler {
 					Object[] args = new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(d1), Component.translatable(tuple.getA())};
 					tooltip.add((Component.translatable("attribute.modifier.plus." + attributemodifier2.getOperation()
 						.toValue(), args))
-							.withStyle(ChatFormatting.BLUE));
+						.withStyle(ChatFormatting.BLUE));
 				} else if (d0 < 0.0D) {
 					d1 = d1 * -1.0D;
 					Object[] args = new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(d1), Component.translatable(tuple.getA())};
 					tooltip.add((Component.translatable("attribute.modifier.take." + attributemodifier2.getOperation()
 						.toValue(), args))
-							.withStyle(ChatFormatting.RED));
+						.withStyle(ChatFormatting.RED));
 				}
 			}
 		}

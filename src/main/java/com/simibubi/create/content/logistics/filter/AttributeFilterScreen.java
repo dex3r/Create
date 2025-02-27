@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPackets;
-import com.simibubi.create.AllRegistries;
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.simibubi.create.content.logistics.filter.AttributeFilterMenu.WhitelistMode;
 import com.simibubi.create.content.logistics.filter.FilterScreenPacket.Option;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
@@ -15,16 +15,15 @@ import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.simibubi.create.foundation.gui.widget.Indicator;
 import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.lang.Lang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
@@ -49,7 +48,6 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 	private Component selectedT = CreateLang.translateDirect(PREFIX + "selected_attributes");
 
 	private IconButton whitelistDis, whitelistCon, blacklist;
-	private Indicator whitelistDisIndicator, whitelistConIndicator, blacklistIndicator;
 	private IconButton add;
 	private IconButton addInverted;
 
@@ -71,34 +69,29 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 		int x = leftPos;
 		int y = topPos;
 
-		whitelistDis = new IconButton(x + 47, y + 61, AllIcons.I_WHITELIST_OR);
+		whitelistDis = new IconButton(x + 38, y + 61, AllIcons.I_WHITELIST_OR);
 		whitelistDis.withCallback(() -> {
 			menu.whitelistMode = WhitelistMode.WHITELIST_DISJ;
 			sendOptionUpdate(Option.WHITELIST);
 		});
 		whitelistDis.setToolTip(allowDisN);
-		whitelistCon = new IconButton(x + 65, y + 61, AllIcons.I_WHITELIST_AND);
+		whitelistCon = new IconButton(x + 56, y + 61, AllIcons.I_WHITELIST_AND);
 		whitelistCon.withCallback(() -> {
 			menu.whitelistMode = WhitelistMode.WHITELIST_CONJ;
 			sendOptionUpdate(Option.WHITELIST2);
 		});
 		whitelistCon.setToolTip(allowConN);
-		blacklist = new IconButton(x + 83, y + 61, AllIcons.I_WHITELIST_NOT);
+		blacklist = new IconButton(x + 74, y + 61, AllIcons.I_WHITELIST_NOT);
 		blacklist.withCallback(() -> {
 			menu.whitelistMode = WhitelistMode.BLACKLIST;
 			sendOptionUpdate(Option.BLACKLIST);
 		});
 		blacklist.setToolTip(denyN);
 
-		whitelistDisIndicator = new Indicator(x + 47, y + 55, Lang.IMMUTABLE_EMPTY);
-		whitelistConIndicator = new Indicator(x + 65, y + 55, Lang.IMMUTABLE_EMPTY);
-		blacklistIndicator = new Indicator(x + 83, y + 55, Lang.IMMUTABLE_EMPTY);
+		addRenderableWidgets(blacklist, whitelistCon, whitelistDis);
 
-		addRenderableWidgets(blacklist, whitelistCon, whitelistDis, blacklistIndicator, whitelistConIndicator,
-			whitelistDisIndicator);
-
-		addRenderableWidget(add = new IconButton(x + 182, y + 23, AllIcons.I_ADD));
-		addRenderableWidget(addInverted = new IconButton(x + 200, y + 23, AllIcons.I_ADD_INVERTED_ATTRIBUTE));
+		addRenderableWidget(add = new IconButton(x + 182, y + 26, AllIcons.I_ADD));
+		addRenderableWidget(addInverted = new IconButton(x + 200, y + 26, AllIcons.I_ADD_INVERTED_ATTRIBUTE));
 		add.withCallback(() -> {
 			handleAddedAttibute(false);
 		});
@@ -110,10 +103,10 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 
 		handleIndicators();
 
-		attributeSelectorLabel = new Label(x + 43, y + 28, Lang.IMMUTABLE_EMPTY).colored(0xF3EBDE)
+		attributeSelectorLabel = new Label(x + 43, y + 31, CommonComponents.EMPTY).colored(0xF3EBDE)
 			.withShadow();
-		attributeSelector = new SelectionScrollInput(x + 39, y + 23, 137, 18);
-		attributeSelector.forOptions(Arrays.asList(Lang.IMMUTABLE_EMPTY));
+		attributeSelector = new SelectionScrollInput(x + 39, y + 26, 137, 18);
+		attributeSelector.forOptions(Arrays.asList(CommonComponents.EMPTY));
 		attributeSelector.removeCallback();
 		referenceItemChanged(menu.ghostInventory.getStackInSlot(0));
 
@@ -124,11 +117,11 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 		selectedAttributes.add((menu.selectedAttributes.isEmpty() ? noSelectedT : selectedT).plainCopy()
 			.withStyle(ChatFormatting.YELLOW));
 		menu.selectedAttributes.forEach(at -> {
-            selectedAttributes.add(Component.literal("- ")
-                .append(at.getFirst()
-                    .format(at.getSecond()))
-                .withStyle(ChatFormatting.GRAY));
-        });
+			selectedAttributes.add(Component.literal("- ")
+				.append(at.getFirst()
+					.format(at.getSecond()))
+				.withStyle(ChatFormatting.GRAY));
+		});
 	}
 
 	private void referenceItemChanged(ItemStack stack) {
@@ -153,7 +146,7 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 			.plainCopy()
 			.append("..."));
 		attributesOfItem.clear();
-		for (ItemAttributeType type : AllRegistries.ITEM_ATTRIBUTE_TYPES)
+		for (ItemAttributeType type : CreateBuiltInRegistries.ITEM_ATTRIBUTE_TYPE)
 			attributesOfItem.addAll(type.getAllAttributes(stack, minecraft.level));
 		List<Component> options = attributesOfItem.stream()
 			.map(a -> a.format(false))
@@ -186,7 +179,7 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 		PoseStack matrixStack = graphics.pose();
 		matrixStack.pushPose();
 		matrixStack.translate(0, 0, 150);
-		graphics.renderItemDecorations(font, stack, leftPos + 22, topPos + 59,
+		graphics.renderItemDecorations(font, stack, leftPos + 16, topPos + 62,
 			String.valueOf(selectedAttributes.size() - 1));
 		matrixStack.popPose();
 
@@ -223,11 +216,6 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 		return Arrays.asList(denyDESC.plainCopy(), allowConDESC.plainCopy(), allowDisDESC.plainCopy());
 	}
 
-	@Override
-	protected List<Indicator> getIndicators() {
-		return Arrays.asList(blacklistIndicator, whitelistConIndicator, whitelistDisIndicator);
-	}
-
 	protected boolean handleAddedAttibute(boolean inverted) {
 		int index = attributeSelector.getState();
 		if (index >= attributesOfItem.size())
@@ -242,7 +230,7 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 		if (menu.selectedAttributes.size() == 1)
 			selectedAttributes.set(0, selectedT.plainCopy()
 				.withStyle(ChatFormatting.YELLOW));
-        selectedAttributes.add(Component.literal("- ").append(itemAttribute.format(inverted))
+		selectedAttributes.add(Component.literal("- ").append(itemAttribute.format(inverted))
 			.withStyle(ChatFormatting.GRAY));
 		return true;
 	}
@@ -267,17 +255,6 @@ public class AttributeFilterScreen extends AbstractFilterScreen<AttributeFilterM
 		if (button == whitelistDis)
 			return menu.whitelistMode != WhitelistMode.WHITELIST_DISJ;
 		return true;
-	}
-
-	@Override
-	protected boolean isIndicatorOn(Indicator indicator) {
-		if (indicator == blacklistIndicator)
-			return menu.whitelistMode == WhitelistMode.BLACKLIST;
-		if (indicator == whitelistConIndicator)
-			return menu.whitelistMode == WhitelistMode.WHITELIST_CONJ;
-		if (indicator == whitelistDisIndicator)
-			return menu.whitelistMode == WhitelistMode.WHITELIST_DISJ;
-		return false;
 	}
 
 }

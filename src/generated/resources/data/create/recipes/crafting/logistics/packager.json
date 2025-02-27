@@ -7,12 +7,15 @@
     },
     "C": {
       "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
     }
   },
   "pattern": [
     " C ",
     "CAC",
-    " C "
+    "RCR"
   ],
   "result": {
     "item": "create:packager"

@@ -95,5 +95,4 @@ public class ValueSettingsInputHandler {
 	public static boolean canInteract(Player player) {
 		return player != null && !player.isSpectator() && !player.isShiftKeyDown() && !AdventureUtil.isAdventure(player);
 	}
-
 }

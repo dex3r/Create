@@ -18,8 +18,8 @@ import com.simibubi.create.content.equipment.symmetryWand.mirror.SymmetryMirror;
 import com.simibubi.create.foundation.utility.BlockHelper;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.createmod.catnip.gui.ScreenOpener;
 import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.gui.ScreenOpener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -146,13 +146,13 @@ public class SymmetryWandItem extends Item {
 				playerIn.getCooldowns()
 					.addCooldown(this, 5);
 			}
-			return new InteractionResultHolder<ItemStack>(InteractionResult.SUCCESS, wand);
+			return new InteractionResultHolder<>(InteractionResult.SUCCESS, wand);
 		}
 
 		// No Shift -> Clear Mirror
 		wand.getTag()
 			.putBoolean(ENABLE, false);
-		return new InteractionResultHolder<ItemStack>(InteractionResult.SUCCESS, wand);
+		return new InteractionResultHolder<>(InteractionResult.SUCCESS, wand);
 	}
 
 	@Environment(EnvType.CLIENT)

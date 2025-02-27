@@ -7,7 +7,6 @@ import com.simibubi.create.content.equipment.clipboard.ClipboardOverrides.Clipbo
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.element.ElementLink;
@@ -17,8 +16,8 @@ import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -75,7 +74,7 @@ public class DisplayScenes {
 
 		Vec3 target = util.vector().of(3.5, 2.75, 3.25);
 		scene.overlay().showControls(target, Pointing.RIGHT, 60).withItem(AllBlocks.DISPLAY_LINK.asStack())
-				.rightClick();
+			.rightClick();
 		scene.idle(6);
 		scene.overlay().chaseBoundingBoxOutline(PonderPalette.OUTPUT, link, new AABB(board).expandTowards(-2, -1, 0)
 			.deflate(0, 0, 3 / 16f), 60);
@@ -139,7 +138,7 @@ public class DisplayScenes {
 
 		scene.world().hideSection(depot, Direction.SOUTH);
 		scene.idle(5);
-		scene.world().setDisplayBoardText(board, 1, Lang.IMMUTABLE_EMPTY);
+		scene.world().setDisplayBoardText(board, 1, CommonComponents.EMPTY);
 		scene.world().flashDisplayLink(linkPos);
 		scene.idle(5);
 		ElementLink<WorldSectionElement> dirtElement = scene.world().showIndependentSection(dirt, Direction.SOUTH);
@@ -159,8 +158,8 @@ public class DisplayScenes {
 		ElementLink<WorldSectionElement> stressElement = scene.world().showIndependentSection(stresso, Direction.SOUTH);
 		scene.world().moveSection(stressElement, util.vector().of(0, -2, 0), 0);
 		scene.idle(10);
-        scene.world().setDisplayBoardText(board, 1,
-										  Component.literal(1024 + " ").append(CreateLang.translateDirect("generic.unit.stress")));
+		scene.world().setDisplayBoardText(board, 1,
+			Component.literal(1024 + " ").append(CreateLang.translateDirect("generic.unit.stress")));
 		scene.world().flashDisplayLink(linkPos);
 		scene.idle(40);
 		scene.world().hideIndependentSection(stressElement, Direction.SOUTH);
@@ -169,9 +168,9 @@ public class DisplayScenes {
 		ElementLink<WorldSectionElement> chestElement = scene.world().showIndependentSection(content, Direction.SOUTH);
 		scene.world().moveSection(chestElement, util.vector().of(0, -3, 0), 0);
 		scene.idle(10);
-        scene.world().setDisplayBoardText(board, 1,
-										  Component.literal(418 + " ").append(new ItemStack(Items.DEEPSLATE).getHoverName()));
-        scene.world().setDisplayBoardText(board, 2, Component.literal(14 + " ").append(AllBlocks.COGWHEEL.asStack()
+		scene.world().setDisplayBoardText(board, 1,
+			Component.literal(418 + " ").append(new ItemStack(Items.DEEPSLATE).getHoverName()));
+		scene.world().setDisplayBoardText(board, 2, Component.literal(14 + " ").append(AllBlocks.COGWHEEL.asStack()
 			.getHoverName()));
 		scene.world().flashDisplayLink(linkPos);
 		scene.idle(40);
@@ -188,9 +187,9 @@ public class DisplayScenes {
 		ElementLink<WorldSectionElement> cuckooElement = scene.world().showIndependentSection(cuckoo, Direction.SOUTH);
 		scene.world().moveSection(cuckooElement, util.vector().of(0, -1, 0), 0);
 		scene.idle(10);
-        scene.world().setDisplayBoardText(board, 1,
-										  Component.literal("6:00 ").append(CreateLang.translateDirect("generic.daytime.pm")));
-		scene.world().setDisplayBoardText(board, 2, Lang.IMMUTABLE_EMPTY);
+		scene.world().setDisplayBoardText(board, 1,
+			Component.literal("6:00 ").append(CreateLang.translateDirect("generic.daytime.pm")));
+		scene.world().setDisplayBoardText(board, 2, CommonComponents.EMPTY);
 		scene.world().flashDisplayLink(linkPos);
 		scene.idle(90);
 
@@ -289,7 +288,7 @@ public class DisplayScenes {
 		scene.overlay().showControls(target, Pointing.RIGHT, 40).withItem(clipboard)
 			.rightClick();
 		scene.idle(6);
-        scene.world().setDisplayBoardText(board, 0, Component.literal("Create"));
+		scene.world().setDisplayBoardText(board, 0, Component.literal("Create"));
 		scene.idle(25);
 
 		scene.overlay().showText(50)
@@ -338,7 +337,7 @@ public class DisplayScenes {
 		scene.idle(50);
 
 		scene.overlay().showControls(target, Pointing.RIGHT, 40).withItem(new ItemStack(Items.PINK_DYE))
-				.rightClick();
+			.rightClick();
 		scene.idle(6);
 		scene.world().dyeDisplayBoard(board, 0, DyeColor.PINK);
 		scene.idle(25);
@@ -351,14 +350,14 @@ public class DisplayScenes {
 		scene.idle(25);
 
 		scene.overlay().showControls(target.add(0, -.5f, 0), Pointing.RIGHT, 40).withItem(new ItemStack(Items.LIME_DYE))
-				.rightClick();
+			.rightClick();
 		scene.idle(6);
 		scene.world().dyeDisplayBoard(board, 1, DyeColor.LIME);
 		scene.idle(55);
 
 		scene.overlay().showControls(target, Pointing.RIGHT, 40).rightClick();
 		scene.idle(6);
-		scene.world().setDisplayBoardText(board, 0, Lang.IMMUTABLE_EMPTY);
+		scene.world().setDisplayBoardText(board, 0, CommonComponents.EMPTY);
 		scene.idle(25);
 
 		scene.overlay().showText(70)
@@ -451,7 +450,7 @@ public class DisplayScenes {
 		scene.world().moveSection(redstoneBlock, util.vector().of(-1, 0, 1), 0);
 		scene.idle(10);
 		scene.world().flashDisplayLink(linkPos);
-		scene.world().setDisplayBoardText(board, 1, Lang.IMMUTABLE_EMPTY);
+		scene.world().setDisplayBoardText(board, 1, CommonComponents.EMPTY);
 		scene.idle(25);
 
 		scene.overlay().showOutlineWithText(depot, 80)

@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.simibubi.create.foundation.item.CustomUseEffectsItem;
 
+import net.createmod.catnip.data.TriState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,9 +31,9 @@ public abstract class CustomItemUseEffectsMixin extends Entity {
 		ItemStack using = getUseItem();
 		Item item = using.getItem();
 		if (item instanceof CustomUseEffectsItem handler) {
-			Boolean result = handler.shouldTriggerUseEffects(using, (LivingEntity) (Object) this);
-			if (result != null) {
-				cir.setReturnValue(result);
+			TriState result = handler.shouldTriggerUseEffects(using, (LivingEntity) (Object) this);
+			if (result != TriState.DEFAULT) {
+				cir.setReturnValue(result.getValue());
 			}
 		}
 	}

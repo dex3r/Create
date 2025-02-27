@@ -4,6 +4,7 @@
 		"1": "create:block/roller_metal",
 		"particle": "create:block/roller_casing"
 	},
+  "render_type": "minecraft:cutout",
 	"elements": [
 		{
 			"name": "Axle left",

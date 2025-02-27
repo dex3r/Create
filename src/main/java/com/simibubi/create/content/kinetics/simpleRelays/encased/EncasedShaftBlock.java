@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.decoration.encasing.EncasedBlock;
 import com.simibubi.create.content.kinetics.base.AbstractEncasedShaftBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -32,7 +32,7 @@ import net.minecraft.world.phys.HitResult;
 import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 
 public class EncasedShaftBlock extends AbstractEncasedShaftBlock
-	implements IBE<KineticBlockEntity>, ISpecialBlockItemRequirement, BlockPickInteractionAware, EncasedBlock {
+	implements IBE<KineticBlockEntity>, SpecialBlockItemRequirement, BlockPickInteractionAware, EncasedBlock {
 
 	private final Supplier<Block> casing;
 

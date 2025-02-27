@@ -3,11 +3,9 @@ package com.simibubi.create.content.logistics.item.filter.attribute;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
-import org.jetbrains.annotations.ApiStatus;
-
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.AllRegistries;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import com.simibubi.create.content.logistics.item.filter.attribute.attributes.AddedByAttribute;
 import com.simibubi.create.content.logistics.item.filter.attribute.attributes.BookAuthorAttribute;
@@ -69,7 +67,7 @@ public class AllItemAttributeTypes {
 		BLASTABLE = singleton("blastable", (s, w) -> testRecipe(s, w, RecipeType.BLASTING)),
 		COMPOSTABLE = singleton("compostable", s -> ComposterBlock.COMPOSTABLES.containsKey(s.getItem())),
 
-		IN_TAG = register("in_tag", new InTagAttribute.Type()),
+	IN_TAG = register("in_tag", new InTagAttribute.Type()),
 		IN_ITEM_GROUP = register("in_item_group", new InItemGroupAttribute.Type()),
 		ADDED_BY = register("added_by", new AddedByAttribute.Type()),
 		HAS_ENCHANT = register("has_enchant", new EnchantAttribute.Type()),
@@ -80,7 +78,7 @@ public class AllItemAttributeTypes {
 		BOOK_AUTHOR = register("book_author", new BookAuthorAttribute.Type()),
 		BOOK_COPY = register("book_copy", new BookCopyAttribute.Type()),
 
-		ASTRAL_AMULET = register("astral_amulet", new AstralSorceryAmuletAttribute.Type()),
+	ASTRAL_AMULET = register("astral_amulet", new AstralSorceryAmuletAttribute.Type()),
 		ASTRAL_ATTUNMENT = register("astral_attunment", new AstralSorceryAttunementAttribute.Type()),
 		ASTRAL_CRYSTAL = register("astral_crystal", new AstralSorceryCrystalAttribute.Type()),
 		ASTRAL_PERK_GEM = register("astral_perk_gem", new AstralSorceryPerkGemAttribute.Type());
@@ -92,7 +90,6 @@ public class AllItemAttributeTypes {
 			.isPresent();
 	}
 
-	// TODO - Move away from stream()
 	private static boolean maxEnchanted(ItemStack s) {
 		return EnchantmentHelper.getEnchantments(s)
 			.entrySet()
@@ -110,12 +107,10 @@ public class AllItemAttributeTypes {
 	}
 
 	private static ItemAttributeType register(String id, ItemAttributeType type) {
-		Registry.register(AllRegistries.ITEM_ATTRIBUTE_TYPES, Create.asResource(id), type);
-		return type;
+		return Registry.register(CreateBuiltInRegistries.ITEM_ATTRIBUTE_TYPE, Create.asResource(id), type);
 	}
 
-	@ApiStatus.Internal
-	public static void register() {
+	public static void init() {
 		// Register legacy deserializers to maintain backwards compatability
 		AllItemAttributeLegacyDeserializers.register();
 	}

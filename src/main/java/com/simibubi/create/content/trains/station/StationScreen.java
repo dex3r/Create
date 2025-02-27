@@ -23,14 +23,14 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
-import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.animation.LerpedFloat;
-import net.createmod.catnip.lang.Lang;
+import net.createmod.catnip.data.Pair;
+import net.createmod.catnip.gui.UIRenderHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -120,7 +120,7 @@ public class StationScreen extends AbstractStationScreen {
 		addRenderableWidget(colorTypeScroll);
 
 		onTextChanged = s -> trainNameBox.setX(nameBoxX(s, trainNameBox));
-		trainNameBox = new EditBox(font, x + 23, y + 47, background.getWidth() - 75, 10, Lang.IMMUTABLE_EMPTY);
+		trainNameBox = new EditBox(font, x + 23, y + 47, background.getWidth() - 75, 10, CommonComponents.EMPTY);
 		trainNameBox.setBordered(false);
 		trainNameBox.setMaxLength(35);
 		trainNameBox.setTextColor(0xC6C6C6);
@@ -161,7 +161,7 @@ public class StationScreen extends AbstractStationScreen {
 
 		updateAssemblyTooltip(blockEntity.edgePoint.isOnCurve() ? "no_assembly_curve"
 			: !blockEntity.edgePoint.isOrthogonal() ? "no_assembly_diagonal"
-				: trainPresent() && !blockEntity.trainCanDisassemble ? "train_not_aligned" : null);
+			: trainPresent() && !blockEntity.trainCanDisassemble ? "train_not_aligned" : null);
 	}
 
 	private void tickTrainDisplay() {
@@ -263,7 +263,7 @@ public class StationScreen extends AbstractStationScreen {
 			newTrainButton.setToolTip(CreateLang.translateDirect("station.create_train"));
 			return;
 		}
-		for (IconButton ib : new IconButton[] { disassembleTrainButton, newTrainButton }) {
+		for (IconButton ib : new IconButton[]{disassembleTrainButton, newTrainButton}) {
 			List<Component> toolTip = ib.getToolTip();
 			toolTip.clear();
 			toolTip.add(CreateLang.translateDirect("station." + key)

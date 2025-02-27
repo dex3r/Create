@@ -25,7 +25,7 @@ public class RotationIndicatorParticleData
 	implements ParticleOptions, ICustomParticleDataWithSprite<RotationIndicatorParticleData> {
 
 	// TODO 1.16 make this unnecessary
-	public static final PrimitiveCodec<Character> CHAR = new PrimitiveCodec<Character>() {
+	public static final PrimitiveCodec<Character> CHAR = new PrimitiveCodec<>() {
 		@Override
 		public <T> DataResult<Character> read(final DynamicOps<T> ops, final T input) {
 			return ops.getNumberValue(input)
@@ -45,7 +45,7 @@ public class RotationIndicatorParticleData
 
 	public static final Codec<RotationIndicatorParticleData> CODEC = RecordCodecBuilder.create(i -> i
 		.group(Codec.INT.fieldOf("color")
-			.forGetter(p -> p.color),
+				.forGetter(p -> p.color),
 			Codec.FLOAT.fieldOf("speed")
 				.forGetter(p -> p.speed),
 			Codec.FLOAT.fieldOf("radius1")
@@ -59,9 +59,9 @@ public class RotationIndicatorParticleData
 		.apply(i, RotationIndicatorParticleData::new));
 
 	public static final ParticleOptions.Deserializer<RotationIndicatorParticleData> DESERIALIZER =
-		new ParticleOptions.Deserializer<RotationIndicatorParticleData>() {
+		new ParticleOptions.Deserializer<>() {
 			public RotationIndicatorParticleData fromCommand(ParticleType<RotationIndicatorParticleData> particleTypeIn,
-				StringReader reader) throws CommandSyntaxException {
+															 StringReader reader) throws CommandSyntaxException {
 				reader.expect(' ');
 				int color = reader.readInt();
 				reader.expect(' ');
@@ -78,7 +78,7 @@ public class RotationIndicatorParticleData
 			}
 
 			public RotationIndicatorParticleData fromNetwork(ParticleType<RotationIndicatorParticleData> particleTypeIn,
-				FriendlyByteBuf buffer) {
+															 FriendlyByteBuf buffer) {
 				return new RotationIndicatorParticleData(buffer.readInt(), buffer.readFloat(), buffer.readFloat(),
 					buffer.readFloat(), buffer.readInt(), buffer.readChar());
 			}
@@ -92,7 +92,7 @@ public class RotationIndicatorParticleData
 	final char axis;
 
 	public RotationIndicatorParticleData(int color, float speed, float radius1, float radius2, int lifeSpan,
-		char axis) {
+										 char axis) {
 		this.color = color;
 		this.speed = speed;
 		this.radius1 = radius1;

@@ -1,5 +1,8 @@
 package com.simibubi.create.content.trains.schedule;
 
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllItems;
@@ -19,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 
@@ -31,7 +35,7 @@ public class ScheduleItemEntityInteraction {
 			return InteractionResult.PASS;
 
 		Entity rootVehicle = entity.getRootVehicle();
-		if (!(rootVehicle instanceof CarriageContraptionEntity))
+		if (!(rootVehicle instanceof CarriageContraptionEntity cce))
 			return InteractionResult.PASS;
 		if (!(entity instanceof LivingEntity living))
 			return InteractionResult.PASS;
@@ -40,7 +44,7 @@ public class ScheduleItemEntityInteraction {
 			return InteractionResult.PASS;
 
 		ItemStack itemStack = player.getItemInHand(hand);
-		if (itemStack.getItem()instanceof ScheduleItem si) {
+		if (itemStack.getItem() instanceof ScheduleItem si) {
 			InteractionResult result = si.handScheduleTo(itemStack, player, living, hand);
 			if (result.consumesAction()) {
 				player.getCooldowns()
@@ -52,7 +56,6 @@ public class ScheduleItemEntityInteraction {
 		if (hand == InteractionHand.OFF_HAND)
 			return InteractionResult.PASS;
 
-		CarriageContraptionEntity cce = (CarriageContraptionEntity) rootVehicle;
 		Contraption contraption = cce.getContraption();
 		if (!(contraption instanceof CarriageContraption cc))
 			return InteractionResult.PASS;

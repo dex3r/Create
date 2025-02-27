@@ -388,8 +388,7 @@ public class BearingScenes {
 		Vec3 blockSurface = util.vector().blockSurface(bearingPos, Direction.NORTH)
 			.add(0, 2 / 16f, 0);
 		scene.overlay().showFilterSlotInput(blockSurface, Direction.NORTH, 60);
-		scene.overlay().showControls(blockSurface, Pointing.DOWN, 60).scroll()
-			.withItem(AllItems.WRENCH.asStack());
+		scene.overlay().showControls(blockSurface, Pointing.DOWN, 60).rightClick();
 		scene.idle(10);
 		scene.overlay().showText(60)
 			.pointAt(blockSurface)

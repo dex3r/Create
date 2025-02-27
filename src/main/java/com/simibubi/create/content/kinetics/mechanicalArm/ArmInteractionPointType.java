@@ -2,19 +2,18 @@ package com.simibubi.create.content.kinetics.mechanicalArm;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import com.simibubi.create.AllRegistries;
+import org.jetbrains.annotations.UnmodifiableView;
+
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-
-import org.jetbrains.annotations.UnmodifiableView;
 
 public abstract class ArmInteractionPointType {
 	private static List<ArmInteractionPointType> sortedTypes = null;
@@ -30,9 +29,7 @@ public abstract class ArmInteractionPointType {
 		if (sortedTypes == null) {
 			sortedTypes = new ReferenceArrayList<>();
 
-			for (Entry<?, ArmInteractionPointType> set : AllRegistries.ARM_INTERACTION_POINT_TYPES.entrySet())
-				sortedTypes.add(set.getValue());
-
+			CreateBuiltInRegistries.ARM_INTERACTION_POINT_TYPE.forEach(sortedTypes::add);
 			sortedTypes.sort((t1, t2) -> t2.getPriority() - t1.getPriority());
 
 			sortedTypesView = Collections.unmodifiableList(sortedTypes);

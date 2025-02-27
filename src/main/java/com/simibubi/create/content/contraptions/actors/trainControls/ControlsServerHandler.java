@@ -24,7 +24,7 @@ public class ControlsServerHandler {
 	public static void tick(LevelAccessor world) {
 		Map<UUID, ControlsContext> map = receivedInputs.get(world);
 		for (Iterator<Entry<UUID, ControlsContext>> iterator = map.entrySet()
-			.iterator(); iterator.hasNext();) {
+			.iterator(); iterator.hasNext(); ) {
 
 			Entry<UUID, ControlsContext> entry = iterator.next();
 			ControlsContext ctx = entry.getValue();
@@ -35,7 +35,7 @@ public class ControlsServerHandler {
 				continue;
 			}
 
-			for (Iterator<ManuallyPressedKey> entryIterator = list.iterator(); entryIterator.hasNext();) {
+			for (Iterator<ManuallyPressedKey> entryIterator = list.iterator(); entryIterator.hasNext(); ) {
 				ManuallyPressedKey pressedKey = entryIterator.next();
 				pressedKey.decrement();
 				if (!pressedKey.isAlive())
@@ -61,7 +61,7 @@ public class ControlsServerHandler {
 	}
 
 	public static void receivePressed(LevelAccessor world, AbstractContraptionEntity entity, BlockPos controlsPos,
-		UUID uniqueID, Collection<Integer> collect, boolean pressed) {
+									  UUID uniqueID, Collection<Integer> collect, boolean pressed) {
 		Map<UUID, ControlsContext> map = receivedInputs.get(world);
 
 		if (map.containsKey(uniqueID) && map.get(uniqueID).entity != entity)
@@ -70,9 +70,9 @@ public class ControlsServerHandler {
 		ControlsContext ctx = map.computeIfAbsent(uniqueID, $ -> new ControlsContext(entity, controlsPos));
 		Collection<ManuallyPressedKey> list = ctx.keys;
 
-		WithNext: for (Integer activated : collect) {
-			for (Iterator<ManuallyPressedKey> iterator = list.iterator(); iterator.hasNext();) {
-				ManuallyPressedKey entry = iterator.next();
+		WithNext:
+		for (Integer activated : collect) {
+			for (ManuallyPressedKey entry : list) {
 				Integer inputType = entry.getSecond();
 				if (inputType.equals(activated)) {
 					if (!pressed)

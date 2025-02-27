@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class FrogportVisual extends AbstractBlockEntityVisual<FrogportBlockEntity> implements SimpleDynamicVisual {
 	private final TransformedInstance body;
-	private final TransformedInstance head;
+	private TransformedInstance head;
 	private final TransformedInstance tongue;
 	private final TransformedInstance rig;
 	private final TransformedInstance box;
@@ -32,6 +32,7 @@ public class FrogportVisual extends AbstractBlockEntityVisual<FrogportBlockEntit
 	private float lastHeadPitch = Float.NaN;
 	private float lastTonguePitch = Float.NaN;
 	private float lastTongueLength = Float.NaN;
+	private boolean lastGoggles = false;
 
 	public FrogportVisual(VisualizationContext ctx, FrogportBlockEntity blockEntity, float partialTick) {
 		super(ctx, blockEntity, partialTick);
@@ -68,6 +69,8 @@ public class FrogportVisual extends AbstractBlockEntityVisual<FrogportBlockEntit
 	}
 
 	private void animate(float partialTicks) {
+		updateGoggles();
+		
 		float yaw = blockEntity.getYaw();
 
 		float headPitch = 80;
@@ -167,6 +170,28 @@ if (yaw != lastYaw) {
 
 			lastTonguePitch = tonguePitch;
 			lastTongueLength = tongueLength;
+		}
+	}
+
+	public void updateGoggles() {
+		if (blockEntity.goggles && !lastGoggles) {
+			head.delete();
+			head = instancerProvider()
+				.instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.FROGPORT_HEAD_GOGGLES))
+				.createInstance();
+			lastHeadPitch = -1;
+			updateLight(0);
+			lastGoggles = true;
+		}
+		
+		if (!blockEntity.goggles && lastGoggles) {
+			head.delete();
+			head = instancerProvider()
+				.instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.FROGPORT_HEAD))
+				.createInstance();
+			lastHeadPitch = -1;
+			updateLight(0);
+			lastGoggles = false;
 		}
 	}
 

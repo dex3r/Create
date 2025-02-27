@@ -59,7 +59,7 @@ public class ChainConveyorPackage {
 
 		public void setBE(ChainConveyorBlockEntity ccbe) {
 			if (beReference == null || beReference.get() != ccbe)
-				beReference = new WeakReference<ChainConveyorBlockEntity>(ccbe);
+				beReference = new WeakReference<>(ccbe);
 		}
 
 	}

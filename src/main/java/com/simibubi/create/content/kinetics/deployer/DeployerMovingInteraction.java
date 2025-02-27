@@ -5,9 +5,9 @@ import java.util.UUID;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import com.simibubi.create.AllItems;
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
-import com.simibubi.create.content.contraptions.behaviour.MovingInteractionBehaviour;
 import com.simibubi.create.content.contraptions.mounted.MountedContraption;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 

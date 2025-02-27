@@ -4,7 +4,6 @@ import org.apache.commons.lang3.mutable.MutableObject;
 
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour.TransportedResult;
-import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
@@ -12,7 +11,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 
@@ -42,12 +40,8 @@ public class ItemNameDisplaySource extends SingleLineDisplaySource {
 			});
 
 			ItemStack stack = stackHolder.getValue();
-			if (stack != null && !stack.isEmpty()) {
-				Component hoverName = stack.getHoverName();
-				if (PackageItem.isPackage(stack))
-					hoverName = Component.literal(PackageItem.getAddress(stack));
-				combined = combined.append(hoverName);
-			}
+			if (stack != null && !stack.isEmpty())
+				combined = combined.append(stack.getHoverName());
 		}
 
 		return combined;

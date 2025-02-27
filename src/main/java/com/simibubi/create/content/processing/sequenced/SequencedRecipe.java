@@ -47,9 +47,7 @@ public class SequencedRecipe<T extends ProcessingRecipe<?>> {
 		ResourceLocation parentId = parent.getId();
 		Recipe<?> recipe = RecipeManager.fromJson(
 			new ResourceLocation(parentId.getNamespace(), parentId.getPath() + "_step_" + index), json);
-		if (recipe instanceof ProcessingRecipe<?> && recipe instanceof IAssemblyRecipe) {
-			ProcessingRecipe<?> processingRecipe = (ProcessingRecipe<?>) recipe;
-			IAssemblyRecipe assemblyRecipe = (IAssemblyRecipe) recipe;
+		if (recipe instanceof ProcessingRecipe<?> processingRecipe && recipe instanceof IAssemblyRecipe assemblyRecipe) {
 			if (assemblyRecipe.supportsAssembly()) {
 				Ingredient transit = Ingredient.of(parent.getTransitionalItem());
 

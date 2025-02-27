@@ -6,8 +6,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.contraptions.bearing.WindmillBearingBlockEntity.RotationDirection;
-import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.IRotate;
@@ -19,8 +19,8 @@ import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOp
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -63,7 +63,8 @@ public class SteamEngineBlockEntity extends SmartBlockEntity implements IHaveGog
 		registerAwardables(behaviours, AllAdvancements.STEAM_ENGINE);
 	}
 
-	private void onDirectionChanged() {}
+	private void onDirectionChanged() {
+	}
 
 	@Override
 	public void tick() {
@@ -91,7 +92,7 @@ public class SteamEngineBlockEntity extends SmartBlockEntity implements IHaveGog
 		boolean verticalTarget = false;
 		BlockState shaftState = shaft.getBlockState();
 		Axis targetAxis = Axis.X;
-		if (shaftState.getBlock()instanceof IRotate ir)
+		if (shaftState.getBlock() instanceof IRotate ir)
 			targetAxis = ir.getRotationAxis(shaftState);
 		verticalTarget = targetAxis == Axis.Y;
 

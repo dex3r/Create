@@ -42,8 +42,8 @@ public class CreateRegistrateTags {
 
 		prov.tag(AllBlockTags.BRITTLE.tag)
 			.add(Blocks.BELL, Blocks.COCOA, Blocks.FLOWER_POT, Blocks.MOSS_CARPET, Blocks.BAMBOO_SAPLING,
-					Blocks.BIG_DRIPLEAF, Blocks.VINE, Blocks.TWISTING_VINES_PLANT, Blocks.TWISTING_VINES,
-					Blocks.WEEPING_VINES_PLANT, Blocks.WEEPING_VINES, Blocks.CAKE
+				Blocks.BIG_DRIPLEAF, Blocks.VINE, Blocks.TWISTING_VINES_PLANT, Blocks.TWISTING_VINES,
+				Blocks.WEEPING_VINES_PLANT, Blocks.WEEPING_VINES, Blocks.CAKE
 			)
 			.addTag(AllBlockTags.CORALS.tag)
 			.addTag(BlockTags.CAVE_VINES)
@@ -76,8 +76,8 @@ public class CreateRegistrateTags {
 
 		prov.tag(AllBlockTags.MOVABLE_EMPTY_COLLIDER.tag)
 			.add(Blocks.COBWEB, Blocks.POWDER_SNOW, Blocks.TRIPWIRE, Blocks.TRIPWIRE_HOOK, Blocks.BAMBOO_SAPLING,
-					Blocks.VINE, Blocks.TWISTING_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.WEEPING_VINES_PLANT,
-					Blocks.WEEPING_VINES
+				Blocks.VINE, Blocks.TWISTING_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.WEEPING_VINES_PLANT,
+				Blocks.WEEPING_VINES
 			)
 			.addTag(AllBlockTags.CORALS.tag)
 			.addTag(BlockTags.CAVE_VINES)
@@ -103,9 +103,9 @@ public class CreateRegistrateTags {
 			.addTag(BlockTags.WOOL);
 
 		prov.tag(AllBlockTags.WRENCH_PICKUP.tag)
-			.add(Blocks.REDSTONE_WIRE, Blocks.REDSTONE_TORCH, Blocks.REPEATER, Blocks.LEVER,
-					Blocks.COMPARATOR, Blocks.OBSERVER, Blocks.REDSTONE_WALL_TORCH, Blocks.PISTON, Blocks.STICKY_PISTON,
-					Blocks.TRIPWIRE, Blocks.TRIPWIRE_HOOK, Blocks.DAYLIGHT_DETECTOR, Blocks.TARGET, Blocks.HOPPER)
+			.add(Blocks.REDSTONE_WIRE, Blocks.REDSTONE_TORCH, Blocks.REPEATER, Blocks.LEVER, Blocks.REDSTONE_LAMP,
+				Blocks.COMPARATOR, Blocks.OBSERVER, Blocks.REDSTONE_WALL_TORCH, Blocks.PISTON, Blocks.STICKY_PISTON,
+				Blocks.TRIPWIRE, Blocks.TRIPWIRE_HOOK, Blocks.DAYLIGHT_DETECTOR, Blocks.TARGET, Blocks.HOPPER)
 			.addTag(BlockTags.BUTTONS)
 			.addTag(BlockTags.PRESSURE_PLATES)
 			.addTag(BlockTags.RAILS);
@@ -123,31 +123,37 @@ public class CreateRegistrateTags {
 		);
 
 		prov.tag(AllBlockTags.ROOTS.tag)
-				.add(Blocks.MANGROVE_ROOTS);
+			.add(Blocks.MANGROVE_ROOTS);
+
+		prov.tag(AllBlockTags.SUGAR_CANE_VARIANTS.tag)
+			.add(Blocks.SUGAR_CANE);
+
+		prov.tag(AllBlockTags.NON_HARVESTABLE.tag)
+				.add(Blocks.FIRE);
 
 		prov.tag(AllBlockTags.CORALS.tag)
 			.add(Blocks.DEAD_TUBE_CORAL, Blocks.DEAD_BRAIN_CORAL, Blocks.DEAD_BUBBLE_CORAL, Blocks.DEAD_FIRE_CORAL,
-					Blocks.DEAD_HORN_CORAL, Blocks.TUBE_CORAL, Blocks.BRAIN_CORAL, Blocks.BUBBLE_CORAL,
-					Blocks.FIRE_CORAL, Blocks.HORN_CORAL, Blocks.DEAD_TUBE_CORAL_FAN,
-					Blocks.DEAD_BRAIN_CORAL_FAN, Blocks.DEAD_BUBBLE_CORAL_FAN, Blocks.DEAD_FIRE_CORAL_FAN,
-					Blocks.DEAD_HORN_CORAL_FAN, Blocks.TUBE_CORAL_FAN, Blocks.BRAIN_CORAL_FAN,
-					Blocks.BUBBLE_CORAL_FAN, Blocks.FIRE_CORAL_FAN, Blocks.HORN_CORAL_FAN,
-					Blocks.DEAD_TUBE_CORAL_WALL_FAN, Blocks.DEAD_BRAIN_CORAL_WALL_FAN,
-					Blocks.DEAD_BUBBLE_CORAL_WALL_FAN, Blocks.DEAD_FIRE_CORAL_WALL_FAN,
-					Blocks.DEAD_HORN_CORAL_WALL_FAN, Blocks.TUBE_CORAL_WALL_FAN, Blocks.BRAIN_CORAL_WALL_FAN,
-					Blocks.BUBBLE_CORAL_WALL_FAN, Blocks.FIRE_CORAL_WALL_FAN, Blocks.HORN_CORAL_WALL_FAN
+				Blocks.DEAD_HORN_CORAL, Blocks.TUBE_CORAL, Blocks.BRAIN_CORAL, Blocks.BUBBLE_CORAL,
+				Blocks.FIRE_CORAL, Blocks.HORN_CORAL, Blocks.DEAD_TUBE_CORAL_FAN,
+				Blocks.DEAD_BRAIN_CORAL_FAN, Blocks.DEAD_BUBBLE_CORAL_FAN, Blocks.DEAD_FIRE_CORAL_FAN,
+				Blocks.DEAD_HORN_CORAL_FAN, Blocks.TUBE_CORAL_FAN, Blocks.BRAIN_CORAL_FAN,
+				Blocks.BUBBLE_CORAL_FAN, Blocks.FIRE_CORAL_FAN, Blocks.HORN_CORAL_FAN,
+				Blocks.DEAD_TUBE_CORAL_WALL_FAN, Blocks.DEAD_BRAIN_CORAL_WALL_FAN,
+				Blocks.DEAD_BUBBLE_CORAL_WALL_FAN, Blocks.DEAD_FIRE_CORAL_WALL_FAN,
+				Blocks.DEAD_HORN_CORAL_WALL_FAN, Blocks.TUBE_CORAL_WALL_FAN, Blocks.BRAIN_CORAL_WALL_FAN,
+				Blocks.BUBBLE_CORAL_WALL_FAN, Blocks.FIRE_CORAL_WALL_FAN, Blocks.HORN_CORAL_WALL_FAN
 			);
 
 		// COMPAT
 
 		TagGen.addOptional(prov.tag(AllBlockTags.NON_MOVABLE.tag), Mods.IE, List.of(
-				"connector_lv", "connector_lv_relay", "connector_mv", "connector_mv_relay",
-				"connector_hv", "connector_hv_relay", "connector_bundled", "connector_structural",
-				"connector_redstone", "connector_probe", "breaker_switch"))
-				.addOptional(Mods.BC.asResource("bits_block")); // fabric: Causes Problems last I checked. TODO: re-evaluate
+			"connector_lv", "connector_lv_relay", "connector_mv", "connector_mv_relay",
+			"connector_hv", "connector_hv_relay", "connector_bundled", "connector_structural",
+			"connector_redstone", "connector_probe", "breaker_switch"))
+			.addOptional(Mods.BC.asResource("bits_block")); // fabric: Causes Problems last I checked. TODO: re-evaluate
 
 		TagGen.addOptional(prov.tag(AllBlockTags.ROOTS.tag), Mods.TF,
-				List.of("root", "liveroot_block", "mangrove_root"));
+			List.of("root", "liveroot_block", "mangrove_root"));
 
 		// VALIDATE
 
@@ -183,7 +189,7 @@ public class CreateRegistrateTags {
 
 		prov.tag(AllItemTags.UPRIGHT_ON_BELT.tag)
 			.add(Items.GLASS_BOTTLE, Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION,
-					Items.HONEY_BOTTLE, Items.CAKE);
+				Items.HONEY_BOTTLE, Items.CAKE);
 
 		prov.tag(AllItemTags.CONTRAPTION_CONTROLLED.tag)
 			.add(Items.BELL, Items.CAMPFIRE, Items.SOUL_CAMPFIRE, Items.DISPENSER, Items.DROPPER);
@@ -222,8 +228,8 @@ public class CreateRegistrateTags {
 		TagGen.addOptional(prov.tag(AllItemTags.AMETHYST.tag), Mods.GS, gsPalette("amethyst"));
 
 		TagGen.addOptional(prov.tag(AllItemTags.UA_CORAL.tag), Mods.UA, List.of("acan_coral",
-				"finger_coral", "star_coral", "moss_coral", "petal_coral", "branch_coral",
-				"rock_coral", "pillow_coral", "chrome_coral", "silk_coral"));
+			"finger_coral", "star_coral", "moss_coral", "petal_coral", "branch_coral",
+			"rock_coral", "pillow_coral", "chrome_coral", "silk_coral"));
 
 		// VALIDATE
 
@@ -279,7 +285,7 @@ public class CreateRegistrateTags {
 		helper.add(Mods.GOOD, "muddy_oak", "cypress");
 		helper.add(Mods.BMK, "blighted_balsa", "willow", "swamp_cypress", "ancient_oak");
 		helper.add(Mods.RU, "alpha", "ashen", "baobab", "blackwood", "brimwood", "cobalt", "cypress", "dead", "eucalyptus", "joshua",
-				"kapok", "larch", "magnolia", "maple","mauve", "palm", "pine", "redwood", "socotra", "willow");
+			"kapok", "larch", "magnolia", "maple", "mauve", "palm", "pine", "redwood", "socotra", "willow");
 
 
 		TagGen.addOptional(logAppender, Mods.AUTUM, "maple");

@@ -12,6 +12,7 @@ import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRender
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.render.CachedBuffers;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -34,6 +35,7 @@ public class SignalRenderer extends SafeBlockEntityRenderer<SignalBlockEntity> {
 		float renderTime = AnimationTickHolder.getRenderTime(be.getLevel());
 		if (signalState.isRedLight(renderTime))
 			CachedBuffers.partial(AllPartialModels.SIGNAL_ON, blockState)
+				.light(LightTexture.FULL_BLOCK)
 				.renderInto(ms, buffer.getBuffer(RenderType.solid()));
 		else
 			CachedBuffers.partial(AllPartialModels.SIGNAL_OFF, blockState)

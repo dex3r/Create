@@ -7,9 +7,9 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
-import com.simibubi.create.content.contraptions.BlockMovementChecks;
 import com.simibubi.create.content.contraptions.ContraptionCollider;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.piston.LinearActuatorBlockEntity;
@@ -76,9 +76,9 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 		if (level.isClientSide() && mirrorParent != null)
 			if (sharedMirrorContraption == null || sharedMirrorContraption.get() == null
 				|| !sharedMirrorContraption.get()
-					.isAlive()) {
+				.isAlive()) {
 				sharedMirrorContraption = null;
-				if (level.getBlockEntity(mirrorParent)instanceof PulleyBlockEntity pte && pte.movedContraption != null)
+				if (level.getBlockEntity(mirrorParent) instanceof PulleyBlockEntity pte && pte.movedContraption != null)
 					sharedMirrorContraption = new WeakReference<>(pte.movedContraption);
 			}
 
@@ -204,8 +204,8 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 							.getCollisionShape(level, magnetPos)
 							.isEmpty());
 						level.setBlock(magnetPos, AllBlocks.PULLEY_MAGNET.getDefaultState()
-							.setValue(BlockStateProperties.WATERLOGGED,
-								Boolean.valueOf(ifluidstate.getType() == Fluids.WATER)),
+								.setValue(BlockStateProperties.WATERLOGGED,
+									Boolean.valueOf(ifluidstate.getType() == Fluids.WATER)),
 							66);
 					}
 				}
@@ -255,8 +255,7 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 
 	@Override
 	protected Vec3 toPosition(float offset) {
-		if (movedContraption.getContraption() instanceof PulleyContraption) {
-			PulleyContraption contraption = (PulleyContraption) movedContraption.getContraption();
+		if (movedContraption.getContraption() instanceof PulleyContraption contraption) {
 			return Vec3.atLowerCornerOf(contraption.anchor)
 				.add(0, contraption.getInitialOffset() - offset, 0);
 

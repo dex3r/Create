@@ -19,7 +19,7 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
-import com.simibubi.create.api.contraption.transformable.ITransformableBlockEntity;
+import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
 import com.simibubi.create.content.contraptions.AssemblyException;
@@ -58,12 +58,19 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.nbt.NBTHelper;
-import net.createmod.catnip.math.VecHelper;
-import net.createmod.catnip.data.WorldAttached;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
+import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.data.WorldAttached;
+import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -95,7 +102,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 
-public class StationBlockEntity extends SmartBlockEntity implements ITransformableBlockEntity, SidedStorageBlockEntity {
+public class StationBlockEntity extends SmartBlockEntity implements TransformableBlockEntity, SidedStorageBlockEntity {
 
 	public TrackTargetingBehaviour<GlobalStation> edgePoint;
 	public DoorControlBehaviour doorControls;
@@ -118,6 +125,7 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 	boolean flagFlipped;
 
 	public Component lastDisassembledTrainName;
+	public int lastDisassembledMapColorIndex;
 
 	public StationBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -151,6 +159,7 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 			trainPresent = tag.getBoolean("ForceFlag");
 		if (tag.contains("PrevTrainName"))
 			lastDisassembledTrainName = Component.Serializer.fromJson(tag.getString("PrevTrainName"));
+		lastDisassembledMapColorIndex = tag.getInt("PrevTrainColor");
 
 		if (!clientPacket)
 			return;
@@ -177,6 +186,7 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 
 		if (lastDisassembledTrainName != null)
 			tag.putString("PrevTrainName", Component.Serializer.toJson(lastDisassembledTrainName));
+		tag.putInt("PrevTrainColor", lastDisassembledMapColorIndex);
 
 		super.write(tag, clientPacket);
 
@@ -281,7 +291,7 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 	}
 
 	public boolean trackClicked(Player player, InteractionHand hand, ITrackBlock track, BlockState state,
-		BlockPos pos) {
+								BlockPos pos) {
 		refreshAssemblyInfo();
 		BoundingBox bb = assemblyAreas.get(level)
 			.get(worldPosition);
@@ -387,7 +397,7 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 				if (train.navigation.destination != station)
 					continue;
 
-				DiscoveredPath preferredPath = train.runtime.startCurrentInstruction();
+				DiscoveredPath preferredPath = train.runtime.startCurrentInstruction(level);
 				train.navigation.startNavigation(
 					preferredPath != null ? preferredPath : train.navigation.findPathTo(station, Double.MAX_VALUE));
 			}
@@ -421,7 +431,7 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 		if (!train.disassemble(getAssemblyDirection(), trackPosition.above()))
 			return false;
 
-		dropSchedule(sender);
+		dropSchedule(sender, train);
 		return true;
 	}
 
@@ -452,12 +462,10 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 		return true;
 	}
 
-	public void dropSchedule(@Nullable ServerPlayer sender) {
+	public void dropSchedule(@Nullable ServerPlayer sender, @Nullable Train train) {
 		GlobalStation station = getStation();
 		if (station == null)
 			return;
-
-		Train train = station.getPresentTrain();
 		if (train == null)
 			return;
 
@@ -832,7 +840,9 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 
 		if (lastDisassembledTrainName != null) {
 			train.name = lastDisassembledTrainName;
+			train.mapColorIndex = lastDisassembledMapColorIndex;
 			lastDisassembledTrainName = null;
+			lastDisassembledMapColorIndex = 0;
 		}
 
 		for (int i = 0; i < contraptions.size(); i++) {
@@ -957,8 +967,8 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 	}
 
 	@Override
-	public void transform(StructureTransform transform) {
-		edgePoint.transform(transform);
+	public void transform(BlockEntity be, StructureTransform transform) {
+		edgePoint.transform(be, transform);
 	}
 
 	// Package port integration
@@ -969,7 +979,7 @@ public class StationBlockEntity extends SmartBlockEntity implements ITransformab
 			return;
 
 		if (ppbe instanceof PostboxBlockEntity pbe)
-			pbe.trackedGlobalStation = new WeakReference<GlobalStation>(station);
+			pbe.trackedGlobalStation = new WeakReference<>(station);
 
 		if (station.connectedPorts.containsKey(ppbe.getBlockPos()))
 			restoreOfflineBuffer(ppbe, station.connectedPorts.get(ppbe.getBlockPos()));

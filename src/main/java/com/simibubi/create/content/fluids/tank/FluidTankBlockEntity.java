@@ -8,7 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
-import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.FluidTankBlock.Shape;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.IMultiBlockEntityContainer;
@@ -48,7 +48,7 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 
 	protected boolean forceFluidLevelUpdate;
 	protected SmartFluidTank tankInventory;
-	protected FluidTank exposedTank;
+	protected io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank exposedTank;
 	protected BlockPos controller;
 	protected BlockPos lastKnownPos;
 	protected boolean updateConnectivity;
@@ -374,9 +374,9 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 		exposedTank = handlerForCapability();
 	}
 
-	private FluidTank handlerForCapability() {
+	private io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank handlerForCapability() {
 		return isController() ? boiler.isActive() ? boiler.createHandler() : tankInventory
-				: getControllerBE() != null ? getControllerBE().handlerForCapability() : new FluidTank(0);
+				: getControllerBE() != null ? getControllerBE().handlerForCapability() : new io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank(0);
 	}
 
 	@Override
@@ -647,7 +647,7 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 	}
 
 	@Override
-	public FluidTank getTank(int tank) {
+	public io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank getTank(int tank) {
 		return tankInventory;
 	}
 

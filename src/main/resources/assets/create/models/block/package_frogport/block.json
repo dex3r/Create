@@ -2,7 +2,7 @@
 	"credit": "Made with Blockbench",
 	"textures": {
 		"0": "create:block/port2",
-		"particle": "create:block/port2"
+		"particle": "create:block/vault/vault_top_small"
 	},
 	"elements": [
 		{

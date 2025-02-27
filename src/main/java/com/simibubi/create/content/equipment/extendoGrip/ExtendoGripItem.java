@@ -3,8 +3,6 @@ package com.simibubi.create.content.equipment.extendoGrip;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -41,11 +39,11 @@ public class ExtendoGripItem extends Item {
 			AttributeModifier.Operation.ADDITION);
 
 	private static final Supplier<Multimap<Attribute, AttributeModifier>> rangeModifier = Suppliers.memoize(() ->
-	// Holding an ExtendoGrip
-	ImmutableMultimap.of(ReachEntityAttributes.REACH, singleRangeAttributeModifier, ReachEntityAttributes.ATTACK_RANGE, singleRangeAttributeModifier));
+		// Holding an ExtendoGrip
+		ImmutableMultimap.of(ReachEntityAttributes.REACH, singleRangeAttributeModifier, ReachEntityAttributes.ATTACK_RANGE, singleRangeAttributeModifier));
 	private static final Supplier<Multimap<Attribute, AttributeModifier>> doubleRangeModifier = Suppliers.memoize(() ->
-	// Holding two ExtendoGrips o.O
-	ImmutableMultimap.of(ReachEntityAttributes.REACH, doubleRangeAttributeModifier, ReachEntityAttributes.ATTACK_RANGE, doubleRangeAttributeModifier));
+		// Holding two ExtendoGrips o.O
+		ImmutableMultimap.of(ReachEntityAttributes.REACH, doubleRangeAttributeModifier, ReachEntityAttributes.ATTACK_RANGE, doubleRangeAttributeModifier));
 
 	private static DamageSource lastActiveDamageSource;
 
@@ -57,10 +55,8 @@ public class ExtendoGripItem extends Item {
 	public static final String DUAL_EXTENDO_MARKER = "createDualExtendo";
 
 	public static void holdingExtendoGripIncreasesRange(LivingEntity entity) {
-		if (!(entity instanceof Player))
+		if (!(entity instanceof Player player))
 			return;
-
-		Player player = (Player) entity;
 
 		CompoundTag persistentData = player.getCustomData();
 		boolean inOff = AllItems.EXTENDO_GRIP.isIn(player.getOffhandItem());
@@ -167,7 +163,13 @@ public class ExtendoGripItem extends Item {
 		return amount;
 	}
 
-	public static double attacksByExtendoGripHaveMoreKnockback(double strength, Player player) {
+	public static double attacksByExtendoGripHaveMoreKnockback(double strength, Player player2) {
+		if (lastActiveDamageSource == null)
+			return strength;
+		Entity entity = lastActiveDamageSource.getDirectEntity();
+		if (!(entity instanceof Player player))
+			return strength;
+		lastActiveDamageSource = null;
 		if (!isHoldingExtendoGrip(player))
 			return strength;
 		return strength + 2;

@@ -40,7 +40,7 @@ public class CrushingWheelBlockEntity extends KineticBlockEntity {
 	public void fixControllers() {
 		for (Direction d : Iterate.directions)
 			((CrushingWheelBlock) getBlockState().getBlock()).updateControllers(getBlockState(), getLevel(), getBlockPos(),
-					d);
+				d);
 	}
 
 	@Override
@@ -54,10 +54,12 @@ public class CrushingWheelBlockEntity extends KineticBlockEntity {
 		fixControllers();
 	}
 
-	public static int crushingIsFortunate(DamageSource source, LivingEntity target, int currentLevel, boolean recentlyHit) {
-		if (source == null || !source.is(AllDamageTypes.CRUSH))
-			return 0;
-		return 2;		//This does not currently increase mob drops. It seems like this only works for damage done by an entity.
+	// This increases the drops when dropCustomDeathLoot is called, and LootingEnchantFunctionMixin increases the drops
+	// defined in the entity loot table
+	public static int crushingIsFortunate(DamageSource damageSource, LivingEntity target, int currentLevel, boolean recentlyHit) {
+		if (damageSource == null || !damageSource.is(AllDamageTypes.CRUSH))
+			return currentLevel;
+		return 2;
 	}
 
 	public static boolean handleCrushedMobDrops(LivingEntity target, DamageSource source, Collection<ItemEntity> drops, int lootingLevel, boolean recentlyHit) {

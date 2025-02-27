@@ -9,9 +9,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.content.fluids.VirtualFluid;
+
+import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
+
+import com.mojang.blaze3d.shaders.FogShape;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.AllTags.AllFluidTags;
 import com.simibubi.create.content.decoration.palettes.AllPaletteStoneTypes;
-import com.simibubi.create.content.fluids.VirtualFluid;
 import com.simibubi.create.content.fluids.potion.PotionFluid;
 import com.simibubi.create.content.fluids.potion.PotionFluid.BottleType;
 import com.simibubi.create.content.fluids.potion.PotionFluidHandler;
@@ -63,7 +69,7 @@ public class AllFluids {
 	// fabric: various Attributes/Types replaced with corresponding handlers
 
 	public static final FluidEntry<PotionFluid> POTION =
-			REGISTRATE.virtualFluid("potion", /*PotionFluidAttributes::new,*/ PotionFluid::new)
+			REGISTRATE.virtualFluid("potion", /*PotionFluidAttributes::new,*/ PotionFluid::createSource, PotionFluid::createFlowing)
 					.lang("Potion")
 					.fluidAttributes(PotionFluidVariantAttributeHandler::new)
 					.register();

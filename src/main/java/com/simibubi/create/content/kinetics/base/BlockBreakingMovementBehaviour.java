@@ -1,8 +1,8 @@
 package com.simibubi.create.content.kinetics.base;
 
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.OrientedContraptionEntity;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.contraptions.mounted.MountedContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraption;

@@ -12,6 +12,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -68,18 +69,6 @@ public class PipeAttachmentModel extends ForwardingBakedModel {
 
 		addQuads(world, state, pos, randomSupplier, context, data);
 	}
-
-	// fabric: unnecessary
-	// TODO: Update once MinecraftForge#9163 is merged
-//	@SuppressWarnings("removal")
-//	@Override
-//	public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
-//		ChunkRenderTypeSet set = super.getRenderTypes(state, rand, data);
-//		if (set.isEmpty()) {
-//			return ItemBlockRenderTypes.getRenderLayers(state);
-//		}
-//		return set;
-//	}
 
 	private void addQuads(BlockAndTintGetter world, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context,
 		PipeModelData pipeData) {

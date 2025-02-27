@@ -2,6 +2,8 @@ package com.simibubi.create.content.logistics.stockTicker;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
@@ -37,7 +39,12 @@ public abstract class StockCheckingBlockEntity extends SmartBlockEntity {
 
 	public boolean broadcastPackageRequest(RequestType type, PackageOrder order, IItemHandler ignoredHandler,
 		String address) {
-		return LogisticsManager.broadcastPackageRequest(behaviour.freqId, type, order, ignoredHandler, address);
+		return broadcastPackageRequest(type, order, ignoredHandler, address, null);
+	}
+	
+	public boolean broadcastPackageRequest(RequestType type, PackageOrder order, IItemHandler ignoredHandler,
+		String address, @Nullable PackageOrder orderContext) {
+		return LogisticsManager.broadcastPackageRequest(behaviour.freqId, type, order, ignoredHandler, address, orderContext);
 	}
 
 }

@@ -9,9 +9,9 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.element.GuiGameElement;
-import net.createmod.catnip.lang.Lang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.Mth;
@@ -31,19 +31,19 @@ public class GoggleConfigScreen extends AbstractSimiScreen {
 		tooltip.add(componentSpacing.plainCopy()
 			.append(CreateLang.translateDirect("gui.config.overlay2")
 				.withStyle(ChatFormatting.GRAY)));
-		tooltip.add(Lang.IMMUTABLE_EMPTY);
+		tooltip.add(CommonComponents.EMPTY);
 		tooltip.add(componentSpacing.plainCopy()
 			.append(CreateLang.translateDirect("gui.config.overlay3")));
 		tooltip.add(componentSpacing.plainCopy()
 			.append(CreateLang.translateDirect("gui.config.overlay4")));
-		tooltip.add(Lang.IMMUTABLE_EMPTY);
+		tooltip.add(CommonComponents.EMPTY);
 		tooltip.add(componentSpacing.plainCopy()
 			.append(CreateLang.translateDirect("gui.config.overlay5")
 				.withStyle(ChatFormatting.GRAY)));
 		tooltip.add(componentSpacing.plainCopy()
 			.append(CreateLang.translateDirect("gui.config.overlay6")
 				.withStyle(ChatFormatting.GRAY)));
-		tooltip.add(Lang.IMMUTABLE_EMPTY);
+		tooltip.add(CommonComponents.EMPTY);
 		tooltip.add(componentSpacing.plainCopy()
 			.append(CreateLang.translateDirect("gui.config.overlay7")));
 		tooltip.add(componentSpacing.plainCopy()
@@ -76,7 +76,7 @@ public class GoggleConfigScreen extends AbstractSimiScreen {
 
 	@Override
 	public boolean mouseDragged(double p_mouseDragged_1_, double p_mouseDragged_3_, int p_mouseDragged_5_,
-		double p_mouseDragged_6_, double p_mouseDragged_8_) {
+								double p_mouseDragged_6_, double p_mouseDragged_8_) {
 		updateOffset(p_mouseDragged_1_, p_mouseDragged_3_);
 
 		return true;

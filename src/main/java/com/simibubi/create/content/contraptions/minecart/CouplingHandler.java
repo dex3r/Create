@@ -62,9 +62,9 @@ public class CouplingHandler {
 		Entity entity1 = world.getEntity(cartId1);
 		Entity entity2 = world.getEntity(cartId2);
 
-		if (!(entity1 instanceof AbstractMinecart))
+		if (!(entity1 instanceof AbstractMinecart cart1))
 			return false;
-		if (!(entity2 instanceof AbstractMinecart))
+		if (!(entity2 instanceof AbstractMinecart cart2))
 			return false;
 
 		String tooMany = "two_couplings_max";
@@ -87,8 +87,6 @@ public class CouplingHandler {
 			return false;
 		}
 
-		AbstractMinecart cart1 = (AbstractMinecart) entity1;
-		AbstractMinecart cart2 = (AbstractMinecart) entity2;
 		UUID mainID = cart1.getUUID();
 		UUID connectedID = cart2.getUUID();
 		MinecartController mainController = CapabilityMinecartController.getIfPresent(world, mainID);

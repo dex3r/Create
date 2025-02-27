@@ -1,6 +1,6 @@
 package com.simibubi.create.content.contraptions.render;
 
-import com.simibubi.create.content.contraptions.ContraptionType;
+import com.simibubi.create.AllTags.AllContraptionTypeTags;
 import com.simibubi.create.content.contraptions.OrientedContraptionEntity;
 
 import net.minecraft.client.renderer.culling.Frustum;
@@ -16,9 +16,9 @@ public class OrientedContraptionEntityRenderer extends ContraptionEntityRenderer
 			double cameraZ) {
 		if (!super.shouldRender(entity, frustum, cameraX, cameraY, cameraZ))
 			return false;
-		if (entity.getContraption()
-				  .getType() == ContraptionType.MOUNTED && entity.getVehicle() == null)
+		if (entity.getVehicle() == null && AllContraptionTypeTags.REQUIRES_VEHICLE_FOR_RENDER.matches(entity.getContraption().getType()))
 			return false;
+
 		return true;
 	}
 }

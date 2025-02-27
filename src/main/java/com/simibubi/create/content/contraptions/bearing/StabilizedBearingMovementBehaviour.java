@@ -2,17 +2,14 @@ package com.simibubi.create.content.contraptions.bearing;
 
 import javax.annotation.Nullable;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import org.joml.Quaternionf;
 
 import com.mojang.math.Axis;
 import com.simibubi.create.AllPartialModels;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.OrientedContraptionEntity;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.contraptions.render.ActorVisual;
 import com.simibubi.create.content.contraptions.render.ContraptionMatrices;
@@ -40,14 +37,16 @@ public class StabilizedBearingMovementBehaviour implements MovementBehaviour {
 	public ItemStack canBeDisabledVia(MovementContext context) {
 		return null;
 	}
-@Override
+
+	@Override
 	public boolean disableBlockEntityRendering() {
 		return true;
 	}
+
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void renderInContraption(MovementContext context, VirtualRenderWorld renderWorld,
-		ContraptionMatrices matrices, MultiBufferSource buffer) {
+									ContraptionMatrices matrices, MultiBufferSource buffer) {
 		if (VisualizationManager.supportsVisualization(context.world))
 			return;
 
@@ -82,7 +81,7 @@ public class StabilizedBearingMovementBehaviour implements MovementBehaviour {
 	@Nullable
 	@Override
 	public ActorVisual createVisual(VisualizationContext visualizationContext, VirtualRenderWorld simulationWorld,
-		MovementContext movementContext) {
+									MovementContext movementContext) {
 		return new StabilizedBearingVisual(visualizationContext, simulationWorld, movementContext);
 	}
 
@@ -94,13 +93,11 @@ public class StabilizedBearingMovementBehaviour implements MovementBehaviour {
 		Direction.Axis axis = facing.getAxis();
 		AbstractContraptionEntity entity = context.contraption.entity;
 
-		if (entity instanceof ControlledContraptionEntity) {
-			ControlledContraptionEntity controlledCE = (ControlledContraptionEntity) entity;
+		if (entity instanceof ControlledContraptionEntity controlledCE) {
 			if (context.contraption.canBeStabilized(facing, context.localPos))
 				offset = -controlledCE.getAngle(renderPartialTicks);
 
-		} else if (entity instanceof OrientedContraptionEntity) {
-			OrientedContraptionEntity orientedCE = (OrientedContraptionEntity) entity;
+		} else if (entity instanceof OrientedContraptionEntity orientedCE) {
 			if (axis.isVertical())
 				offset = -orientedCE.getViewYRot(renderPartialTicks);
 			else {

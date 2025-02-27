@@ -8,6 +8,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.utility.BlockHelper;
 
 import net.minecraft.core.BlockPos;
@@ -22,7 +23,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -122,7 +122,7 @@ public class ToolboxBlock extends HorizontalDirectionalBlock implements SimpleWa
 
 	@Override
 	public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, LevelAccessor world,
-		BlockPos pos, BlockPos neighbourPos) {
+								  BlockPos pos, BlockPos neighbourPos) {
 		if (state.getValue(WATERLOGGED))
 			world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
 		return state;
@@ -135,7 +135,7 @@ public class ToolboxBlock extends HorizontalDirectionalBlock implements SimpleWa
 
 	@Override
 	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult ray) {
+								 BlockHitResult ray) {
 
 		if (player == null || player.isCrouching())
 			return InteractionResult.PASS;
@@ -166,7 +166,7 @@ public class ToolboxBlock extends HorizontalDirectionalBlock implements SimpleWa
 		FluidState ifluidstate = context.getLevel()
 			.getFluidState(context.getClickedPos());
 		return super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection()
-			.getOpposite())
+				.getOpposite())
 			.setValue(WATERLOGGED, Boolean.valueOf(ifluidstate.getType() == Fluids.WATER));
 	}
 
@@ -184,9 +184,14 @@ public class ToolboxBlock extends HorizontalDirectionalBlock implements SimpleWa
 		return color;
 	}
 
-	public static Ingredient getMainBox() {
-		return Ingredient.of(AllBlocks.TOOLBOXES.get(DyeColor.BROWN)
-			.get());
+	@Override
+	public boolean hasAnalogOutputSignal(BlockState pState) {
+		return true;
+	}
+
+	@Override
+	public int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
+		return ItemHelper.calcRedstoneFromBlockEntity(this, pLevel, pPos);
 	}
 
 }

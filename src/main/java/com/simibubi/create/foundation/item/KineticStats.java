@@ -9,8 +9,9 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.api.stress.BlockStressValues;
+import com.simibubi.create.api.stress.BlockStressValues.GeneratedRpm;
 import com.simibubi.create.content.equipment.goggles.GogglesItem;
-import com.simibubi.create.content.kinetics.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.IRotate.StressImpact;
 import com.simibubi.create.content.kinetics.crank.ValveHandleBlock;
@@ -19,9 +20,9 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.config.CKinetics;
 
-import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.lang.LangBuilder;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -52,7 +53,7 @@ public class KineticStats implements TooltipModifier {
 	public void modify(ItemStack stack, Player player, TooltipFlag flags, List<Component> tooltip) {
 		List<Component> kineticStats = getKineticStats(block, player);
 		if (!kineticStats.isEmpty()) {
-			tooltip.add(Lang.IMMUTABLE_EMPTY);
+			tooltip.add(CommonComponents.EMPTY);
 			tooltip.addAll(kineticStats);
 		}
 	}
@@ -78,7 +79,7 @@ public class KineticStats implements TooltipModifier {
 
 		boolean hasStressImpact =
 			StressImpact.isEnabled() && showStressImpact && BlockStressValues.getImpact(block) > 0;
-		boolean hasStressCapacity = StressImpact.isEnabled() && BlockStressValues.hasCapacity(block);
+		boolean hasStressCapacity = StressImpact.isEnabled() && BlockStressValues.getCapacity(block) > 0;
 
 		if (hasStressImpact) {
 			CreateLang.translate("tooltip.stressImpact")
@@ -108,7 +109,7 @@ public class KineticStats implements TooltipModifier {
 				.addTo(list);
 
 			double capacity = BlockStressValues.getCapacity(block);
-			Couple<Integer> generatedRPM = BlockStressValues.getGeneratedRPM(block);
+			GeneratedRpm generatedRPM = BlockStressValues.RPM.get(block);
 
 			StressImpact impactId = capacity >= config.highCapacity.get() ? StressImpact.HIGH
 				: (capacity >= config.mediumCapacity.get() ? StressImpact.MEDIUM : StressImpact.LOW);
@@ -124,11 +125,10 @@ public class KineticStats implements TooltipModifier {
 					.addTo(list);
 
 				if (generatedRPM != null) {
-					LangBuilder amount = CreateLang.number(capacity * generatedRPM.getSecond())
+					LangBuilder amount = CreateLang.number(capacity * generatedRPM.value())
 						.add(suUnit);
 					CreateLang.text(" -> ")
-						.add(!generatedRPM.getFirst()
-							.equals(generatedRPM.getSecond()) ? CreateLang.translate("tooltip.up_to", amount) : amount)
+						.add(generatedRPM.mayGenerateLess() ? CreateLang.translate("tooltip.up_to", amount) : amount)
 						.style(DARK_GRAY)
 						.addTo(list);
 				}

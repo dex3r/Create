@@ -185,6 +185,18 @@ public class LogisticallyLinkedBehaviour extends BlockEntityBehaviour {
 		return InventorySummary.EMPTY;
 	}
 
+	public void deductFromAccurateSummary(ItemStackHandler packageContents) {
+		InventorySummary summary = LogisticsManager.ACCURATE_SUMMARIES.getIfPresent(freqId);
+		if (summary == null)
+			return;
+		for (int i = 0; i < packageContents.getSlots(); i++) {
+			ItemStack orderedStack = packageContents.getStackInSlot(i);
+			if (orderedStack.isEmpty())
+				continue;
+			summary.add(orderedStack, -Math.min(summary.getCountOf(orderedStack), orderedStack.getCount()));
+		}
+	}
+
 	//
 
 	public boolean mayInteract(Player player) {

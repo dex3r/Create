@@ -32,7 +32,7 @@ public class RepackagerBlockEntity extends PackagerBlockEntity {
 			return false;
 
 		Storage<ItemVariant> targetInv = targetInventory.getInventory();
-		if (targetInv == null)
+		if (targetInv == null || targetInv instanceof PackagerItemHandler)
 			return false;
 
 		boolean targetIsCreativeCrate = targetInv instanceof BottomlessItemHandler;

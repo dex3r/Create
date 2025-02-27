@@ -1,6 +1,6 @@
 package com.simibubi.create.content.redstone.displayLink;
 
-import com.simibubi.create.content.redstone.displayLink.target.DisplayTarget;
+import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.client.Minecraft;
@@ -21,7 +21,7 @@ public class DisplayLinkBlockItem extends ClickToLinkBlockItem /* FIXME - Used t
 	@Environment(EnvType.CLIENT)
 	public AABB getSelectionBounds(BlockPos pos) {
 		Level world = Minecraft.getInstance().level;
-		DisplayTarget target = AllDisplayBehaviours.targetOf(world, pos);
+		DisplayTarget target = DisplayTarget.get(world, pos);
 		if (target != null)
 			return target.getMultiblockBounds(world, pos);
 		return super.getSelectionBounds(pos);

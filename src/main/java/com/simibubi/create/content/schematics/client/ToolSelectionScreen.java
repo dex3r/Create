@@ -137,6 +137,7 @@ public class ToolSelectionScreen extends Screen {
 			matrixStack.popPose();
 		}
 
+		RenderSystem.setShaderColor(1, 1, 1, 1);
 		RenderSystem.disableBlend();
 		matrixStack.popPose();
 	}

@@ -1,10 +1,10 @@
 package com.simibubi.create.content.logistics.depot;
 
 import com.simibubi.create.AllSoundEvents;
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorage;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.MountedStorageManager;
-import com.simibubi.create.content.contraptions.behaviour.MovingInteractionBehaviour;
 import com.simibubi.create.content.logistics.depot.storage.DepotMountedStorage;
 
 import net.minecraft.core.BlockPos;

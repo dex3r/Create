@@ -1,5 +1,6 @@
 package com.simibubi.create.content.contraptions.behaviour;
 
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
 

@@ -11,9 +11,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 public enum AllToolMaterials implements Tier {
 
 	CARDBOARD(Create.asResource("cardboard")
-		.toString(), 200, 1, 2, 1, () -> Ingredient.of(AllItems.CARDBOARD.asItem()))
-
-	;
+		.toString(), 0, 1, 2, 1, () -> Ingredient.of(AllItems.CARDBOARD.asItem()));
 
 	public String name;
 
@@ -24,7 +22,7 @@ public enum AllToolMaterials implements Tier {
 	private Supplier<Ingredient> repairMaterial;
 
 	private AllToolMaterials(String name, int uses, float speed, float damageBonus, int enchantValue,
-		Supplier<Ingredient> repairMaterial) {
+							 Supplier<Ingredient> repairMaterial) {
 		this.name = name;
 		this.uses = uses;
 		this.speed = speed;

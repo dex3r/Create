@@ -6,9 +6,8 @@ import java.util.List;
 import com.simibubi.create.AllFluids;
 import com.simibubi.create.content.fluids.VirtualFluid;
 
-import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.nbt.NBTHelper;
-import net.minecraft.core.BlockPos;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -20,18 +19,29 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 
 public class PotionFluid extends VirtualFluid {
 
-	public PotionFluid(Properties properties) {
-		super(properties);
+	public static PotionFluid createSource(Properties properties) {
+		return new PotionFluid(properties, true);
 	}
 
-	public static FluidStack of(long amount, Potion potion) {
-		FluidStack fluidStack = new FluidStack(AllFluids.POTION.get()
-				.getSource(), amount);
-		return addPotionToFluidStack(fluidStack, potion);
+	public static PotionFluid createFlowing(Properties properties) {
+		return new PotionFluid(properties, false);
+	}
+
+	public PotionFluid(Properties properties, boolean source) {
+		super(properties, source);
+	}
+
+	public static FluidStack of(long amount, Potion potion, BottleType bottleType) {
+
+		FluidStack fluidStack;
+		fluidStack = new FluidStack(AllFluids.POTION.get().getSource(), amount);
+		addPotionToFluidStack(fluidStack, potion);
+		NBTHelper.writeEnum(fluidStack.getOrCreateTag(), "Bottle", bottleType);
+		return fluidStack;
 	}
 
 	public static FluidStack withEffects(long amount, Potion potion, List<MobEffectInstance> customEffects) {
-		FluidStack fluidStack = of(amount, potion);
+		FluidStack fluidStack = of(amount, potion, BottleType.REGULAR);
 		return appendEffects(fluidStack, customEffects);
 	}
 

@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.simibubi.create.content.logistics.box.PackageEntity;
+import com.simibubi.create.foundation.block.IBE;
 
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.BlockPos;
@@ -88,6 +89,13 @@ public class ItemHelper {
 //		return true;
 //	}
 
+	public static <T extends IBE<? extends BlockEntity>> int calcRedstoneFromBlockEntity(T ibe, Level level, BlockPos pos) {
+		return ibe.getBlockEntityOptional(level, pos)
+			.map(be -> be.getCapability(ForgeCapabilities.ITEM_HANDLER))
+			.map(lo -> lo.map(ItemHelper::calcRedstoneFromInventory).orElse(0))
+			.orElse(0);
+	}
+
 	public static int calcRedstoneFromInventory(@Nullable Storage<ItemVariant> inv) {
 		if (inv == null)
 			return 0;
@@ -118,7 +126,8 @@ public class ItemHelper {
 
 	public static List<Pair<Ingredient, MutableInt>> condenseIngredients(NonNullList<Ingredient> recipeIngredients) {
 		List<Pair<Ingredient, MutableInt>> actualIngredients = new ArrayList<>();
-		Ingredients: for (Ingredient igd : recipeIngredients) {
+		Ingredients:
+		for (Ingredient igd : recipeIngredients) {
 			for (Pair<Ingredient, MutableInt> pair : actualIngredients) {
 				ItemStack[] stacks1 = pair.getFirst()
 					.getItems();
@@ -179,7 +188,7 @@ public class ItemHelper {
 	}
 
 	public static ItemStack extract(Storage<ItemVariant> inv, Predicate<ItemStack> test, ExtractionCountMode mode, int amount,
-		boolean simulate) {
+									boolean simulate) {
 		int extracted = 0;
 		ItemVariant extracting = null;
 		List<ItemVariant> otherTargets = null;
@@ -248,7 +257,7 @@ public class ItemHelper {
 	}
 
 	public static ItemStack extract(Storage<ItemVariant> inv, Predicate<ItemStack> test,
-		Function<ItemStack, Integer> amountFunction, boolean simulate) {
+									Function<ItemStack, Integer> amountFunction, boolean simulate) {
 		ItemStack extracting = ItemStack.EMPTY;
 		int maxExtractionCount = 64;
 
@@ -306,8 +315,7 @@ public class ItemHelper {
 	public static ItemStack fromItemEntity(Entity entityIn) {
 		if (!entityIn.isAlive())
 			return ItemStack.EMPTY;
-		if (entityIn instanceof PackageEntity) {
-			PackageEntity packageEntity = (PackageEntity) entityIn;
+		if (entityIn instanceof PackageEntity packageEntity) {
 			return packageEntity.getBox();
 		}
 		return entityIn instanceof ItemEntity ? ((ItemEntity) entityIn).getItem() : ItemStack.EMPTY;

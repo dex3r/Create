@@ -2,6 +2,8 @@ package com.simibubi.create.content.equipment.clipboard;
 
 import javax.annotation.Nonnull;
 
+import com.simibubi.create.foundation.recipe.ItemCopyingRecipe.SupportsItemCopying;
+
 import net.createmod.catnip.gui.ScreenOpener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -23,7 +25,7 @@ import net.fabricmc.api.Environment;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 
-public class ClipboardBlockItem extends BlockItem {
+public class ClipboardBlockItem extends BlockItem implements SupportsItemCopying {
 
 	public ClipboardBlockItem(Block pBlock, Properties pProperties) {
 		super(pBlock, pProperties);

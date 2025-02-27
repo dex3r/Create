@@ -17,6 +17,7 @@ import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.block.connected.GlassPaneCTBehaviour;
 import com.simibubi.create.foundation.block.connected.HorizontalCTBehaviour;
 import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
@@ -33,6 +34,7 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -41,7 +43,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
-
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
 import io.github.fabricators_of_create.porting_lib.tags.Tags;
@@ -164,7 +165,7 @@ public class WindowGen {
 		ResourceLocation itemSideTexture = Create.asResource(palettesDir() + name);
 		ResourceLocation topTexture = Create.asResource(palettesDir() + "framed_glass_pane_top");
 		Supplier<Supplier<RenderType>> renderType = () -> RenderType::cutoutMipped;
-		return connectedGlassPane(name, parent, ctshift, sideTexture, itemSideTexture, topTexture, renderType)
+		return connectedGlassPane(name, parent, ctshift, sideTexture, itemSideTexture, topTexture, renderType, true)
 			.register();
 	}
 
@@ -173,7 +174,7 @@ public class WindowGen {
 		Supplier<Supplier<RenderType>> renderType) {
 		ResourceLocation topTexture = Create.asResource(palettesDir() + name + "_pane_top");
 		ResourceLocation sideTexture = Create.asResource(palettesDir() + name);
-		return connectedGlassPane(name, parent, ctshift, sideTexture, sideTexture, topTexture, renderType);
+		return connectedGlassPane(name, parent, ctshift, sideTexture, sideTexture, topTexture, renderType, false);
 	}
 
 	public static BlockEntry<ConnectedGlassPaneBlock> woodenWindowPane(WoodType woodType,
@@ -188,7 +189,7 @@ public class WindowGen {
 		ResourceLocation topTexture = new ResourceLocation("block/" + woodName + "_planks");
 		ResourceLocation sideTexture = Create.asResource(palettesDir() + name);
 		return connectedGlassPane(name, parent, () -> AllSpriteShifts.getWoodenWindow(woodType), sideTexture,
-			sideTexture, topTexture, renderType).register();
+			sideTexture, topTexture, renderType, false).register();
 	}
 
 	public static BlockEntry<GlassPaneBlock> standardGlassPane(String name, Supplier<? extends Block> parent,
@@ -196,12 +197,12 @@ public class WindowGen {
 		NonNullBiConsumer<DataGenContext<Block, GlassPaneBlock>, RegistrateBlockstateProvider> stateProvider =
 			(c, p) -> p.paneBlock(c.get(), sideTexture, topTexture);
 		return glassPane(name, parent, sideTexture, topTexture, GlassPaneBlock::new, renderType, $ -> {
-		}, stateProvider).register();
+		}, stateProvider, true).register();
 	}
 
 	private static BlockBuilder<ConnectedGlassPaneBlock, CreateRegistrate> connectedGlassPane(String name,
 		Supplier<? extends Block> parent, Supplier<CTSpriteShiftEntry> ctshift, ResourceLocation sideTexture,
-		ResourceLocation itemSideTexture, ResourceLocation topTexture, Supplier<Supplier<RenderType>> renderType) {
+		ResourceLocation itemSideTexture, ResourceLocation topTexture, Supplier<Supplier<RenderType>> renderType, boolean colorless) {
 		NonNullConsumer<? super ConnectedGlassPaneBlock> connectedTextures = ctshift == null ? $ -> {
 		} : connectedTextures(() -> new GlassPaneCTBehaviour(ctshift.get()));
 		String CGPparents = "block/connected_glass_pane/";
@@ -219,7 +220,7 @@ public class WindowGen {
 				noSideAlt.apply(p));
 
 		return glassPane(name, parent, itemSideTexture, topTexture, ConnectedGlassPaneBlock::new, renderType,
-			connectedTextures, stateProvider);
+			connectedTextures, stateProvider, colorless);
 	}
 
 	private static Function<RegistrateBlockstateProvider, ModelFile> getPaneModelProvider(String CGPparents,
@@ -234,28 +235,46 @@ public class WindowGen {
 		Supplier<? extends Block> parent, ResourceLocation sideTexture, ResourceLocation topTexture,
 		NonNullFunction<Properties, G> factory, Supplier<Supplier<RenderType>> renderType,
 		NonNullConsumer<? super G> connectedTextures,
-		NonNullBiConsumer<DataGenContext<Block, G>, RegistrateBlockstateProvider> stateProvider) {
+		NonNullBiConsumer<DataGenContext<Block, G>, RegistrateBlockstateProvider> stateProvider, boolean colorless) {
 		name += "_pane";
 
-		return REGISTRATE.block(name, factory)
+
+		ItemBuilder<BlockItem, BlockBuilder<G, CreateRegistrate>> itemBuilder = REGISTRATE.block(name, factory)
 			.onRegister(connectedTextures)
 			.addLayer(renderType)
 			.initialProperties(() -> Blocks.GLASS_PANE)
 			.properties(p -> p.mapColor(parent.get()
 				.defaultMapColor()))
 			.blockstate(stateProvider)
-			.recipe((c, p) -> ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, c.get(), 16)
-				.pattern("###")
-				.pattern("###")
-				.define('#', parent.get())
-				.unlockedBy("has_ingredient", RegistrateRecipeProvider.has(parent.get()))
-				.save(p::accept))
-			.tag(Tags.Blocks.GLASS_PANES)
+			.recipe((c, p) -> {
+				ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, c.get(), 16)
+					.pattern("###")
+					.pattern("###")
+					.define('#', parent.get())
+					.unlockedBy("has_ingredient", RegistrateRecipeProvider.has(parent.get()))
+					.save(p::accept);
+				if (colorless)
+					p.stonecutting(DataIngredient.tag(Tags.Items.GLASS_PANES_COLORLESS), RecipeCategory.BUILDING_BLOCKS,
+						c::get);
+			})
 			.loot((t, g) -> t.dropWhenSilkTouch(g))
-			.item()
-			.tag(Tags.Items.GLASS_PANES)
+			.item();
+
+		if (colorless)
+			itemBuilder.tag(Tags.Items.GLASS_PANES, Tags.Items.GLASS_PANES_COLORLESS);
+		else
+			itemBuilder.tag(Tags.Items.GLASS_PANES);
+
+		BlockBuilder<G, CreateRegistrate> blockBuilder = itemBuilder
 			.model((c, p) -> p.generated(c, sideTexture))
 			.build();
+
+		if (colorless)
+			blockBuilder.tag(Tags.Blocks.GLASS_PANES, Tags.Blocks.GLASS_PANES_COLORLESS);
+		else
+			blockBuilder.tag(Tags.Blocks.GLASS_PANES);
+
+		return blockBuilder;
 	}
 
 	private static String palettesDir() {

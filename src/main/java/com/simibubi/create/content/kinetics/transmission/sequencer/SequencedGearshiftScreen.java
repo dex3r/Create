@@ -17,7 +17,6 @@ import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 
 public class SequencedGearshiftScreen extends AbstractSimiScreen {
@@ -169,7 +168,7 @@ public class SequencedGearshiftScreen extends AbstractSimiScreen {
 			if (def.hasValueParameter) {
 				String text = def.formatValue(instruction.value);
 				int stringWidth = font.width(text);
-                label(graphics, 90 + (12 - stringWidth / 2), yOffset - 1, Component.literal(text));
+				label(graphics, 90 + (12 - stringWidth / 2), yOffset - 1, Component.literal(text));
 			}
 			if (def.hasSpeedParameter)
 				label(graphics, 127, yOffset - 1, instruction.speedModifier.label);
@@ -180,9 +179,9 @@ public class SequencedGearshiftScreen extends AbstractSimiScreen {
 	}
 
 	private void renderAdditional(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, int guiLeft, int guiTop,
-		AllGuiTextures background) {
+								  AllGuiTextures background) {
 		GuiGameElement.of(renderedItem).<GuiGameElement
-			.GuiRenderBuilder>at(guiLeft + background.getWidth() + 6, guiTop + background.getHeight() - 56, 100)
+				.GuiRenderBuilder>at(guiLeft + background.getWidth() + 6, guiTop + background.getHeight() - 56, 100)
 			.scale(5)
 			.render(graphics);
 	}

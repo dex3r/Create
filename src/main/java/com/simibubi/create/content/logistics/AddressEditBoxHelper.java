@@ -38,7 +38,7 @@ public class AddressEditBoxHelper {
 		NEARBY_CLIPBOARDS.put(blockPos, new WeakReference<>(blockEntity));
 	}
 
-	public static DestinationSuggestions createSuggestions(Screen screen, EditBox pInput, boolean anchorToBottom) {
+	public static DestinationSuggestions createSuggestions(Screen screen, EditBox pInput, boolean anchorToBottom, String localAddress) {
 		Minecraft mc = Minecraft.getInstance();
 		Player player = mc.player;
 		List<IntAttached<String>> options = new ArrayList<>();
@@ -49,6 +49,11 @@ public class AddressEditBoxHelper {
 
 		if (player == null)
 			return destinationSuggestions;
+		
+		if (localAddress != null) {
+			options.add(IntAttached.with(-1, localAddress));
+			alreadyAdded.add(localAddress);
+		}
 
 		for (int i = 0; i < Inventory.INVENTORY_SIZE; i++)
 			appendAddresses(options, alreadyAdded, player.getInventory()

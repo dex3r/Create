@@ -181,8 +181,10 @@ public class BacktankBlockEntity extends KineticBlockEntity implements Nameable 
 	}
 
 	public void setTags(CompoundTag vanillaTag/*, @Nullable CompoundTag forgeCapsTag*/) {
-		this.vanillaTag = vanillaTag;
-//		this.forgeCapsTag = forgeCapsTag;
+		this.vanillaTag = vanillaTag.copy();
+//		this.forgeCapsTag = forgeCapsTag == null ? null : forgeCapsTag.copy();
+		// Prevent nesting of the ctrl+pick block added tag
+		vanillaTag.remove("BlockEntityTag");
 	}
 
 	public CompoundTag getVanillaTag() {

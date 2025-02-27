@@ -181,9 +181,8 @@ public class CartAssemblerBlockEntity extends SmartBlockEntity implements IDispl
 			return;
 		Entity entity = cart.getPassengers()
 			.get(0);
-		if (!(entity instanceof OrientedContraptionEntity))
+		if (!(entity instanceof OrientedContraptionEntity contraption))
 			return;
-		OrientedContraptionEntity contraption = (OrientedContraptionEntity) entity;
 		UUID couplingId = contraption.getCouplingId();
 
 		if (couplingId == null) {

@@ -13,13 +13,13 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.foundation.utility.RaycastHelper;
 import com.simibubi.create.foundation.utility.fabric.ReachUtil;
 
-import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -63,7 +63,7 @@ public class SuperGlueSelectionHandler {
 
 		if (clusterCooldown > 0) {
 			if (clusterCooldown == 25)
-				player.displayClientMessage(Lang.IMMUTABLE_EMPTY, true);
+				player.displayClientMessage(CommonComponents.EMPTY, true);
 			Outliner.getInstance().keep(clusterOutlineSlot);
 			clusterCooldown--;
 		}
@@ -216,7 +216,7 @@ public class SuperGlueSelectionHandler {
 		if (mc.hitResult instanceof BlockHitResult bhr) {
 			face = bhr.getDirection();
 			BlockState blockState = level.getBlockState(hoveredPos);
-			if (blockState.getBlock()instanceof AbstractChassisBlock cb)
+			if (blockState.getBlock() instanceof AbstractChassisBlock cb)
 				if (cb.getGlueableSide(blockState, bhr.getDirection()) != null)
 					return false;
 		}

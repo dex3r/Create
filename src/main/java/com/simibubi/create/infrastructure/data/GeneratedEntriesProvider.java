@@ -5,6 +5,9 @@ import java.util.concurrent.CompletableFuture;
 
 import com.simibubi.create.AllDamageTypes;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.registry.CreateRegistries;
+import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileTypes;
+import com.simibubi.create.infrastructure.worldgen.AllBiomeModifiers;
 import com.simibubi.create.infrastructure.worldgen.AllConfiguredFeatures;
 import com.simibubi.create.infrastructure.worldgen.AllPlacedFeatures;
 
@@ -17,8 +20,12 @@ import net.minecraft.data.PackOutput;
 import io.github.fabricators_of_create.porting_lib.data.DatapackBuiltinEntriesProvider;
 
 public class GeneratedEntriesProvider extends DatapackBuiltinEntriesProvider {
-
-	public static final RegistrySetBuilder BUILDER = Util.make(new RegistrySetBuilder(), GeneratedEntriesProvider::addBootstraps);
+	private static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
+		.add(Registries.DAMAGE_TYPE, AllDamageTypes::bootstrap)
+		.add(Registries.CONFIGURED_FEATURE, AllConfiguredFeatures::bootstrap)
+		.add(Registries.PLACED_FEATURE, AllPlacedFeatures::bootstrap)
+		.add(ForgeRegistries.Keys.BIOME_MODIFIERS, AllBiomeModifiers::bootstrap)
+		.add(CreateRegistries.POTATO_PROJECTILE_TYPE, AllPotatoProjectileTypes::bootstrap);
 
 	public GeneratedEntriesProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
 		super(output, registries, BUILDER, Set.of(Create.ID));

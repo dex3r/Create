@@ -10,14 +10,15 @@ import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllContraptionTypes;
+import com.simibubi.create.api.behaviour.interaction.ConductorBlockInteractionBehavior;
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
+import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.ContraptionType;
 import com.simibubi.create.content.contraptions.MountedStorageManager;
 import com.simibubi.create.content.contraptions.actors.trainControls.ControlsBlock;
 import com.simibubi.create.content.contraptions.minecart.TrainCargoManager;
-import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
-import com.simibubi.create.content.processing.burner.BlazeBurnerBlock.HeatLevel;
 import com.simibubi.create.content.trains.bogey.AbstractBogeyBlock;
 import com.simibubi.create.foundation.utility.CreateLang;
 
@@ -45,7 +46,7 @@ public class CarriageContraption extends Contraption {
 	private boolean forwardControls;
 	private boolean backwardControls;
 
-	public Couple<Boolean> blazeBurnerConductors;
+	public Couple<Boolean> blockConductors;
 	public Map<BlockPos, Couple<Boolean>> conductorSeats;
 	public ArrivalSoundQueue soundQueue;
 
@@ -55,7 +56,7 @@ public class CarriageContraption extends Contraption {
 	private int bogeys;
 	private boolean sidewaysControls;
 	private BlockPos secondBogeyPos;
-	private List<BlockPos> assembledBlazeBurners;
+	private List<BlockPos> assembledBlockConductors;
 
 	// render
 	public int portalCutoffMin;
@@ -70,8 +71,8 @@ public class CarriageContraption extends Contraption {
 
 	public CarriageContraption() {
 		conductorSeats = new HashMap<>();
-		assembledBlazeBurners = new ArrayList<>();
-		blazeBurnerConductors = Couple.create(false, false);
+		assembledBlockConductors = new ArrayList<>();
+		blockConductors = Couple.create(false, false);
 		soundQueue = new ArrivalSoundQueue();
 		portalCutoffMin = Integer.MIN_VALUE;
 		portalCutoffMax = Integer.MAX_VALUE;
@@ -101,10 +102,10 @@ public class CarriageContraption extends Contraption {
 		if (sidewaysControls)
 			throw new AssemblyException(CreateLang.translateDirect("train_assembly.sideways_controls"));
 
-		for (BlockPos blazePos : assembledBlazeBurners)
+		for (BlockPos blazePos : assembledBlockConductors)
 			for (Direction direction : Iterate.directionsInAxis(assemblyDirection.getAxis()))
 				if (inControl(blazePos, direction))
-					blazeBurnerConductors.set(direction != assemblyDirection, true);
+					blockConductors.set(direction != assemblyDirection, true);
 		for (BlockPos seatPos : getSeats())
 			for (Direction direction : Iterate.directionsInAxis(assemblyDirection.getAxis()))
 				if (inControl(seatPos, direction))
@@ -165,9 +166,10 @@ public class CarriageContraption extends Contraption {
 				captureBE ? world.getBlockEntity(pos) : null);
 		}
 
-		if (AllBlocks.BLAZE_BURNER.has(blockState)
-			&& blockState.getValue(BlazeBurnerBlock.HEAT_LEVEL) != HeatLevel.NONE)
-			assembledBlazeBurners.add(toLocalPos(pos));
+		MovingInteractionBehaviour behaviour = MovingInteractionBehaviour.REGISTRY.get(blockState);
+		if (behaviour instanceof ConductorBlockInteractionBehavior conductor && conductor.isValidConductor(blockState)) {
+			assembledBlockConductors.add(toLocalPos(pos));
+		}
 
 		if (AllBlocks.TRAIN_CONTROLS.has(blockState)) {
 			Direction facing = blockState.getValue(ControlsBlock.FACING);
@@ -191,8 +193,8 @@ public class CarriageContraption extends Contraption {
 		NBTHelper.writeEnum(tag, "AssemblyDirection", getAssemblyDirection());
 		tag.putBoolean("FrontControls", forwardControls);
 		tag.putBoolean("BackControls", backwardControls);
-		tag.putBoolean("FrontBlazeConductor", blazeBurnerConductors.getFirst());
-		tag.putBoolean("BackBlazeConductor", blazeBurnerConductors.getSecond());
+		tag.putBoolean("FrontBlazeConductor", blockConductors.getFirst());
+		tag.putBoolean("BackBlazeConductor", blockConductors.getSecond());
 		ListTag list = NBTHelper.writeCompoundList(conductorSeats.entrySet(), e -> {
 			CompoundTag compoundTag = new CompoundTag();
 			compoundTag.put("Pos", NbtUtils.writeBlockPos(e.getKey()));
@@ -212,7 +214,7 @@ public class CarriageContraption extends Contraption {
 		assemblyDirection = NBTHelper.readEnum(nbt, "AssemblyDirection", Direction.class);
 		forwardControls = nbt.getBoolean("FrontControls");
 		backwardControls = nbt.getBoolean("BackControls");
-		blazeBurnerConductors =
+		blockConductors =
 			Couple.create(nbt.getBoolean("FrontBlazeConductor"), nbt.getBoolean("BackBlazeConductor"));
 		conductorSeats.clear();
 		NBTHelper.iterateCompoundList(nbt.getList("ConductorSeats", Tag.TAG_COMPOUND),
@@ -229,7 +231,7 @@ public class CarriageContraption extends Contraption {
 
 	@Override
 	public ContraptionType getType() {
-		return ContraptionType.CARRIAGE;
+		return AllContraptionTypes.CARRIAGE.get();
 	}
 
 	public Direction getAssemblyDirection() {

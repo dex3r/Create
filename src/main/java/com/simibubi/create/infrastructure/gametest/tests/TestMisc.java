@@ -12,7 +12,6 @@ import com.simibubi.create.infrastructure.gametest.CreateGameTestHelper;
 import com.simibubi.create.infrastructure.gametest.GameTestGroup;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
@@ -36,8 +35,8 @@ public class TestMisc {
 		BlockPos redEndTop = helper.absolutePos(new BlockPos(5, 4, 7));
 		ServerLevel level = helper.getLevel();
 		SchematicExport.saveSchematic(
-				SchematicExport.SCHEMATICS.resolve("uploaded/Deployer"), "schematicannon_gametest", true,
-				level, whiteEndBottom, redEndTop
+			SchematicExport.SCHEMATICS.resolve("uploaded/Deployer"), "schematicannon_gametest", true,
+			level, whiteEndBottom, redEndTop
 		);
 		ItemStack schematic =
 			SchematicItem.create(level, "schematicannon_gametest.nbt", "Deployer");

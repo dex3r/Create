@@ -28,7 +28,6 @@ import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.recipe.RecipeConditions;
 import com.simibubi.create.foundation.recipe.RecipeFinder;
 import com.simibubi.create.foundation.utility.AbstractBlockBreakQueue;
-import com.simibubi.create.foundation.utility.TreeCutter;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.createmod.catnip.math.VecHelper;
@@ -358,15 +357,14 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		inventory.clear();
 
 		for (int roll = 0; roll < rolls; roll++) {
-			List<ItemStack> results = new LinkedList<ItemStack>();
+			List<ItemStack> results = new LinkedList<>();
 			if (recipe instanceof CuttingRecipe)
 				results = ((CuttingRecipe) recipe).rollResults();
 			else if (recipe instanceof StonecutterRecipe || recipe.getType() == woodcuttingRecipeType.get())
 				results.add(recipe.getResultItem(level.registryAccess())
 					.copy());
 
-			for (int i = 0; i < results.size(); i++) {
-				ItemStack stack = results.get(i);
+			for (ItemStack stack : results) {
 				ItemHelper.addToList(stack, list);
 			}
 		}

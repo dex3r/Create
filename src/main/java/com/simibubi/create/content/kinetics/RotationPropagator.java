@@ -47,11 +47,9 @@ public class RotationPropagator {
 
 		Block fromBlock = stateFrom.getBlock();
 		Block toBlock = stateTo.getBlock();
-		if (!(fromBlock instanceof IRotate && toBlock instanceof IRotate))
+		if (!(fromBlock instanceof IRotate definitionFrom && toBlock instanceof IRotate definitionTo))
 			return 0;
 
-		final IRotate definitionFrom = (IRotate) fromBlock;
-		final IRotate definitionTo = (IRotate) toBlock;
 		final BlockPos diff = to.getBlockPos()
 				.subtract(from.getBlockPos());
 		final Direction direction = Direction.getNearest(diff.getX(), diff.getY(), diff.getZ());
@@ -235,7 +233,7 @@ public class RotationPropagator {
 					Math.signum(newSpeed) != Math.signum(speedOfNeighbour) && (newSpeed != 0 && speedOfNeighbour != 0);
 
 			boolean tooFast = Math.abs(newSpeed) > AllConfigs.server().kinetics.maxRotationSpeed.get()
-					|| Math.abs(oppositeSpeed) > AllConfigs.server().kinetics.maxRotationSpeed.get();
+				|| Math.abs(oppositeSpeed) > AllConfigs.server().kinetics.maxRotationSpeed.get();
 			// Check for both the new speed and the opposite speed, just in case
 
 			boolean speedChangedTooOften = currentTE.getFlickerScore() > MAX_FLICKER_SCORE;
@@ -321,10 +319,9 @@ public class RotationPropagator {
 			if (!(neighbourState.getBlock() instanceof IRotate))
 				continue;
 			BlockEntity blockEntity = worldIn.getBlockEntity(neighbourPos);
-			if (!(blockEntity instanceof KineticBlockEntity))
+			if (!(blockEntity instanceof KineticBlockEntity neighbourBE))
 				continue;
 
-			final KineticBlockEntity neighbourBE = (KineticBlockEntity) blockEntity;
 			if (!neighbourBE.hasSource() || !neighbourBE.source.equals(pos))
 				continue;
 
@@ -350,9 +347,8 @@ public class RotationPropagator {
 		while (!frontier.isEmpty()) {
 			final BlockPos pos = frontier.remove(0);
 			BlockEntity blockEntity = world.getBlockEntity(pos);
-			if (!(blockEntity instanceof KineticBlockEntity))
+			if (!(blockEntity instanceof KineticBlockEntity currentBE))
 				continue;
-			final KineticBlockEntity currentBE = (KineticBlockEntity) blockEntity;
 
 			currentBE.removeSource();
 			currentBE.sendData();
@@ -393,9 +389,8 @@ public class RotationPropagator {
 			return null;
 		BlockEntity neighbourBE = currentTE.getLevel()
 				.getBlockEntity(neighbourPos);
-		if (!(neighbourBE instanceof KineticBlockEntity))
+		if (!(neighbourBE instanceof KineticBlockEntity neighbourKBE))
 			return null;
-		KineticBlockEntity neighbourKBE = (KineticBlockEntity) neighbourBE;
 		if (!(neighbourKBE.getBlockState()
 				.getBlock() instanceof IRotate))
 			return null;
@@ -439,9 +434,8 @@ public class RotationPropagator {
 		}
 
 		BlockState blockState = be.getBlockState();
-		if (!(blockState.getBlock() instanceof IRotate))
+		if (!(blockState.getBlock() instanceof IRotate block))
 			return neighbours;
-		IRotate block = (IRotate) blockState.getBlock();
 		return be.addPropagationLocations(block, blockState, neighbours);
 	}
 

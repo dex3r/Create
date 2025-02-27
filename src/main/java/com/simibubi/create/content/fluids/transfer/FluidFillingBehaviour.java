@@ -229,10 +229,10 @@ public class FluidFillingBehaviour extends FluidManipulationBehaviour {
 					protected void onFinalCommit() {
 						playEffect(world, currentPos, fluid, false);
 						LevelTickAccess<Fluid> pendingFluidTicks = world.getFluidTicks();
-						if (pendingFluidTicks instanceof LevelTicks) {
-							LevelTicks<Fluid> serverTickList = (LevelTicks<Fluid>) pendingFluidTicks;
+						if (pendingFluidTicks instanceof LevelTicks<Fluid> serverTickList) {
 							serverTickList.clearArea(new BoundingBox(currentPos));
 						}
+
 						affectedArea = BBHelper.encapsulate(affectedArea, currentPos);
 					}
 				}.updateSnapshots(ctx);
@@ -304,7 +304,7 @@ public class FluidFillingBehaviour extends FluidManipulationBehaviour {
 
 		if (fluidState.getType() != Fluids.EMPTY
 			&& blockState.getCollisionShape(getWorld(), pos, CollisionContext.empty())
-				.isEmpty())
+			.isEmpty())
 			return toFill.isSame(fluidState.getType()) ? SpaceType.FILLED : SpaceType.BLOCKING;
 
 		return canBeReplacedByFluid(world, pos, blockState) ? SpaceType.FILLABLE : SpaceType.BLOCKING;

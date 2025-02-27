@@ -9,7 +9,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.Create;
-import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.belt.behaviour.DirectBeltInputBehaviour;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour.TransportedResult;
@@ -28,9 +28,22 @@ import com.simibubi.create.foundation.utility.BlockHelper;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
+
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
+
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -655,8 +668,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		if (AllBlocks.ENCASED_FAN.has(blockStateAbove)
 			&& blockStateAbove.getValue(EncasedFanBlock.FACING) == Direction.DOWN) {
 			BlockEntity be = level.getBlockEntity(worldPosition.above());
-			if (be instanceof EncasedFanBlockEntity && !be.isRemoved()) {
-				EncasedFanBlockEntity fan = (EncasedFanBlockEntity) be;
+			if (be instanceof EncasedFanBlockEntity fan && !be.isRemoved()) {
 				return fan.getSpeed();
 			}
 		}
@@ -678,8 +690,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		if (AllBlocks.ENCASED_FAN.has(blockStateBelow)
 			&& blockStateBelow.getValue(EncasedFanBlock.FACING) == Direction.UP) {
 			BlockEntity be = level.getBlockEntity(worldPosition.below());
-			if (be instanceof EncasedFanBlockEntity && !be.isRemoved()) {
-				EncasedFanBlockEntity fan = (EncasedFanBlockEntity) be;
+			if (be instanceof EncasedFanBlockEntity fan && !be.isRemoved()) {
 				return fan.getSpeed();
 			}
 		}
@@ -763,10 +774,10 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			.style(ChatFormatting.YELLOW)
 			.forGoggles(tooltip);
 		if (!item.isEmpty())
-            CreateLang.translate("tooltip.chute.contains", Component.translatable(item.getDescriptionId())
-                .getString(), item.getCount())
-                .style(ChatFormatting.GREEN)
-                .forGoggles(tooltip);
+			CreateLang.translate("tooltip.chute.contains", Component.translatable(item.getDescriptionId())
+					.getString(), item.getCount())
+				.style(ChatFormatting.GREEN)
+				.forGoggles(tooltip);
 
 		return true;
 	}

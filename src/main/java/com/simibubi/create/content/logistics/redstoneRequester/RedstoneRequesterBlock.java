@@ -91,7 +91,7 @@ public class RedstoneRequesterBlock extends Block implements IBE<RedstoneRequest
 	}
 
 	public static void programRequester(ServerPlayer player, StockTickerBlockEntity be, PackageOrder order,
-		String address) {
+		String address, PackageOrder orderContext) {
 		ItemStack stack = player.getMainHandItem();
 		boolean isRequester = AllBlocks.REDSTONE_REQUESTER.isIn(stack);
 		boolean isShopCloth = AllItemTags.TABLE_CLOTHS.matches(stack);
@@ -100,6 +100,7 @@ public class RedstoneRequesterBlock extends Block implements IBE<RedstoneRequest
 
 		AutoRequestData autoRequestData = new AutoRequestData();
 		autoRequestData.encodedRequest = order;
+		autoRequestData.encodedRequestContext = orderContext;
 		autoRequestData.encodedTargetAdress = address;
 		autoRequestData.targetOffset = be.getBlockPos();
 		autoRequestData.targetDim = player.level()
@@ -150,6 +151,7 @@ public class RedstoneRequesterBlock extends Block implements IBE<RedstoneRequest
 			if (data == null)
 				return;
 			rrbe.encodedRequest = data.encodedRequest;
+			rrbe.encodedRequestContext = data.encodedRequestContext;
 			rrbe.encodedTargetAdress = data.encodedTargetAdress;
 		});
 	}

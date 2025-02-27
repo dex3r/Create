@@ -30,7 +30,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -507,10 +506,10 @@ public class RedstoneScenes {
 		scene.title("analog_lever", "Controlling signals using the Analog Lever");
 		scene.configureBasePlate(0, 0, 5);
 
-		BlockPos[] wireLocations = new BlockPos[] { util.grid().at(2, 1, 1), util.grid().at(2, 1, 0), util.grid().at(1, 1, 0),
+		BlockPos[] wireLocations = new BlockPos[]{util.grid().at(2, 1, 1), util.grid().at(2, 1, 0), util.grid().at(1, 1, 0),
 			util.grid().at(0, 1, 0), util.grid().at(0, 1, 1), util.grid().at(0, 1, 2), util.grid().at(0, 1, 3),
 			util.grid().at(0, 1, 4), util.grid().at(1, 1, 4), util.grid().at(2, 1, 4), util.grid().at(3, 1, 4),
-			util.grid().at(4, 1, 4), util.grid().at(4, 1, 3), util.grid().at(4, 1, 2), util.grid().at(4, 1, 1) };
+			util.grid().at(4, 1, 4), util.grid().at(4, 1, 3), util.grid().at(4, 1, 2), util.grid().at(4, 1, 1)};
 
 		Selection leverSelection = util.select().fromTo(2, 1, 2, 2, 2, 2);
 		Selection lamp = util.select().position(4, 1, 0);
@@ -638,7 +637,7 @@ public class RedstoneScenes {
 			.withItem(clipboard);
 		scene.idle(7);
 
-        Component component = Component.literal("CREATE");
+		Component component = Component.literal("CREATE");
 		for (int i = 0; i < 3; i++) {
 			final int index = i;
 			scene.world().modifyBlockEntityNBT(util.select().position(3 - i, 1, 3), NixieTubeBlockEntity.class, nbt -> {

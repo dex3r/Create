@@ -9,7 +9,6 @@ import com.simibubi.create.content.logistics.box.PackageStyles;
 import com.simibubi.create.content.logistics.filter.FilterScreenPacket.Option;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.simibubi.create.foundation.gui.widget.Indicator;
 
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.GuiGraphics;
@@ -78,6 +77,13 @@ public class PackageFilterScreen extends AbstractFilterScreen<PackageFilterMenu>
 	public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
 		return super.mouseClicked(pMouseX, pMouseY, pButton);
 	}
+	
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+		if (addressBox.mouseScrolled(mouseX, mouseY, delta))
+			return true;
+		return super.mouseScrolled(mouseX, mouseY, delta);
+	}
 
 	@Override
 	public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
@@ -99,11 +105,6 @@ public class PackageFilterScreen extends AbstractFilterScreen<PackageFilterMenu>
 
 	@Override
 	protected boolean isButtonEnabled(IconButton button) {
-		return false;
-	}
-
-	@Override
-	protected boolean isIndicatorOn(Indicator indicator) {
 		return false;
 	}
 

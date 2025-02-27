@@ -7,6 +7,12 @@
       },
       {
         "item": "minecraft:dirt"
+      },
+      {
+        "item": "minecraft:coarse_dirt"
+      },
+      {
+        "item": "minecraft:rooted_dirt"
       }
     ]
   ],

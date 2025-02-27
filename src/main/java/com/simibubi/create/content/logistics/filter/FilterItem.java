@@ -7,7 +7,9 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
-import net.minecraft.network.chat.MutableComponent;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.AllItems;
@@ -16,12 +18,14 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.filter.AttributeFilterMenu.WhitelistMode;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
 import com.simibubi.create.foundation.item.ItemHelper;
+import com.simibubi.create.foundation.recipe.ItemCopyingRecipe.SupportsItemCopying;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -44,7 +48,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelp
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
 
-public class FilterItem extends Item implements MenuProvider {
+public class FilterItem extends Item implements MenuProvider, SupportsItemCopying {
 
 	private FilterType type;
 
@@ -85,7 +89,7 @@ public class FilterItem extends Item implements MenuProvider {
 		List<Component> makeSummary = makeSummary(stack);
 		if (makeSummary.isEmpty())
 			return;
-		tooltip.add(Component.literal(" "));
+		tooltip.add(CommonComponents.SPACE);
 		tooltip.addAll(makeSummary);
 	}
 
@@ -104,7 +108,7 @@ public class FilterItem extends Item implements MenuProvider {
 			int count = 0;
 			for (int i = 0; i < filterItems.getSlotCount(); i++) {
 				if (count > 3) {
-                    list.add(Component.literal("- ...")
+					list.add(Component.literal("- ...")
 						.withStyle(ChatFormatting.DARK_GRAY));
 					break;
 				}
@@ -112,7 +116,7 @@ public class FilterItem extends Item implements MenuProvider {
 				ItemStack filterStack = filterItems.getStackInSlot(i);
 				if (filterStack.isEmpty())
 					continue;
-                list.add(Component.literal("- ")
+				list.add(Component.literal("- ")
 					.append(filterStack.getHoverName())
 					.withStyle(ChatFormatting.GRAY));
 				count++;
@@ -128,8 +132,8 @@ public class FilterItem extends Item implements MenuProvider {
 			list.add((whitelistMode == WhitelistMode.WHITELIST_CONJ
 				? CreateLang.translateDirect("gui.attribute_filter.allow_list_conjunctive")
 				: whitelistMode == WhitelistMode.WHITELIST_DISJ
-					? CreateLang.translateDirect("gui.attribute_filter.allow_list_disjunctive")
-					: CreateLang.translateDirect("gui.attribute_filter.deny_list")).withStyle(ChatFormatting.GOLD));
+				? CreateLang.translateDirect("gui.attribute_filter.allow_list_disjunctive")
+				: CreateLang.translateDirect("gui.attribute_filter.deny_list")).withStyle(ChatFormatting.GOLD));
 
 			int count = 0;
 			ListTag attributes = filter.getOrCreateTag()
@@ -141,11 +145,11 @@ public class FilterItem extends Item implements MenuProvider {
 					continue;
 				boolean inverted = compound.getBoolean("Inverted");
 				if (count > 3) {
-                    list.add(Component.literal("- ...")
+					list.add(Component.literal("- ...")
 						.withStyle(ChatFormatting.DARK_GRAY));
 					break;
 				}
-                list.add(Component.literal("- ")
+				list.add(Component.literal("- ")
 					.append(attribute.format(inverted)));
 				count++;
 			}
@@ -237,7 +241,7 @@ public class FilterItem extends Item implements MenuProvider {
 			if (key.equals("Fragment"))
 				continue;
 			if (!Objects.equals(a.getTag()
-				.get(key),
+					.get(key),
 				b.getTag()
 					.get(key)))
 				return false;

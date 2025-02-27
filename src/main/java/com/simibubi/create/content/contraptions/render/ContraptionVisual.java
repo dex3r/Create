@@ -6,15 +6,15 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.AllMovementBehaviours;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.Contraption.RenderedBlocks;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.foundation.utility.worldWrappers.WrappedBlockAndTintGetter;
 import com.simibubi.create.foundation.virtualWorld.VirtualRenderWorld;
 
+import dev.engine_room.flywheel.api.material.CardinalLightingMode;
 import dev.engine_room.flywheel.api.model.Model;
 import dev.engine_room.flywheel.api.task.Plan;
 import dev.engine_room.flywheel.api.visual.BlockEntityVisual;
@@ -28,6 +28,8 @@ import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
 import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
+import dev.engine_room.flywheel.lib.material.SimpleMaterial;
+import dev.engine_room.flywheel.lib.model.ModelUtil;
 import dev.engine_room.flywheel.lib.model.baked.FabricMultiBlockModelBuilder;
 import dev.engine_room.flywheel.lib.task.ForEachPlan;
 import dev.engine_room.flywheel.lib.task.NestedPlan;
@@ -70,6 +72,9 @@ public class ContraptionVisual<E extends AbstractContraptionEntity> extends Abst
 		setEmbeddingMatrices(partialTick);
 
 		Contraption contraption = entity.getContraption();
+		// The contraption could be null if it wasn't synced (ex. too much data)
+		if (contraption == null)
+			return;
 
 		setupModel(contraption);
 
@@ -91,6 +96,8 @@ public class ContraptionVisual<E extends AbstractContraptionEntity> extends Abst
 		};
 
 		model = new FabricMultiBlockModelBuilder(modelWorld, blocks.positions())
+			.materialFunc((renderType, aBoolean) -> SimpleMaterial.builderOf(ModelUtil.getMaterial(renderType, aBoolean))
+				.cardinalLightingMode(CardinalLightingMode.CHUNK))
 			.build();
 
 		var instancer = embedding.instancerProvider()
@@ -159,7 +166,7 @@ public class ContraptionVisual<E extends AbstractContraptionEntity> extends Abst
 
 		StructureTemplate.StructureBlockInfo blockInfo = actor.getLeft();
 
-		MovementBehaviour movementBehaviour = AllMovementBehaviours.getBehaviour(blockInfo.state());
+		MovementBehaviour movementBehaviour = MovementBehaviour.REGISTRY.get(blockInfo.state());
 		if (movementBehaviour == null) {
 			return;
 		}

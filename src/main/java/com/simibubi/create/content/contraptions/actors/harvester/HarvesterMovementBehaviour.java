@@ -4,7 +4,8 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
+import com.simibubi.create.AllTags.AllBlockTags;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.contraptions.render.ActorVisual;
 import com.simibubi.create.content.contraptions.render.ContraptionMatrices;
@@ -43,24 +44,27 @@ public class HarvesterMovementBehaviour implements MovementBehaviour {
 	public boolean isActive(MovementContext context) {
 		return MovementBehaviour.super.isActive(context)
 			&& !VecHelper.isVecPointingTowards(context.relativeMotion, context.state.getValue(HarvesterBlock.FACING)
-				.getOpposite());
+			.getOpposite());
 	}
 
 	@Override
 	public Vec3 getActiveAreaOffset(MovementContext context) {
 		return Vec3.atLowerCornerOf(context.state.getValue(HarvesterBlock.FACING)
-			.getNormal())
+				.getNormal())
 			.scale(.45);
 	}
 
 	@Override
 	public void visitNewPosition(MovementContext context, BlockPos pos) {
 		Level world = context.world;
-		BlockState stateVisited = world.getBlockState(pos);
-		boolean notCropButCuttable = false;
-
 		if (world.isClientSide)
 			return;
+
+		BlockState stateVisited = world.getBlockState(pos);
+		if (stateVisited.isAir() || AllBlockTags.NON_HARVESTABLE.matches(stateVisited))
+			return;
+
+		boolean notCropButCuttable = false;
 
 		if (!isValidCrop(world, pos, stateVisited)) {
 			if (isValidOther(world, pos, stateVisited))
@@ -97,8 +101,7 @@ public class HarvesterMovementBehaviour implements MovementBehaviour {
 		boolean harvestPartial = AllConfigs.server().kinetics.harvestPartiallyGrown.get();
 		boolean replant = AllConfigs.server().kinetics.harvesterReplants.get();
 
-		if (state.getBlock() instanceof CropBlock) {
-			CropBlock crop = (CropBlock) state.getBlock();
+		if (state.getBlock() instanceof CropBlock crop) {
 			if (harvestPartial)
 				return state != crop.getStateForAge(0) || !replant;
 			return crop.isMaxAge(state);
@@ -107,9 +110,8 @@ public class HarvesterMovementBehaviour implements MovementBehaviour {
 		if (state.getCollisionShape(world, pos)
 			.isEmpty() || state.getBlock() instanceof CocoaBlock) {
 			for (Property<?> property : state.getProperties()) {
-				if (!(property instanceof IntegerProperty))
+				if (!(property instanceof IntegerProperty ageProperty))
 					continue;
-				IntegerProperty ageProperty = (IntegerProperty) property;
 				if (!property.getName()
 					.equals(BlockStateProperties.AGE_1.getName()))
 					continue;
@@ -168,14 +170,13 @@ public class HarvesterMovementBehaviour implements MovementBehaviour {
 		}
 
 		Block block = state.getBlock();
-		if (block instanceof CropBlock) {
-			CropBlock crop = (CropBlock) block;
+		if (block instanceof CropBlock crop) {
 			return crop.getStateForAge(0);
 		}
 		if (block == Blocks.SWEET_BERRY_BUSH) {
 			return state.setValue(BlockStateProperties.AGE_3, Integer.valueOf(1));
 		}
-		if (block == Blocks.SUGAR_CANE || block instanceof GrowingPlantBlock) {
+		if (AllBlockTags.SUGAR_CANE_VARIANTS.matches(block) || block instanceof GrowingPlantBlock) {
 			if (state.getFluidState()
 				.isEmpty())
 				return Blocks.AIR.defaultBlockState();
@@ -208,15 +209,15 @@ public class HarvesterMovementBehaviour implements MovementBehaviour {
 
 	@Override
 	public void renderInContraption(MovementContext context, VirtualRenderWorld renderWorld,
-		ContraptionMatrices matrices, MultiBufferSource buffers) {
-        if (!VisualizationManager.supportsVisualization(context.world))
+									ContraptionMatrices matrices, MultiBufferSource buffers) {
+		if (!VisualizationManager.supportsVisualization(context.world))
 			HarvesterRenderer.renderInContraption(context, renderWorld, matrices, buffers);
 	}
 
 	@Nullable
 	@Override
 	public ActorVisual createVisual(VisualizationContext visualizationContext, VirtualRenderWorld simulationWorld,
-		MovementContext movementContext) {
+									MovementContext movementContext) {
 		return new HarvesterActorVisual(visualizationContext, simulationWorld, movementContext);
 	}
 

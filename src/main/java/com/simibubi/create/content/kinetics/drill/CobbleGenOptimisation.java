@@ -13,7 +13,6 @@ import com.simibubi.create.foundation.mixin.accessor.FluidInteractionRegistryAcc
 
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.levelWrappers.PlacementSimulationServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +29,7 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
 
 public class CobbleGenOptimisation {
 
-	static PlacementSimulationServerLevel cachedLevel;
+	static CobbleGenLevel cachedLevel;
 
 	public record CobbleGenBlockConfiguration(List<BlockState> statesAroundDrill) {
 	}
@@ -91,9 +90,12 @@ public class CobbleGenOptimisation {
 			}
 		}
 
-		// TODO Catnip: add empty methods to PSSL overriding levelEvent() side-effects
-		if (cachedLevel == null || cachedLevel.getLevel() != level)
-			cachedLevel = new PlacementSimulationServerLevel(level);
+		ServerLevel owLevel = level.getServer().getLevel(Level.OVERWORLD);
+		if (owLevel == null)
+			owLevel = level;
+		
+		if (cachedLevel == null || cachedLevel.getLevel() != owLevel)
+			cachedLevel = new CobbleGenLevel(level);
 
 		BlockState result = Blocks.AIR.defaultBlockState();
 		if (interaction == null)

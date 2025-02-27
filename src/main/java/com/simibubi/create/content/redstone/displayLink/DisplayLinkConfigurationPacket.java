@@ -1,6 +1,6 @@
 package com.simibubi.create.content.redstone.displayLink;
 
-import com.simibubi.create.content.redstone.displayLink.source.DisplaySource;
+import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.foundation.networking.BlockEntityConfigurationPacket;
 
 import net.minecraft.core.BlockPos;
@@ -44,8 +44,8 @@ public class DisplayLinkConfigurationPacket extends BlockEntityConfigurationPack
 			return;
 		}
 
-		ResourceLocation id = new ResourceLocation(configData.getString("Id"));
-		DisplaySource source = AllDisplayBehaviours.getSource(id);
+		ResourceLocation id = ResourceLocation.tryParse(configData.getString("Id"));
+		DisplaySource source = DisplaySource.get(id);
 		if (source == null) {
 			be.notifyUpdate();
 			return;

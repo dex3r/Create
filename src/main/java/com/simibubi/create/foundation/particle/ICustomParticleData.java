@@ -19,7 +19,7 @@ public interface ICustomParticleData<T extends ParticleOptions> {
 	Codec<T> getCodec(ParticleType<T> type);
 
 	public default ParticleType<T> createType() {
-		return new ParticleType<T>(false, getDeserializer()) {
+		return new ParticleType<>(false, getDeserializer()) {
 
 			@Override
 			public Codec<T> codec() {

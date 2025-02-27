@@ -13,7 +13,9 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.network.chat.Component;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.joml.Math;
 
 import com.google.common.collect.HashMultimap;
@@ -27,10 +29,13 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock.PanelSlot;
 import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedClientHandler;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
@@ -55,12 +60,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
@@ -71,8 +80,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import net.minecraftforge.network.NetworkHooks;
 
-public class FactoryPanelBehaviour extends FilteringBehaviour {
+public class FactoryPanelBehaviour extends FilteringBehaviour implements MenuProvider {
 
 	public static final BehaviourType<FactoryPanelBehaviour> TOP_LEFT = new BehaviourType<>();
 	public static final BehaviourType<FactoryPanelBehaviour> TOP_RIGHT = new BehaviourType<>();
@@ -143,7 +153,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		if (cached instanceof FactoryPanelBehaviour fbe && !fbe.blockEntity.isRemoved())
 			return fbe;
 		FactoryPanelBehaviour result = at(world, connection.from);
-		connection.cachedSource = new WeakReference<Object>(result);
+		connection.cachedSource = new WeakReference<>(result);
 		return result;
 	}
 
@@ -165,7 +175,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		if (cached instanceof FactoryPanelSupportBehaviour fpsb && !fpsb.blockEntity.isRemoved())
 			return fpsb;
 		FactoryPanelSupportBehaviour result = linkAt(world, connection.from);
-		connection.cachedSource = new WeakReference<Object>(result);
+		connection.cachedSource = new WeakReference<>(result);
 		return result;
 	}
 
@@ -210,7 +220,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 
 		SmartBlockEntity oldBE = blockEntity;
 		FactoryPanelPosition oldPos = getPanelPosition();
-		slot = newPos.slot();
+		moveToSlot(newPos.slot());
 
 		// Add to new BE
 		if (level.getBlockEntity(newPos.pos()) instanceof FactoryPanelBlockEntity fpbe) {
@@ -265,6 +275,12 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 			.playSound(null, newPos.pos(), SoundEvents.COPPER_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
 	}
 
+	private void moveToSlot(PanelSlot slot) {
+		this.slot = slot;
+		if (this.getSlotPositioning() instanceof FactoryPanelSlotPositioning fpsp)
+			fpsp.slot = slot;
+	}
+
 	@Override
 	public void initialize() {
 		super.initialize();
@@ -279,6 +295,8 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 				tickStorageMonitor();
 			bulb.updateChaseTarget(redstonePowered || satisfied ? 1 : 0);
 			bulb.tickChaser();
+			if (active)
+				tickOutline();
 			return;
 		}
 
@@ -347,7 +365,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 			&& promisedSatisfied == shouldPromiseSatisfy && waitingForNetwork == shouldWait)
 			return;
 
-		if (!satisfied && shouldSatisfy) {
+		if (!satisfied && shouldSatisfy && demand > 0) {
 			AllSoundEvents.CONFIRM.playOnServer(getWorld(), getPos(), 0.075f, 1f);
 			AllSoundEvents.CONFIRM_2.playOnServer(getWorld(), getPos(), 0.125f, 0.575f);
 		}
@@ -377,7 +395,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 			return;
 		}
 
-		timer = REQUEST_INTERVAL;
+		resetTimer();
 
 		if (recipeAddress.isBlank())
 			return;
@@ -480,7 +498,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		sendEffect(getPanelPosition(), true);
 
 		if (!LogisticsManager.broadcastPackageRequest(network, RequestType.RESTOCK, order,
-			packager.targetInventory.getInventory(), recipeAddress))
+			packager.targetInventory.getInventory(), recipeAddress, null))
 			return;
 
 		restockerPromises.add(new RequestPromise(orderedItem));
@@ -524,6 +542,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 
 	@Override
 	public void onShortInteract(Player player, InteractionHand hand, Direction side, BlockHitResult hitResult) {
+		// Network is protected
 		if (!Create.LOGISTICS.mayInteract(network, player)) {
 			player.displayClientMessage(CreateLang.translate("logistically_linked.protected")
 				.style(ChatFormatting.RED)
@@ -531,6 +550,9 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 			return;
 		}
 
+		boolean isClientSide = player.level().isClientSide;
+
+		// Wrench cycles through arrow bending
 		if (targeting.size() + targetedByLinks.size() > 0 && AllItemTags.WRENCH.matches(player.getItemInHand(hand))) {
 			int sharedMode = -1;
 			boolean notifySelf = false;
@@ -545,7 +567,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 				if (sharedMode == -1)
 					sharedMode = (connection.arrowBendMode + 1) % 4;
 				connection.arrowBendMode = sharedMode;
-				if (!player.level().isClientSide)
+				if (!isClientSide)
 					at.blockEntity.notifyUpdate();
 			}
 
@@ -553,7 +575,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 				if (sharedMode == -1)
 					sharedMode = (connection.arrowBendMode + 1) % 4;
 				connection.arrowBendMode = sharedMode;
-				if (!player.level().isClientSide)
+				if (!isClientSide)
 					notifySelf = true;
 			}
 
@@ -570,16 +592,34 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 			return;
 		}
 
-		if (player.level().isClientSide)
+		// Client might be in the process of connecting a panel
+		if (isClientSide)
 			if (FactoryPanelConnectionHandler.panelClicked(getWorld(), player, this))
 				return;
 
+		ItemStack heldItem = player.getItemInHand(hand);
 		if (getFilter().isEmpty()) {
+			// Open screen for setting an item through JEI
+			if (heldItem.isEmpty()) {
+				if (!isClientSide && player instanceof ServerPlayer sp)
+					NetworkHooks.openScreen(sp, this, buf -> getPanelPosition().send(buf));
+				return;
+			}
+
+			// Use regular filter interaction for setting the item
 			super.onShortInteract(player, hand, side, hitResult);
 			return;
 		}
 
-		if (player.level().isClientSide)
+		// Bind logistics items to this panels' frequency
+		if (heldItem.getItem() instanceof LogisticallyLinkedBlockItem) {
+			if (!isClientSide)
+				LogisticallyLinkedBlockItem.assignFrequency(heldItem, player, network);
+			return;
+		}
+
+		// Open configuration screen
+		if (isClientSide)
 			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> displayScreen(player));
 	}
 
@@ -608,7 +648,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 	}
 
 	public boolean isMissingAddress() {
-		return !targetedBy.isEmpty() && count != 0 && recipeAddress.isBlank();
+		return (!targetedBy.isEmpty() || panelBE().restocker) && count != 0 && recipeAddress.isBlank();
 	}
 
 	@Override
@@ -674,7 +714,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		PackagerBlockEntity packager = panelBE.getRestockedPackager();
 		if (packager == null)
 			return InventorySummary.EMPTY;
-		return packager.getAvailableItems();
+		return packager.getAvailableItems(true);
 	}
 
 	public int getPromised() {
@@ -687,7 +727,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		if (panelBE().restocker) {
 			if (forceClearPromises) {
 				restockerPromises.forceClear(item);
-				timer = 0;
+				resetTimerSlightly();
 			}
 			forceClearPromises = false;
 			return restockerPromises.getTotalPromisedAndRemoveExpired(item, getPromiseExpiryTimeInTicks());
@@ -696,11 +736,19 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(network);
 		if (forceClearPromises) {
 			promises.forceClear(item);
-			timer = 0;
+			resetTimerSlightly();
 		}
 		forceClearPromises = false;
 
 		return promises == null ? 0 : promises.getTotalPromisedAndRemoveExpired(item, getPromiseExpiryTimeInTicks());
+	}
+
+	public void resetTimer() {
+		timer = REQUEST_INTERVAL;
+	}
+
+	public void resetTimerSlightly() {
+		timer = REQUEST_INTERVAL / 2;
 	}
 
 	private int getPromiseExpiryTimeInTicks() {
@@ -735,6 +783,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		CompoundTag panelTag = new CompoundTag();
 		super.write(panelTag, clientPacket);
 
+		panelTag.putInt("Timer", timer);
 		panelTag.putInt("LastLevel", lastReportedLevelInStorage);
 		panelTag.putInt("LastPromised", lastReportedPromises);
 		panelTag.putInt("LastUnloadedLinks", lastReportedUnloadedLinks);
@@ -770,6 +819,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		filter = FilterItemStack.of(panelTag.getCompound("Filter"));
 		count = panelTag.getInt("FilterAmount");
 		upTo = panelTag.getBoolean("UpTo");
+		timer = panelTag.getInt("Timer");
 		lastReportedLevelInStorage = panelTag.getInt("LastLevel");
 		lastReportedPromises = panelTag.getInt("LastPromised");
 		lastReportedUnloadedLinks = panelTag.getInt("LastUnloadedLinks");
@@ -840,6 +890,9 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		blockEntity.setChanged();
 		blockEntity.sendData();
 		playFeedbackSound(this);
+		resetTimerSlightly();
+		if (!getWorld().isClientSide)
+			notifyRedstoneOutputs();
 	}
 
 	@Override
@@ -848,7 +901,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 		return new ValueSettingsBoard(CreateLang.translate("factory_panel.target_amount")
 			.component(), maxAmount, 10,
 			List.of(CreateLang.translate("schedule.condition.threshold.items")
-				.component(),
+					.component(),
 				CreateLang.translate("schedule.condition.threshold.stacks")
 					.component()),
 			new ValueSettingsFormatter(this::formatValue));
@@ -910,7 +963,7 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 	@Override
 	public MutableComponent getCountLabelForValueBox() {
 		if (filter.isEmpty())
-            return Component.empty();
+			return Component.empty();
 		if (waitingForNetwork) {
 			return Component.literal("?");
 		}
@@ -954,10 +1007,10 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 
 	public static BehaviourType<?> getTypeForSlot(PanelSlot slot) {
 		return switch (slot) {
-		case BOTTOM_LEFT -> BOTTOM_LEFT;
-		case TOP_LEFT -> TOP_LEFT;
-		case TOP_RIGHT -> TOP_RIGHT;
-		case BOTTOM_RIGHT -> BOTTOM_RIGHT;
+			case BOTTOM_LEFT -> BOTTOM_LEFT;
+			case TOP_LEFT -> TOP_LEFT;
+			case TOP_RIGHT -> TOP_RIGHT;
+			case BOTTOM_RIGHT -> BOTTOM_RIGHT;
 		};
 	}
 
@@ -991,6 +1044,32 @@ public class FactoryPanelBehaviour extends FilteringBehaviour {
 	@Override
 	public boolean writeToClipboard(CompoundTag tag, Direction side) {
 		return false;
+	}
+
+	private void tickOutline() {
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> LogisticallyLinkedClientHandler.tickPanel(this));
+	}
+
+	@Override
+	public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+		return FactoryPanelSetItemMenu.create(containerId, playerInventory, this);
+	}
+
+	@Override
+	public Component getDisplayName() {
+		return blockEntity.getBlockState()
+			.getBlock()
+			.getName();
+	}
+
+	public String getFrogAddress() {
+		PackagerBlockEntity packager = panelBE().getRestockedPackager();
+		if (packager == null)
+			return null;
+		if (packager.getLevel().getBlockEntity(packager.getBlockPos().above()) instanceof FrogportBlockEntity fpbe)
+			if (fpbe.addressFilter != null && !fpbe.addressFilter.isBlank())
+				return fpbe.addressFilter + "";
+		return null;
 	}
 
 }

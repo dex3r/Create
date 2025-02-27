@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.contraptions.elevator.ElevatorColumn.ColumnCoords;
 import com.simibubi.create.content.redstone.contact.RedstoneContactBlock;
 import com.simibubi.create.content.redstone.diodes.BrassDiodeBlock;
@@ -49,7 +49,7 @@ import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 
 public class ElevatorContactBlock extends WrenchableDirectionalBlock
-	implements IBE<ElevatorContactBlockEntity>, ISpecialBlockItemRequirement, WeakPowerCheckingBlock, ConnectableRedstoneBlock {
+	implements IBE<ElevatorContactBlockEntity>, SpecialBlockItemRequirement, WeakPowerCheckingBlock, ConnectableRedstoneBlock {
 
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 	public static final BooleanProperty CALLING = BooleanProperty.create("calling");

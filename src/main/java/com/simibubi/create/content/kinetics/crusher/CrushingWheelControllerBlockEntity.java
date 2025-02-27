@@ -19,8 +19,8 @@ import com.simibubi.create.foundation.sound.SoundScapes;
 import com.simibubi.create.foundation.sound.SoundScapes.AmbienceGroup;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -115,10 +115,10 @@ public class CrushingWheelControllerBlockEntity extends SmartBlockEntity impleme
 			.getStep();
 		Vec3 outSpeed = new Vec3((facing.getAxis() == Axis.X ? 0.25D : 0.0D) * offset,
 			offset == 1 ? (facing.getAxis() == Axis.Y ? 0.5D : 0.0D) : 0.0D // Increased upwards speed so upwards
-																			// crushing wheels shoot out the item
-																			// properly.
+			// crushing wheels shoot out the item
+			// properly.
 			, (facing.getAxis() == Axis.Z ? 0.25D : 0.0D) * offset); // No downwards speed, so downwards crushing wheels
-																		// drop the items as before.
+		// drop the items as before.
 		Vec3 outPos = centerPos.add((facing.getAxis() == Axis.X ? .55f * offset : 0f),
 			(facing.getAxis() == Axis.Y ? .55f * offset : 0f), (facing.getAxis() == Axis.Z ? .55f * offset : 0f));
 
@@ -203,32 +203,32 @@ public class CrushingWheelControllerBlockEntity extends SmartBlockEntity impleme
 		double movement = Math.max(-speed / 4f, -.5f) * -offset;
 		processingEntity.setDeltaMovement(
 			new Vec3(facing.getAxis() == Axis.X ? movement : xMotion, facing.getAxis() == Axis.Y ? movement : 0f // Do
-																														// not
-																														// move
-																														// entities
-																														// upwards
-																														// or
-																														// downwards
-																														// for
-																														// horizontal
-																														// crushers,
+				// not
+				// move
+				// entities
+				// upwards
+				// or
+				// downwards
+				// for
+				// horizontal
+				// crushers,
 				, facing.getAxis() == Axis.Z ? movement : zMotion)); // Or they'll only get their feet crushed.
 
 		if (level.isClientSide)
 			return;
 
-		if (!(processingEntity instanceof ItemEntity)) {
+		if (!(processingEntity instanceof ItemEntity itemEntity)) {
 			Vec3 entityOutPos = outPos.add(facing.getAxis() == Axis.X ? .5f * offset : 0f,
 				facing.getAxis() == Axis.Y ? .5f * offset : 0f, facing.getAxis() == Axis.Z ? .5f * offset : 0f);
 			int crusherDamage = AllConfigs.server().kinetics.crushingDamage.get();
 
 			if (processingEntity instanceof LivingEntity) {
 				if ((((LivingEntity) processingEntity).getHealth() - crusherDamage <= 0) // Takes LivingEntity instances
-																							// as exception, so it can
-																							// move them before it would
-																							// kill them.
+					// as exception, so it can
+					// move them before it would
+					// kill them.
 					&& (((LivingEntity) processingEntity).hurtTime <= 0)) { // This way it can actually output the items
-																			// to the right spot.
+					// to the right spot.
 					processingEntity.setPos(entityOutPos.x, entityOutPos.y, entityOutPos.z);
 				}
 			}
@@ -239,7 +239,6 @@ public class CrushingWheelControllerBlockEntity extends SmartBlockEntity impleme
 			return;
 		}
 
-		ItemEntity itemEntity = (ItemEntity) processingEntity;
 		itemEntity.setPickUpDelay(20);
 		if (facing.getAxis() == Axis.Y) {
 			if (processingEntity.getY() * -offset < (centerPos.y - .25f) * -offset) {
@@ -302,8 +301,7 @@ public class CrushingWheelControllerBlockEntity extends SmartBlockEntity impleme
 			for (int roll = 0; roll < rolls; roll++) {
 				List<ItemStack> rolledResults = recipe.get()
 					.rollResults();
-				for (int i = 0; i < rolledResults.size(); i++) {
-					ItemStack stack = rolledResults.get(i);
+				for (ItemStack stack : rolledResults) {
 					ItemHelper.addToList(stack, list);
 				}
 			}

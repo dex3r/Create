@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 
 class FactoryPanelSlotPositioning extends ValueBoxTransform {
 
-	private PanelSlot slot;
+	public PanelSlot slot;
 
 	public FactoryPanelSlotPositioning(PanelSlot slot) {
 		this.slot = slot;

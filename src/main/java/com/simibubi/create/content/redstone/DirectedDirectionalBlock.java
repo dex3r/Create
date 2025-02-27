@@ -2,7 +2,7 @@ package com.simibubi.create.content.redstone;
 
 import javax.annotation.Nullable;
 
-import com.simibubi.create.api.contraption.transformable.ITransformableBlock;
+import com.simibubi.create.api.contraption.transformable.TransformableBlock;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 
@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 
-public class DirectedDirectionalBlock extends HorizontalDirectionalBlock implements IWrenchable, ITransformableBlock {
+public class DirectedDirectionalBlock extends HorizontalDirectionalBlock implements IWrenchable, TransformableBlock {
 
 	public static final EnumProperty<AttachFace> TARGET = EnumProperty.create("target", AttachFace.class);
 

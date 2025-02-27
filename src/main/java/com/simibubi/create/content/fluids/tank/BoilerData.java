@@ -6,15 +6,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.createmod.catnip.lang.Lang;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
+import com.simibubi.create.api.boiler.BoilerHeater;
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.steamWhistle.WhistleBlock;
 import com.simibubi.create.content.decoration.steamWhistle.WhistleBlockEntity;
-import com.simibubi.create.content.kinetics.BlockStressValues;
 import com.simibubi.create.content.kinetics.steamEngine.SteamEngineBlock;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
@@ -23,13 +22,14 @@ import com.simibubi.create.foundation.fluid.SmartFluidTank;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import joptsimple.internal.Strings;
-import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
+import net.createmod.catnip.data.Iterate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
@@ -72,7 +72,7 @@ public class BoilerData {
 	private int maxHeatForWater = 0;
 	private int minValue = 0;
 	private int maxValue = 0;
-	public boolean[] occludedDirections = { true, true, true, true };
+	public boolean[] occludedDirections = {true, true, true, true};
 
 	public LerpedFloat gauge = LerpedFloat.linear();
 
@@ -202,7 +202,7 @@ public class BoilerData {
 		calcMinMaxForSize(boilerSize);
 
 		CreateLang.translate("boiler.status", getHeatLevelTextComponent().withStyle(ChatFormatting.GREEN))
-						.forGoggles(tooltip);
+			.forGoggles(tooltip);
 		CreateLang.builder().add(getSizeComponent(true, false)).forGoggles(tooltip, 1);
 		CreateLang.builder().add(getWaterComponent(true, false)).forGoggles(tooltip, 1);
 		CreateLang.builder().add(getHeatComponent(true, false)).forGoggles(tooltip, 1);
@@ -213,7 +213,7 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 		double totalSU = getEngineEfficiency(boilerSize) * 16 * Math.max(boilerLevel, attachedEngines)
 			* BlockStressValues.getCapacity(AllBlocks.STEAM_ENGINE.get());
 
-		tooltip.add(Lang.IMMUTABLE_EMPTY);
+		tooltip.add(CommonComponents.EMPTY);
 
 		if (attachedEngines > 0 && maxHeatForSize > 0 && maxHeatForWater == 0 && (passiveHeat ? 1 : activeHeat) > 0) {
 			CreateLang.translate("boiler.water_input_rate")
@@ -225,7 +225,7 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 				.add(CreateLang.text(" / ")
 					.style(ChatFormatting.GRAY))
 				.add(CreateLang.translate("boiler.per_tick", CreateLang.number(waterSupplyPerLevel)
-					.add(CreateLang.translate("generic.unit.millibuckets")))
+						.add(CreateLang.translate("generic.unit.millibuckets")))
 					.style(ChatFormatting.DARK_GRAY))
 				.forGoggles(tooltip, 1);
 			return true;
@@ -260,8 +260,8 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 
 		return isPassive() ? CreateLang.translateDirect("boiler.passive")
 			: (boilerLevel == 0 ? CreateLang.translateDirect("boiler.idle")
-				: boilerLevel == 18 ? CreateLang.translateDirect("boiler.max_lvl")
-					: CreateLang.translateDirect("boiler.lvl", String.valueOf(boilerLevel)));
+			: boilerLevel == 18 ? CreateLang.translateDirect("boiler.max_lvl")
+			: CreateLang.translateDirect("boiler.lvl", String.valueOf(boilerLevel)));
 	}
 
 	public MutableComponent getSizeComponent(boolean forGoggles, boolean useBlocksAsBars, ChatFormatting... styles) {
@@ -277,7 +277,7 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 	}
 
 	private MutableComponent componentHelper(String label, int level, boolean forGoggles, boolean useBlocksAsBars,
-		ChatFormatting... styles) {
+											 ChatFormatting... styles) {
 		MutableComponent base = useBlocksAsBars ? blockComponent(level) : barComponent(level);
 
 		if (!forGoggles)
@@ -298,7 +298,7 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 	}
 
 	private MutableComponent barComponent(int level) {
-        return Component.empty()
+		return Component.empty()
 			.append(bars(Math.max(0, minValue - 1), ChatFormatting.DARK_GREEN))
 			.append(bars(minValue > 0 ? 1 : 0, ChatFormatting.GREEN))
 			.append(bars(Math.max(0, level - minValue), ChatFormatting.DARK_GREEN))
@@ -336,7 +336,7 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 							attachedEngines++;
 						if (AllBlocks.STEAM_WHISTLE.has(attachedState)
 							&& WhistleBlock.getAttachedDirection(attachedState)
-								.getOpposite() == d)
+							.getOpposite() == d)
 							attachedWhistles++;
 					}
 				}
@@ -369,7 +369,7 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 						BlockState attachedState = level.getBlockState(attachedPos);
 						if (AllBlocks.STEAM_WHISTLE.has(attachedState)
 							&& WhistleBlock.getAttachedDirection(attachedState)
-								.getOpposite() == d) {
+							.getOpposite() == d) {
 							if (level.getBlockEntity(attachedPos) instanceof WhistleBlockEntity wbe)
 								whistlePitches.add(wbe.getPitchId());
 						}
@@ -396,7 +396,7 @@ int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize)
 			for (int zOffset = 0; zOffset < controller.width; zOffset++) {
 				BlockPos pos = controllerPos.offset(xOffset, -1, zOffset);
 				BlockState blockState = level.getBlockState(pos);
-				float heat = BoilerHeaters.getActiveHeat(level, pos, blockState);
+				float heat = BoilerHeater.findHeat(level, pos, blockState);
 				if (heat == 0) {
 					passiveHeat = true;
 				} else if (heat > 0) {

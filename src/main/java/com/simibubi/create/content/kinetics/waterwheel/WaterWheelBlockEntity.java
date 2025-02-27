@@ -200,6 +200,12 @@ public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
 	}
 
 	@Override
+	public void writeSafe(CompoundTag tag) {
+		super.writeSafe(tag);
+		tag.put("Material", NbtUtils.writeBlockState(material));
+	}
+	
+	@Override
 	public void write(CompoundTag compound, boolean clientPacket) {
 		super.write(compound, clientPacket);
 		compound.putInt("FlowScore", flowScore);

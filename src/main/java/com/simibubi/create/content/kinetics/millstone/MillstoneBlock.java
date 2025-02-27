@@ -52,7 +52,7 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
 
 	@Override
 	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
+								 BlockHitResult hit) {
 		if (!player.getItemInHand(handIn)
 			.isEmpty())
 			return InteractionResult.PASS;
@@ -93,7 +93,7 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
 
 		if (entityIn.level().isClientSide)
 			return;
-		if (!(entityIn instanceof ItemEntity))
+		if (!(entityIn instanceof ItemEntity itemEntity))
 			return;
 		if (!entityIn.isAlive())
 			return;
@@ -106,7 +106,6 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
 		if (millstone == null)
 			return;
 
-		ItemEntity itemEntity = (ItemEntity) entityIn;
 		Storage<ItemVariant> handler = millstone.getItemStorage(null);
 		if (handler == null)
 			return;

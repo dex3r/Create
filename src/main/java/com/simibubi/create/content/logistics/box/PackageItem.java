@@ -113,7 +113,7 @@ public class PackageItem extends Item {
 	}
 
 	public static void setOrder(ItemStack box, int orderId, int linkIndex, boolean isFinalLink, int fragmentIndex,
-		boolean isFinal, @Nullable PackageOrder orderContext) {
+								boolean isFinal, @Nullable PackageOrder orderContext) {
 		CompoundTag tag = new CompoundTag();
 		tag.putInt("OrderId", orderId);
 		tag.putInt("LinkIndex", linkIndex);
@@ -173,7 +173,7 @@ public class PackageItem extends Item {
 	public static String getAddress(ItemStack box) {
 		String boxAddress = !box.hasTag() ? ""
 			: box.getTag()
-				.getString("Address");
+			.getString("Address");
 		return boxAddress;
 	}
 
@@ -212,15 +212,15 @@ public class PackageItem extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack pStack, Level pLevel, List<Component> pTooltipComponents,
-		TooltipFlag pIsAdvanced) {
+								TooltipFlag pIsAdvanced) {
 		super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
 		CompoundTag compoundnbt = pStack.getOrCreateTag();
 
 		if (compoundnbt.contains("Address", Tag.TAG_STRING) && !compoundnbt.getString("Address")
 			.isBlank()) {
-            pTooltipComponents.add(Component.literal("\u2192 " + compoundnbt.getString("Address"))
-                .withStyle(ChatFormatting.GOLD));
-        }
+			pTooltipComponents.add(Component.literal("\u2192 " + compoundnbt.getString("Address"))
+				.withStyle(ChatFormatting.GOLD));
+		}
 
 		/*
 		 * Debug Fragmentation Data if (compoundnbt.contains("Fragment")) { CompoundTag
@@ -244,6 +244,8 @@ public class PackageItem extends Item {
 		for (int i = 0; i < contents.getSlots(); i++) {
 			ItemStack itemstack = contents.getStackInSlot(i);
 			if (itemstack.isEmpty())
+				continue;
+			if (itemstack.getItem() instanceof SpawnEggItem)
 				continue;
 			if (visibleNames > 2) {
 				skippedNames++;
@@ -291,9 +293,9 @@ public class PackageItem extends Item {
 				if (itemstack.getItem() instanceof SpawnEggItem sei && worldIn instanceof ServerLevel sl) {
 					EntityType<?> entitytype = sei.getType(itemstack.getTag());
 					Entity entity = entitytype.spawn(sl, itemstack, null, BlockPos.containing(playerIn.position()
-						.add(playerIn.getLookAngle()
-							.multiply(1, 0, 1)
-							.normalize())),
+							.add(playerIn.getLookAngle()
+								.multiply(1, 0, 1)
+								.normalize())),
 						MobSpawnType.SPAWN_EGG, false, false);
 					if (entity != null)
 						itemstack.shrink(1);
@@ -339,7 +341,7 @@ public class PackageItem extends Item {
 			.getAxis()
 			.isHorizontal())
 			point = point.add(Vec3.atLowerCornerOf(context.getClickedFace()
-				.getNormal())
+					.getNormal())
 				.scale(r));
 
 		AABB scanBB = new AABB(point, point).inflate(r, 0, r)
@@ -396,7 +398,7 @@ public class PackageItem extends Item {
 		PackageEntity packageEntity = new PackageEntity(world, vec.x, vec.y, vec.z);
 		packageEntity.setBox(copy);
 		packageEntity.setDeltaMovement(motion);
-		packageEntity.tossedBy = new WeakReference<Player>(player);
+		packageEntity.tossedBy = new WeakReference<>(player);
 		world.addFreshEntity(packageEntity);
 	}
 

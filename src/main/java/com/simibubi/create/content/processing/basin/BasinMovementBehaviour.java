@@ -3,7 +3,7 @@ package com.simibubi.create.content.processing.basin;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 
 import net.minecraft.core.Direction;

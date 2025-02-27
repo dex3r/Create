@@ -11,17 +11,35 @@ import net.minecraft.world.level.material.FluidState;
 
 public class VirtualFluid extends SimpleFlowableFluid {
 
-	public VirtualFluid(Properties properties) {
+	public static VirtualFluid createSource(Properties properties) {
+		return new VirtualFluid(properties, true);
+	}
+
+	public static VirtualFluid createFlowing(Properties properties) {
+		return new VirtualFluid(properties, false);
+	}
+
+
+	private final boolean source;
+
+	public VirtualFluid(Properties properties, boolean source) {
 		super(properties);
+		this.source = source;
 	}
 
 	@Override
 	public Fluid getSource() {
+		if (source) {
+			return this;
+		}
 		return super.getSource();
 	}
 
 	@Override
 	public Fluid getFlowing() {
+		if (source) {
+			return super.getFlowing();
+		}
 		return this;
 	}
 
@@ -37,7 +55,7 @@ public class VirtualFluid extends SimpleFlowableFluid {
 
 	@Override
 	public boolean isSource(FluidState p_207193_1_) {
-		return true;
+		return source;
 	}
 
 	@Override

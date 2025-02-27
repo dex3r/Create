@@ -173,7 +173,8 @@ public class RadialWrenchMenu extends AbstractSimiScreen {
 	@Override
 	public void tick() {
 		ticksOpen++;
-
+		if (!level.getBlockState(pos).is(state.getBlock()))
+			Minecraft.getInstance().setScreen(null);
 		super.tick();
 	}
 
@@ -183,8 +184,6 @@ public class RadialWrenchMenu extends AbstractSimiScreen {
 		int y = this.height / 2;
 
 		PoseStack ms = graphics.pose();
-
-		LocalPlayer player = Minecraft.getInstance().player;
 
 		ms.pushPose();
 		ms.translate(x, y, 0);
@@ -271,6 +270,8 @@ public class RadialWrenchMenu extends AbstractSimiScreen {
 					.translateY(-(sectorWidth / 2f + innerRadius))
 					.rotateZDegrees(-i * sectorAngle);
 
+			poseStack.translate(0, 0, 100);
+			
 			try {
 				GuiGameElement.of(blockState, blockEntity)
 						.rotateBlock(player.getXRot(), player.getYRot() + 180, 0f)

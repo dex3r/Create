@@ -18,7 +18,7 @@ public interface ICustomParticleDataWithSprite<T extends ParticleOptions> extend
 	Deserializer<T> getDeserializer();
 
 	public default ParticleType<T> createType() {
-		return new ParticleType<T>(false, getDeserializer()) {
+		return new ParticleType<>(false, getDeserializer()) {
 
 			@Override
 			public Codec<T> codec() {
@@ -41,4 +41,5 @@ public interface ICustomParticleDataWithSprite<T extends ParticleOptions> extend
 	public default void register(ParticleType<T> type, ParticleEngine particles) {
 		ParticleFactoryRegistry.getInstance().register(type, getMetaFactory()::create);
 	}
+
 }

@@ -10,6 +10,7 @@
     "minecraft:redstone_torch",
     "minecraft:repeater",
     "minecraft:lever",
+    "minecraft:redstone_lamp",
     "minecraft:comparator",
     "minecraft:observer",
     "minecraft:redstone_wall_torch",

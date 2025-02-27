@@ -89,13 +89,7 @@ public class LogisticallyLinkedBlockItem extends BlockItem {
 			if (!link.mayInteractMessage(player))
 				return InteractionResult.SUCCESS;
 
-			CompoundTag stackTag = stack.getOrCreateTag();
-			CompoundTag teTag = new CompoundTag();
-			teTag.putUUID("Freq", link.freqId);
-			stackTag.put(BLOCK_ENTITY_TAG, teTag);
-
-			player.displayClientMessage(CreateLang.translateDirect("logistically_linked.tuned"), true);
-			stack.setTag(stackTag);
+			assignFrequency(stack, player, link.freqId);
 			return InteractionResult.SUCCESS;
 		}
 
@@ -106,6 +100,16 @@ public class LogisticallyLinkedBlockItem extends BlockItem {
 		player.displayClientMessage(tuned ? CreateLang.translateDirect("logistically_linked.connected")
 			: CreateLang.translateDirect("logistically_linked.new_network_started"), true);
 		return useOn;
+	}
+
+	public static void assignFrequency(ItemStack stack, Player player, UUID frequency) {
+		CompoundTag stackTag = stack.getOrCreateTag();
+		CompoundTag teTag = new CompoundTag();
+		teTag.putUUID("Freq", frequency);
+		stackTag.put(BLOCK_ENTITY_TAG, teTag);
+
+		player.displayClientMessage(CreateLang.translateDirect("logistically_linked.tuned"), true);
+		stack.setTag(stackTag);
 	}
 
 }

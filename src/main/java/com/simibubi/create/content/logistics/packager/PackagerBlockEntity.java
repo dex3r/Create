@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
@@ -62,6 +59,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
+
+import org.jetbrains.annotations.Nullable;
 
 public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity {
 
@@ -161,6 +160,10 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 	}
 
 	public InventorySummary getAvailableItems() {
+		return getAvailableItems(false);
+	}
+
+	public InventorySummary getAvailableItems(boolean scanInputSlots) {
 		if (availableItems != null && invVersionTracker.stillWaiting(targetInventory.getInventory()))
 			return availableItems;
 
@@ -180,9 +183,7 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 
 		for (int slot = 0; slot < targetInv.getSlots(); slot++) {
 			int slotLimit = targetInv.getSlotLimit(slot);
-			@NotNull
-			ItemStack extractItem = targetInv.extractItem(slot, slotLimit, true);
-			availableItems.add(extractItem);
+			availableItems.add(scanInputSlots ? targetInv.getStackInSlot(slot) : targetInv.extractItem(slot, slotLimit, true));
 		}
 
 		invVersionTracker.awaitNewVersion(targetInventory.getInventory());
@@ -261,7 +262,7 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 		BlockState blockState = getBlockState();
 		if (!blockState.hasProperty(PackagerBlock.LINKED))
 			return;
-		boolean shouldBeLinked = shouldBeLinked();
+		boolean shouldBeLinked = getLinkPos() != null;
 		boolean isLinked = blockState.getValue(PackagerBlock.LINKED);
 		if (shouldBeLinked == isLinked)
 			return;
@@ -273,16 +274,16 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 			.orElse(false);
 	}
 
-	private boolean shouldBeLinked() {
+	private BlockPos getLinkPos() {
 		for (Direction d : Iterate.directions) {
 			BlockState adjacentState = level.getBlockState(worldPosition.relative(d));
 			if (!AllBlocks.STOCK_LINK.has(adjacentState))
 				continue;
 			if (PackagerLinkBlock.getConnectedDirection(adjacentState) != d)
 				continue;
-			return true;
+			return worldPosition.relative(d);
 		}
-		return false;
+		return null;
 	}
 
 	public void flashLink() {
@@ -545,6 +546,11 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 				finalPackageAtLink, orderContext);
 		if (!requestQueue && !signBasedAddress.isBlank())
 			PackageItem.addAddress(createdBox, signBasedAddress);
+
+		BlockPos linkPos = getLinkPos();
+		if (extractedPackageItem.isEmpty() && linkPos != null
+			&& level.getBlockEntity(linkPos) instanceof PackagerLinkBlockEntity plbe)
+			plbe.behaviour.deductFromAccurateSummary(extractedItems);
 
 		if (!heldBox.isEmpty() || animationTicks != 0) {
 			queuedExitingPackages.add(createdBox);

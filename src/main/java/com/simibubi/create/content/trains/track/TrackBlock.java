@@ -17,7 +17,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.minecraft.network.chat.Component;
+import com.simibubi.create.api.contraption.train.PortalTrackProvider;
+
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.registry.LandPathNodeTypesRegistry;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicates;
@@ -27,7 +34,8 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.AllTags;
-import com.simibubi.create.api.schematic.requirement.ISpecialBlockItemRequirement;
+import com.simibubi.create.api.contraption.train.PortalTrackProvider;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.decoration.girder.GirderBlock;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
@@ -48,17 +56,17 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.createmod.catnip.math.BlockFace;
 import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.math.BlockFace;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -100,7 +108,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.registry.LandPathNodeTypesRegistry;
 
-public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrenchable, ITrackBlock, ISpecialBlockItemRequirement, ProperWaterloggedBlock, IHaveBigOutline, ReducedDestroyEffects, MultiPosDestructionHandler {
+public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrenchable, ITrackBlock, SpecialBlockItemRequirement, ProperWaterloggedBlock, IHaveBigOutline, ReducedDestroyEffects, MultiPosDestructionHandler {
 
 	public static final EnumProperty<TrackShape> SHAPE = EnumProperty.create("shape", TrackShape.class);
 	public static final BooleanProperty HAS_BE = BooleanProperty.create("turn");
@@ -233,18 +241,18 @@ public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrencha
 		for (Direction d : Iterate.directionsInAxis(portalTest)) {
 			BlockPos portalPos = pos.relative(d);
 			BlockState portalState = level.getBlockState(portalPos);
-			if (!AllPortalTracks.isSupportedPortal(portalState))
+			if (!PortalTrackProvider.isSupportedPortal(portalState))
 				continue;
 
 			pop = true;
-			Pair<ServerLevel, BlockFace> otherSide = AllPortalTracks.getOtherSide(level, new BlockFace(pos, d));
+			PortalTrackProvider.Exit otherSide = PortalTrackProvider.getOtherSide(level, new BlockFace(pos, d));
 			if (otherSide == null) {
 				fail = "missing";
 				continue;
 			}
 
-			ServerLevel otherLevel = otherSide.getFirst();
-			BlockFace otherTrack = otherSide.getSecond();
+			ServerLevel otherLevel = otherSide.level();
+			BlockFace otherTrack = otherSide.face();
 			BlockPos otherTrackPos = otherTrack.getPos();
 			BlockState existing = otherLevel.getBlockState(otherTrackPos);
 			if (!existing.canBeReplaced()) {
@@ -305,7 +313,7 @@ public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrencha
 
 			BlockPos portalPos = pCurrentPos.relative(d);
 			BlockState portalState = level.getBlockState(portalPos);
-			if (!AllPortalTracks.isSupportedPortal(portalState))
+			if (!PortalTrackProvider.isSupportedPortal(portalState))
 				return Blocks.AIR.defaultBlockState();
 		}
 

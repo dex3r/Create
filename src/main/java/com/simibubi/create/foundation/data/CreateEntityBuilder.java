@@ -5,8 +5,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.jetbrains.annotations.NotNull;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.EntityBuilder;
@@ -17,6 +15,7 @@ import dev.engine_room.flywheel.lib.visualization.SimpleEntityVisualizer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+
 
 import net.fabricmc.api.EnvType;
 
@@ -57,7 +56,7 @@ public class CreateEntityBuilder<T extends Entity, P> extends EntityBuilder<T, P
 	protected void registerVisualizer() {
 		var visualFactory = this.visualFactory;
 		if (visualFactory != null) {
-			Predicate<@NotNull T> renderNormally = this.renderNormally;
+			NonNullPredicate<T> renderNormally = this.renderNormally;
 			SimpleEntityVisualizer.builder(getEntry())
 					.factory(visualFactory.get())
 					.skipVanillaRender(entity -> !renderNormally.test(entity))

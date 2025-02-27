@@ -16,12 +16,14 @@ public class PackageOrderRequestPacket extends BlockEntityConfigurationPacket<St
 	private PackageOrder order;
 	private String address;
 	private boolean encodeRequester;
+	private PackageOrder craftingRequest;
 
-	public PackageOrderRequestPacket(BlockPos pos, PackageOrder order, String address, boolean encodeRequester) {
+	public PackageOrderRequestPacket(BlockPos pos, PackageOrder order, String address, boolean encodeRequester, PackageOrder craftingRequest) {
 		super(pos);
 		this.order = order;
 		this.address = address;
 		this.encodeRequester = encodeRequester;
+		this.craftingRequest = craftingRequest;
 	}
 
 	public PackageOrderRequestPacket(FriendlyByteBuf buffer) {
@@ -33,6 +35,7 @@ public class PackageOrderRequestPacket extends BlockEntityConfigurationPacket<St
 		buffer.writeUtf(address);
 		order.write(buffer);
 		buffer.writeBoolean(encodeRequester);
+		craftingRequest.write(buffer);
 	}
 
 	@Override
@@ -40,6 +43,7 @@ public class PackageOrderRequestPacket extends BlockEntityConfigurationPacket<St
 		address = buffer.readUtf();
 		order = PackageOrder.read(buffer);
 		encodeRequester = buffer.readBoolean();
+		craftingRequest = PackageOrder.read(buffer);
 	}
 
 	@Override
@@ -51,7 +55,7 @@ public class PackageOrderRequestPacket extends BlockEntityConfigurationPacket<St
 			if (!order.isEmpty())
 				AllSoundEvents.CONFIRM.playOnServer(be.getLevel(), pos);
 			player.closeContainer();
-			RedstoneRequesterBlock.programRequester(player, be, order, address);
+			RedstoneRequesterBlock.programRequester(player, be, order, address, craftingRequest);
 			return;
 		}
 
@@ -61,7 +65,7 @@ public class PackageOrderRequestPacket extends BlockEntityConfigurationPacket<St
 			WiFiEffectPacket.send(player.level(), pos);
 		}
 
-		be.broadcastPackageRequest(RequestType.PLAYER, order, null, address);
+		be.broadcastPackageRequest(RequestType.PLAYER, order, null, address, craftingRequest.isEmpty() ? null : craftingRequest);
 		return;
 	}
 

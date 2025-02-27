@@ -92,7 +92,7 @@ public class ChassisRangeDisplay {
 		boolean hasWrench = AllItems.WRENCH.isIn(player.getMainHandItem());
 
 		for (Iterator<BlockPos> iterator = entries.keySet()
-			.iterator(); iterator.hasNext();) {
+			.iterator(); iterator.hasNext(); ) {
 			BlockPos pos = iterator.next();
 			Entry entry = entries.get(pos);
 			if (tickEntry(entry, hasWrench))
@@ -100,7 +100,7 @@ public class ChassisRangeDisplay {
 			Outliner.getInstance().keep(entry.getOutlineKey());
 		}
 
-		for (Iterator<GroupEntry> iterator = groupEntries.iterator(); iterator.hasNext();) {
+		for (Iterator<GroupEntry> iterator = groupEntries.iterator(); iterator.hasNext(); ) {
 			GroupEntry group = iterator.next();
 			if (tickEntry(group, hasWrench)) {
 				iterator.remove();
@@ -114,18 +114,16 @@ public class ChassisRangeDisplay {
 			return;
 
 		HitResult over = Minecraft.getInstance().hitResult;
-		if (!(over instanceof BlockHitResult))
+		if (!(over instanceof BlockHitResult ray))
 			return;
-		BlockHitResult ray = (BlockHitResult) over;
 		BlockPos pos = ray.getBlockPos();
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity == null || blockEntity.isRemoved())
 			return;
-		if (!(blockEntity instanceof ChassisBlockEntity))
+		if (!(blockEntity instanceof ChassisBlockEntity chassisBlockEntity))
 			return;
 
 		boolean ctrl = AllKeys.ctrlDown();
-		ChassisBlockEntity chassisBlockEntity = (ChassisBlockEntity) blockEntity;
 
 		if (ctrl) {
 			GroupEntry existingGroupForPos = getExistingGroupForPos(pos);

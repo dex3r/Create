@@ -37,5 +37,4 @@ public abstract class JourneyFullscreenMapMixin {
 		double z = gridRenderer.getCenterBlockZ() - (dragging ? mouseDrag.y : 0);
 		JourneyTrainMap.onRender(graphics, (Fullscreen) (Object) this, x, z, mouseX, mouseY, pt);
 	}
-
 }

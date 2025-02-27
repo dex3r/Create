@@ -11,6 +11,7 @@ import net.createmod.catnip.data.Iterate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -49,6 +50,12 @@ public abstract class CopycatModel extends ForwardingBakedModel implements Custo
 			if (!Block.shouldRenderFace(material, world, pos, face, neighbourPos))
 				occlusionData.occlude(face);
 		}
+	}
+
+	@Override
+	public List<BakedQuad> getQuads(BlockState state, Direction side, RandomSource rand) {
+		return getCroppedQuads(state, side, rand, getMaterial(ModelData.EMPTY), ModelData.EMPTY,
+			RenderType.cutoutMipped());
 	}
 
 	@Override

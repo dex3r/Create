@@ -21,11 +21,11 @@ import com.simibubi.create.foundation.blockEntity.IMultiBlockEntityContainer;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.levelWrappers.SchematicLevel;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.outliner.AABBOutline;
+import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -96,8 +96,6 @@ public class SchematicHandler {
 
 		if (activeSchematicItem != null && transformation != null)
 			transformation.tick();
-
-		renderers.forEach(SchematicRenderer::tick);
 
 		LocalPlayer player = mc.player;
 		ItemStack stack = findBlueprintInHand(player);
@@ -286,8 +284,7 @@ public class SchematicHandler {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player.isShiftKeyDown())
 			return false;
-		if (mc.hitResult instanceof BlockHitResult) {
-			BlockHitResult blockRayTraceResult = (BlockHitResult) mc.hitResult;
+		if (mc.hitResult instanceof BlockHitResult blockRayTraceResult) {
 			BlockState clickedBlock = mc.level.getBlockState(blockRayTraceResult.getBlockPos());
 			if (AllBlocks.SCHEMATICANNON.has(clickedBlock))
 				return false;
@@ -317,7 +314,7 @@ public class SchematicHandler {
 			return false;
 
 		if (selectionScreen.focused) {
-			selectionScreen.cycle((int) delta);
+			selectionScreen.cycle((int) Math.signum(delta));
 			return true;
 		}
 		if (AllKeys.ctrlDown())
@@ -341,11 +338,11 @@ public class SchematicHandler {
 	private boolean itemLost(Player player) {
 		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
 			if (player.getInventory()
-					.getItem(i)
-					.is(activeSchematicItem.getItem()))
+				.getItem(i)
+				.is(activeSchematicItem.getItem()))
 				continue;
 			if (!ItemStack.matches(player.getInventory()
-					.getItem(i), activeSchematicItem))
+				.getItem(i), activeSchematicItem))
 				continue;
 			return false;
 		}

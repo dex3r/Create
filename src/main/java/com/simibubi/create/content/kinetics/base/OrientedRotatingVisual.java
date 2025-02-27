@@ -19,14 +19,13 @@ import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.Property;
 
 public class OrientedRotatingVisual<T extends KineticBlockEntity> extends KineticBlockEntityVisual<T> {
 	protected final RotatingInstance rotatingModel;
 
 	/**
-	 * @param from The source model orientation to rotate away from.
-	 * @param to The orientation to rotate to.
+	 * @param from  The source model orientation to rotate away from.
+	 * @param to    The orientation to rotate to.
 	 * @param model The model to spin.
 	 */
 	public OrientedRotatingVisual(VisualizationContext context, T blockEntity, float partialTick, Direction from, Direction to, Model model) {

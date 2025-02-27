@@ -21,12 +21,11 @@ import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.gui.element.GuiGameElement;
-import net.createmod.catnip.lang.Lang;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -57,7 +56,7 @@ public class SchematicTableScreen extends AbstractSimiContainerScreen<SchematicT
 	private List<Rect2i> extraAreas = Collections.emptyList();
 
 	public SchematicTableScreen(SchematicTableMenu menu, Inventory playerInventory,
-		Component title) {
+								Component title) {
 		super(menu, playerInventory, title);
 		background = AllGuiTextures.SCHEMATIC_TABLE;
 	}
@@ -74,8 +73,8 @@ public class SchematicTableScreen extends AbstractSimiContainerScreen<SchematicT
 		int x = leftPos;
 		int y = topPos + 2;
 
-		schematicsLabel = new Label(x + 51, y + 26, Lang.IMMUTABLE_EMPTY).withShadow();
-		schematicsLabel.text = Lang.IMMUTABLE_EMPTY;
+		schematicsLabel = new Label(x + 51, y + 26, CommonComponents.EMPTY).withShadow();
+		schematicsLabel.text = CommonComponents.EMPTY;
 		if (!availableSchematics.isEmpty()) {
 			schematicsArea =
 				new SelectionScrollInput(x + 45, y + 21, 139, 18).forOptions(availableSchematics)
@@ -119,7 +118,7 @@ public class SchematicTableScreen extends AbstractSimiContainerScreen<SchematicT
 				addRenderableWidget(schematicsArea);
 			} else {
 				schematicsArea = null;
-				schematicsLabel.text = Lang.IMMUTABLE_EMPTY;
+				schematicsLabel.text = CommonComponents.EMPTY;
 			}
 		});
 		refreshButton.setToolTip(refresh);
@@ -191,11 +190,11 @@ public class SchematicTableScreen extends AbstractSimiContainerScreen<SchematicT
 			if (schematicsLabel != null) {
 				schematicsLabel.colored(0xCCDDFF);
 				String uploadingSchematic = menu.contentHolder.uploadingSchematic;
-                if (uploadingSchematic == null) {
-                    schematicsLabel.text = null;
-                } else {
-                    schematicsLabel.text = Component.literal(uploadingSchematic);
-                }
+				if (uploadingSchematic == null) {
+					schematicsLabel.text = null;
+				} else {
+					schematicsLabel.text = Component.literal(uploadingSchematic);
+				}
 			}
 			if (schematicsArea != null)
 				schematicsArea.visible = false;

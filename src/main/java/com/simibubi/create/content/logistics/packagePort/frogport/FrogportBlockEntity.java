@@ -3,7 +3,8 @@ package com.simibubi.create.content.logistics.packagePort.frogport;
 import java.util.List;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.content.equipment.goggles.IHaveHoveringInformation;
+import com.simibubi.create.AllItems;
+import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.box.PackageStyles;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
@@ -14,10 +15,10 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.item.TooltipHelper;
 
-import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
+import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -27,6 +28,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -41,6 +44,7 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 	public LerpedFloat animationProgress;
 	public LerpedFloat anticipationProgress;
 	public boolean currentlyDepositing;
+	public boolean goggles;
 
 	public boolean sendAnticipate;
 
@@ -48,6 +52,9 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 
 	private boolean failedLastExport;
 	private FrogportSounds sounds;
+
+	private ItemStack deferAnimationStart;
+	private boolean deferAnimationInward;
 
 	private AdvancementBehaviour advancements;
 
@@ -59,6 +66,7 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 		manualOpenAnimationProgress = LerpedFloat.linear()
 			.startWithValue(0)
 			.chase(0, 0.35, Chaser.LINEAR);
+		goggles = false;
 	}
 
 	@Override
@@ -114,8 +122,13 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 	public void tick() {
 		super.tick();
 
+		if (deferAnimationStart != null) {
+			startAnimation(deferAnimationStart, deferAnimationInward);
+			deferAnimationStart = null;
+		}
+
 		if (anticipationProgress.getValue() == 1)
-			anticipationProgress.updateChaseTarget(0);
+			anticipationProgress.startWithValue(0);
 
 		manualOpenAnimationProgress.updateChaseTarget(openTracker.openCount > 0 ? 1 : 0);
 		boolean wasOpen = manualOpenAnimationProgress.getValue() > 0;
@@ -241,7 +254,8 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 	}
 
 	@Override
-	protected void onOpenChange(boolean open) {}
+	protected void onOpenChange(boolean open) {
+	}
 
 	public void tryPullingFromOwnAndAdjacentInventories() {
 		if (isAnimationInProgress())
@@ -288,7 +302,7 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 	protected void write(CompoundTag tag, boolean clientPacket) {
 		super.write(tag, clientPacket);
 		tag.putFloat("PlacedYaw", passiveYaw);
-		if (animatedPackage != null) {
+		if (animatedPackage != null && isAnimationInProgress()) {
 			tag.put("AnimatedPackage", animatedPackage.serializeNBT());
 			tag.putBoolean("Deposit", currentlyDepositing);
 		}
@@ -298,6 +312,8 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 		}
 		if (failedLastExport)
 			NBTHelper.putMarker(tag, "FailedLastExport");
+		if (goggles)
+			NBTHelper.putMarker(tag, "Goggles");
 	}
 
 	@Override
@@ -305,10 +321,13 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 		super.read(tag, clientPacket);
 		passiveYaw = tag.getFloat("PlacedYaw");
 		failedLastExport = tag.getBoolean("FailedLastExport");
+		goggles = tag.getBoolean("Goggles");
 		if (!clientPacket)
 			animatedPackage = null;
-		if (tag.contains("AnimatedPackage"))
-			startAnimation(ItemStack.of(tag.getCompound("AnimatedPackage")), tag.getBoolean("Deposit"));
+		if (tag.contains("AnimatedPackage")) {
+			deferAnimationInward = tag.getBoolean("Deposit");
+			deferAnimationStart = ItemStack.of(tag.getCompound("AnimatedPackage"));
+		}
 		if (clientPacket && tag.contains("Anticipate"))
 			anticipate();
 	}
@@ -334,6 +353,24 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 	protected void onOpenedManually() {
 		if (level.isClientSide())
 			sounds.open(level, worldPosition);
+	}
+
+	@Override
+	public InteractionResult use(Player player) {
+		if (player == null)
+			return InteractionResult.PASS;
+
+		ItemStack mainHandItem = player.getMainHandItem();
+		if (!goggles && AllItems.GOGGLES.isIn(mainHandItem)) {
+			goggles = true;
+			if (!level.isClientSide()) {
+				notifyUpdate();
+				level.playSound(null, worldPosition, SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.BLOCKS, 0.5f, 1.0f);
+			}
+			return InteractionResult.SUCCESS;
+		}
+
+		return super.use(player);
 	}
 
 }

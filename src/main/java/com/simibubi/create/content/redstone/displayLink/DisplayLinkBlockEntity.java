@@ -2,12 +2,16 @@ package com.simibubi.create.content.redstone.displayLink;
 
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.simibubi.create.api.behaviour.display.DisplaySource;
+import com.simibubi.create.api.behaviour.display.DisplayTarget;
+import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelSupportBehaviour;
-import com.simibubi.create.content.redstone.displayLink.source.DisplaySource;
-import com.simibubi.create.content.redstone.displayLink.target.DisplayTarget;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
@@ -92,8 +96,8 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 		if (!level.isLoaded(targetPosition) || !level.isLoaded(sourcePosition))
 			return;
 
-		DisplayTarget target = AllDisplayBehaviours.targetOf(level, targetPosition);
-		List<DisplaySource> sources = AllDisplayBehaviours.sourcesOf(level, sourcePosition);
+		DisplayTarget target = DisplayTarget.get(level, targetPosition);
+		List<DisplaySource> sources = DisplaySource.getAll(level, sourcePosition);
 		boolean notify = false;
 
 		if (activeTarget != target) {
@@ -130,8 +134,12 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 	protected void write(CompoundTag tag, boolean clientPacket) {
 		super.write(tag, clientPacket);
 		writeGatheredData(tag);
-		if (clientPacket && activeTarget != null)
-			tag.putString("TargetType", activeTarget.id.toString());
+		if (clientPacket && activeTarget != null) {
+			ResourceLocation id = CreateBuiltInRegistries.DISPLAY_TARGET.getKey(this.activeTarget);
+			if (id != null) {
+				tag.putString("TargetType", id.toString());
+			}
+		}
 	}
 
 	private void writeGatheredData(CompoundTag tag) {
@@ -140,7 +148,10 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 
 		if (activeSource != null) {
 			CompoundTag data = sourceConfig.copy();
-			data.putString("Id", activeSource.id.toString());
+			ResourceLocation id = CreateBuiltInRegistries.DISPLAY_SOURCE.getKey(this.activeSource);
+			if (id != null) {
+				data.putString("Id", id.toString());
+			}
 			tag.put("Source", data);
 		}
 	}
@@ -152,12 +163,12 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 		targetLine = tag.getInt("TargetLine");
 
 		if (clientPacket && tag.contains("TargetType"))
-			activeTarget = AllDisplayBehaviours.getTarget(new ResourceLocation(tag.getString("TargetType")));
+			activeTarget = DisplayTarget.get(ResourceLocation.tryParse(tag.getString("TargetType")));
 		if (!tag.contains("Source"))
 			return;
 
 		CompoundTag data = tag.getCompound("Source");
-		activeSource = AllDisplayBehaviours.getSource(new ResourceLocation(data.getString("Id")));
+		activeSource = DisplaySource.get(ResourceLocation.tryParse(data.getString("Id")));
 		sourceConfig = new CompoundTag();
 		if (activeSource != null)
 			sourceConfig = data.copy();
@@ -192,9 +203,11 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 	}
 
 	private static final Vec3 bulbOffset = VecHelper.voxelSpace(11, 7, 5);
-
+private static final Vec3 bulbOffsetVertical = VecHelper.voxelSpace(5, 7, 11);
 	@Override
 	public Vec3 getBulbOffset(BlockState state) {
+		if (state.getOptionalValue(DisplayLinkBlock.FACING).orElse(Direction.UP).getAxis().isVertical())
+			return bulbOffsetVertical;
 		return bulbOffset;
 	}
 

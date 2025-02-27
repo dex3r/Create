@@ -6,6 +6,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import com.simibubi.create.content.kinetics.base.RotatingInstance;
 import com.simibubi.create.content.processing.burner.ScrollInstance;
+import com.simibubi.create.content.processing.burner.ScrollTransformedInstance;
 
 import dev.engine_room.flywheel.api.instance.InstanceType;
 import dev.engine_room.flywheel.api.layout.FloatRepr;
@@ -86,6 +87,41 @@ public class AllInstanceTypes {
 				MemoryUtil.memPutFloat(ptr + 68, instance.offsetV);
 			})
 			.build();
+
+	// TODO: Switch everything using SCROLLING to this? Right now this is only used for bogey belts.
+	//  This takes a decent few more bytes to represent but perhaps it can be packed
+	//  down into 96 by sacrificing precision
+	public static final InstanceType<ScrollTransformedInstance> SCROLLING_TRANSFORMED = SimpleInstanceType.builder(ScrollTransformedInstance::new)
+		.cullShader(asResource("instance/cull/scrolling_transformed.glsl"))
+		.vertexShader(asResource("instance/scrolling_transformed.vert"))
+		.layout(LayoutBuilder.create()
+			.matrix("pose", FloatRepr.FLOAT, 4)
+			.vector("color", FloatRepr.NORMALIZED_UNSIGNED_BYTE, 4)
+			.vector("light", IntegerRepr.SHORT, 2)
+			.vector("overlay", IntegerRepr.SHORT, 2)
+			.vector("speed", FloatRepr.FLOAT, 2)
+			.vector("diff", FloatRepr.FLOAT, 2)
+			.vector("scale", FloatRepr.FLOAT, 2)
+			.vector("offset", FloatRepr.FLOAT, 2)
+			.build())
+		.writer((ptr, instance) -> {
+			ExtraMemoryOps.putMatrix4f(ptr, instance.pose);
+			MemoryUtil.memPutByte(ptr + 64, instance.red);
+			MemoryUtil.memPutByte(ptr + 65, instance.green);
+			MemoryUtil.memPutByte(ptr + 66, instance.blue);
+			MemoryUtil.memPutByte(ptr + 67, instance.alpha);
+			ExtraMemoryOps.put2x16(ptr + 68, instance.light);
+			ExtraMemoryOps.put2x16(ptr + 72, instance.overlay);
+			MemoryUtil.memPutFloat(ptr + 76, instance.speedU);
+			MemoryUtil.memPutFloat(ptr + 80, instance.speedV);
+			MemoryUtil.memPutFloat(ptr + 84, instance.diffU);
+			MemoryUtil.memPutFloat(ptr + 88, instance.diffV);
+			MemoryUtil.memPutFloat(ptr + 92, instance.scaleU);
+			MemoryUtil.memPutFloat(ptr + 96, instance.scaleV);
+			MemoryUtil.memPutFloat(ptr + 100, instance.offsetU);
+			MemoryUtil.memPutFloat(ptr + 104, instance.offsetV);
+		})
+		.build();
 
 	public static void init() {
 		// noop

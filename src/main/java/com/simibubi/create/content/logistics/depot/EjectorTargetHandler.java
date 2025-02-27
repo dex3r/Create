@@ -175,9 +175,8 @@ public class EjectorTargetHandler {
 			return;
 
 		HitResult objectMouseOver = mc.hitResult;
-		if (!(objectMouseOver instanceof BlockHitResult))
+		if (!(objectMouseOver instanceof BlockHitResult blockRayTraceResult))
 			return;
-		BlockHitResult blockRayTraceResult = (BlockHitResult) objectMouseOver;
 		if (blockRayTraceResult.getType() == Type.MISS)
 			return;
 
@@ -226,9 +225,8 @@ public class EjectorTargetHandler {
 		if (!AllItems.WRENCH.isIn(heldItem))
 			return;
 		HitResult objectMouseOver = Minecraft.getInstance().hitResult;
-		if (!(objectMouseOver instanceof BlockHitResult))
+		if (!(objectMouseOver instanceof BlockHitResult result))
 			return;
-		BlockHitResult result = (BlockHitResult) objectMouseOver;
 		BlockPos pos = result.getBlockPos();
 
 		BlockEntity be = Minecraft.getInstance().level.getBlockEntity(pos);

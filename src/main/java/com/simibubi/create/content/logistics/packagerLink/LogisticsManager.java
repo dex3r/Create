@@ -62,12 +62,12 @@ public class LogisticsManager {
 	}
 
 	public static boolean broadcastPackageRequest(UUID freqId, RequestType type, PackageOrder order,
-		IItemHandler ignoredHandler, String address) {
+		IItemHandler ignoredHandler, String address, @Nullable PackageOrder orderContext) {
 		if (order.isEmpty())
 			return false;
 
 		Multimap<PackagerBlockEntity, PackagingRequest> requests =
-			findPackagersForRequest(freqId, order, null, ignoredHandler, address);
+			findPackagersForRequest(freqId, order, orderContext, ignoredHandler, address);
 
 		// Check if packagers have accumulated too many packages already
 		for (PackagerBlockEntity packager : requests.keySet())

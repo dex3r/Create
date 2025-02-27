@@ -8,9 +8,9 @@ import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 
 import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.levelWrappers.WrappedLevel;
+import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -121,9 +121,8 @@ public class GaugeBlock extends DirectionalAxisKineticBlock implements IBE<Gauge
 	@Override
 	public void animateTick(BlockState stateIn, Level worldIn, BlockPos pos, RandomSource rand) {
 		BlockEntity be = worldIn.getBlockEntity(pos);
-		if (be == null || !(be instanceof GaugeBlockEntity))
+		if (be == null || !(be instanceof GaugeBlockEntity gaugeBE))
 			return;
-		GaugeBlockEntity gaugeBE = (GaugeBlockEntity) be;
 		if (gaugeBE.dialTarget == 0)
 			return;
 		int color = gaugeBE.color;
@@ -169,8 +168,7 @@ public class GaugeBlock extends DirectionalAxisKineticBlock implements IBE<Gauge
 	@Override
 	public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos) {
 		BlockEntity be = worldIn.getBlockEntity(pos);
-		if (be instanceof GaugeBlockEntity) {
-			GaugeBlockEntity gaugeBlockEntity = (GaugeBlockEntity) be;
+		if (be instanceof GaugeBlockEntity gaugeBlockEntity) {
 			return Mth.ceil(Mth.clamp(gaugeBlockEntity.dialTarget * 14, 0, 15));
 		}
 		return 0;

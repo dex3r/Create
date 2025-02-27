@@ -18,7 +18,7 @@ public class TableClothFilteringBehaviour extends FilteringBehaviour {
 
 	public TableClothFilteringBehaviour(TableClothBlockEntity be) {
 		super(be, new TableClothFilterSlot(be));
-		withPredicate(is -> !(is.getItem() instanceof FilterItem));
+		withPredicate(is -> !(is.getItem() instanceof FilterItem) && !(is.getItem() instanceof ShoppingListItem));
 		count = 1;
 	}
 
@@ -68,7 +68,7 @@ public class TableClothFilteringBehaviour extends FilteringBehaviour {
 	public void setValueSettings(Player player, ValueSettings settings, boolean ctrlDown) {
 		if (getValueSettings().equals(settings))
 			return;
-		count = settings.value();
+		count = Math.max(1, settings.value());
 		blockEntity.setChanged();
 		blockEntity.sendData();
 		playFeedbackSound(this);

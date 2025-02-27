@@ -154,7 +154,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 	@Override
 	public BlockState updateShape(BlockState pState, Direction pDirection, BlockState pNeighborState,
-		LevelAccessor pLevel, BlockPos pCurrentPos, BlockPos pNeighborPos) {
+								  LevelAccessor pLevel, BlockPos pCurrentPos, BlockPos pNeighborPos) {
 		if (pDirection == Direction.DOWN && pNeighborState.getBlock() != this)
 			withBlockEntityDo(pLevel, pCurrentPos, FluidTankBlockEntity::updateBoilerTemperature);
 		return pState;
@@ -162,7 +162,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 	@Override
 	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult ray) {
+								 BlockHitResult ray) {
 		ItemStack heldItem = player.getItemInHand(hand);
 		boolean onClient = world.isClientSide;
 
@@ -181,7 +181,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 		if (fluidTank == null)
 			return InteractionResult.PASS;
 
-		FluidStack prevFluidInTank = TransferUtil.firstCopyOrEmpty(fluidTank);
+		io.github.fabricators_of_create.porting_lib.fluids.FluidStack prevFluidInTank = TransferUtil.firstCopyOrEmpty(fluidTank);
 
 		if (FluidHelper.tryEmptyItemIntoBE(world, player, hand, heldItem, be, direction))
 			exchange = FluidExchange.ITEM_TO_TANK;
@@ -197,7 +197,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 		SoundEvent soundevent = null;
 		BlockState fluidState = null;
-		FluidStack fluidInTank = TransferUtil.firstOrEmpty(fluidTank);
+		io.github.fabricators_of_create.porting_lib.fluids.FluidStack fluidInTank = TransferUtil.firstOrEmpty(fluidTank);
 
 		if (exchange == FluidExchange.ITEM_TO_TANK) {
 			if (creative && !onClient) {
@@ -270,9 +270,8 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (state.hasBlockEntity() && (state.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
 			BlockEntity be = world.getBlockEntity(pos);
-			if (!(be instanceof FluidTankBlockEntity))
+			if (!(be instanceof FluidTankBlockEntity tankBE))
 				return;
-			FluidTankBlockEntity tankBE = (FluidTankBlockEntity) be;
 			world.removeBlockEntity(pos);
 			ConnectivityHandler.splitMulti(tankBE);
 		}
@@ -294,16 +293,16 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 			return state;
 		boolean x = mirror == Mirror.FRONT_BACK;
 		switch (state.getValue(SHAPE)) {
-		case WINDOW_NE:
-			return state.setValue(SHAPE, x ? Shape.WINDOW_NW : Shape.WINDOW_SE);
-		case WINDOW_NW:
-			return state.setValue(SHAPE, x ? Shape.WINDOW_NE : Shape.WINDOW_SW);
-		case WINDOW_SE:
-			return state.setValue(SHAPE, x ? Shape.WINDOW_SW : Shape.WINDOW_NE);
-		case WINDOW_SW:
-			return state.setValue(SHAPE, x ? Shape.WINDOW_SE : Shape.WINDOW_NW);
-		default:
-			return state;
+			case WINDOW_NE:
+				return state.setValue(SHAPE, x ? Shape.WINDOW_NW : Shape.WINDOW_SE);
+			case WINDOW_NW:
+				return state.setValue(SHAPE, x ? Shape.WINDOW_NE : Shape.WINDOW_SW);
+			case WINDOW_SE:
+				return state.setValue(SHAPE, x ? Shape.WINDOW_SW : Shape.WINDOW_NE);
+			case WINDOW_SW:
+				return state.setValue(SHAPE, x ? Shape.WINDOW_SE : Shape.WINDOW_NW);
+			default:
+				return state;
 		}
 	}
 
@@ -316,16 +315,16 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 	private BlockState rotateOnce(BlockState state) {
 		switch (state.getValue(SHAPE)) {
-		case WINDOW_NE:
-			return state.setValue(SHAPE, Shape.WINDOW_SE);
-		case WINDOW_NW:
-			return state.setValue(SHAPE, Shape.WINDOW_NE);
-		case WINDOW_SE:
-			return state.setValue(SHAPE, Shape.WINDOW_SW);
-		case WINDOW_SW:
-			return state.setValue(SHAPE, Shape.WINDOW_NW);
-		default:
-			return state;
+			case WINDOW_NE:
+				return state.setValue(SHAPE, Shape.WINDOW_SE);
+			case WINDOW_NW:
+				return state.setValue(SHAPE, Shape.WINDOW_NE);
+			case WINDOW_SE:
+				return state.setValue(SHAPE, Shape.WINDOW_SW);
+			case WINDOW_SW:
+				return state.setValue(SHAPE, Shape.WINDOW_NW);
+			default:
+				return state;
 		}
 	}
 
@@ -366,7 +365,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 	public static void updateBoilerState(BlockState pState, Level pLevel, BlockPos tankPos) {
 		BlockState tankState = pLevel.getBlockState(tankPos);
-		if (!(tankState.getBlock()instanceof FluidTankBlock tank))
+		if (!(tankState.getBlock() instanceof FluidTankBlock tank))
 			return;
 		FluidTankBlockEntity tankBE = tank.getBlockEntity(pLevel, tankPos);
 		if (tankBE == null)

@@ -1,7 +1,7 @@
 package com.simibubi.create.content.kinetics.chainDrive;
 
 import com.simibubi.create.AllBlockEntityTypes;
-import com.simibubi.create.api.contraption.transformable.ITransformableBlock;
+import com.simibubi.create.api.contraption.transformable.TransformableBlock;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -34,7 +34,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
 
 public class ChainDriveBlock extends RotatedPillarKineticBlock
-	implements IBE<KineticBlockEntity>, ITransformableBlock, WeakPowerCheckingBlock {
+	implements IBE<KineticBlockEntity>, TransformableBlock, WeakPowerCheckingBlock {
 
 	public static final Property<Part> PART = EnumProperty.create("part", Part.class);
 	public static final BooleanProperty CONNECTED_ALONG_FIRST_COORDINATE =

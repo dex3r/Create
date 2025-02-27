@@ -4,6 +4,8 @@ import com.simibubi.create.content.equipment.blueprint.BlueprintMenu;
 import com.simibubi.create.content.equipment.blueprint.BlueprintScreen;
 import com.simibubi.create.content.equipment.toolbox.ToolboxMenu;
 import com.simibubi.create.content.equipment.toolbox.ToolboxScreen;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelSetItemMenu;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelSetItemScreen;
 import com.simibubi.create.content.logistics.filter.AttributeFilterMenu;
 import com.simibubi.create.content.logistics.filter.AttributeFilterScreen;
 import com.simibubi.create.content.logistics.filter.FilterMenu;
@@ -75,6 +77,9 @@ public class AllMenuTypes {
 	
 	public static final MenuEntry<RedstoneRequesterMenu> REDSTONE_REQUESTER =
 		register("redstone_requester", RedstoneRequesterMenu::new, () -> RedstoneRequesterScreen::new);
+	
+	public static final MenuEntry<FactoryPanelSetItemMenu> FACTORY_PANEL_SET_ITEM =
+		register("factory_panel_set_item", FactoryPanelSetItemMenu::new, () -> FactoryPanelSetItemScreen::new);
 	
 	private static <C extends AbstractContainerMenu, S extends Screen & MenuAccess<C>> MenuEntry<C> register(
 			String name, MenuBuilder.ForgeMenuFactory<C> factory, NonNullSupplier<ScreenFactory<C, S>> screenFactory) {

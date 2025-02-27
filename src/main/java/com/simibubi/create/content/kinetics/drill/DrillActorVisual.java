@@ -3,8 +3,6 @@ package com.simibubi.create.content.kinetics.drill;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.contraptions.render.ActorVisual;
-import com.simibubi.create.content.kinetics.base.RotatingInstance;
-import com.simibubi.create.foundation.render.AllInstanceTypes;
 import com.simibubi.create.foundation.virtualWorld.VirtualRenderWorld;
 
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
@@ -12,36 +10,35 @@ import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.model.Models;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class DrillActorVisual extends ActorVisual {
 
-    TransformedInstance drillHead;
-    private final Direction facing;
+	TransformedInstance drillHead;
+	private final Direction facing;
 
 	private double rotation;
 	private double previousRotation;
 
-    public DrillActorVisual(VisualizationContext visualizationContext, VirtualRenderWorld contraption, MovementContext context) {
-        super(visualizationContext, contraption, context);
+	public DrillActorVisual(VisualizationContext visualizationContext, VirtualRenderWorld contraption, MovementContext context) {
+		super(visualizationContext, contraption, context);
 
-        BlockState state = context.state;
+		BlockState state = context.state;
 
-        facing = state.getValue(DrillBlock.FACING);
+		facing = state.getValue(DrillBlock.FACING);
 
 		drillHead = instancerProvider.instancer(InstanceTypes.TRANSFORMED, Models.partial(AllPartialModels.DRILL_HEAD))
-				.createInstance();
-    }
+			.createInstance();
+	}
 
 	@Override
 	public void tick() {
 		previousRotation = rotation;
 
-		if (context.contraption.stalled || context.disabled
+		if (context.disabled
 			|| VecHelper.isVecPointingTowards(context.relativeMotion, facing.getOpposite()))
 			return;
 
@@ -53,7 +50,7 @@ public class DrillActorVisual extends ActorVisual {
 	}
 
 	@Override
-    public void beginFrame() {
+	public void beginFrame() {
 		drillHead.setIdentityTransform()
 			.translate(context.localPos)
 			.center()
@@ -61,7 +58,7 @@ public class DrillActorVisual extends ActorVisual {
 			.rotateZDegrees((float) getRotation())
 			.uncenter()
 			.setChanged();
-    }
+	}
 
 	protected double getRotation() {
 		return AngleHelper.angleLerp(AnimationTickHolder.getPartialTicks(), previousRotation, rotation);

@@ -33,10 +33,9 @@ public class ScrollValueRenderer {
 	public static void tick() {
 		Minecraft mc = Minecraft.getInstance();
 		HitResult target = mc.hitResult;
-		if (target == null || !(target instanceof BlockHitResult))
+		if (target == null || !(target instanceof BlockHitResult result))
 			return;
 
-		BlockHitResult result = (BlockHitResult) target;
 		ClientLevel world = mc.level;
 		BlockPos pos = result.getBlockPos();
 		Direction face = result.getDirection();
@@ -60,8 +59,7 @@ public class ScrollValueRenderer {
 				continue;
 			boolean highlight = behaviour.testHit(target.getLocation()) && !clipboard && !highlightFound;
 
-			if (behaviour instanceof BulkScrollValueBehaviour && AllKeys.ctrlDown()) {
-				BulkScrollValueBehaviour bulkScrolling = (BulkScrollValueBehaviour) behaviour;
+			if (behaviour instanceof BulkScrollValueBehaviour bulkScrolling && AllKeys.ctrlDown()) {
 				for (SmartBlockEntity smartBlockEntity : bulkScrolling.getBulk()) {
 					ScrollValueBehaviour other = smartBlockEntity.getBehaviour(ScrollValueBehaviour.TYPE);
 					if (other != null)
@@ -82,7 +80,7 @@ public class ScrollValueRenderer {
 	}
 
 	protected static void addBox(ClientLevel world, BlockPos pos, Direction face, ScrollValueBehaviour behaviour,
-		boolean highlight) {
+								 boolean highlight) {
 		AABB bb = new AABB(Vec3.ZERO, Vec3.ZERO).inflate(.5f)
 			.contract(0, 0, -.5f)
 			.move(0, 0, -.125f);
@@ -92,7 +90,7 @@ public class ScrollValueRenderer {
 		if (behaviour instanceof ScrollOptionBehaviour) {
 			box = new IconValueBox(label, ((ScrollOptionBehaviour<?>) behaviour).getIconForSelected(), bb, pos);
 		} else {
-            box = new TextValueBox(label, bb, pos, Component.literal(behaviour.formatValue()));
+			box = new TextValueBox(label, bb, pos, Component.literal(behaviour.formatValue()));
 		}
 
 		if (!AdventureUtil.isAdventure(Minecraft.getInstance().player))

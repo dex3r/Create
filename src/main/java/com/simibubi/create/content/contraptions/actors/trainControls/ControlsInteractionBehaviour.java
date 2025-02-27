@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import com.google.common.base.Objects;
 import com.simibubi.create.AllItems;
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
-import com.simibubi.create.content.contraptions.behaviour.MovingInteractionBehaviour;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 import com.tterrag.registrate.fabric.EnvExecutor;
 

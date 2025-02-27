@@ -72,8 +72,7 @@ public class DivingBootsItem extends BaseArmorItem {
 			return false;
 		if (entity.getPose() == Pose.SWIMMING)
 			return false;
-		if (entity instanceof Player) {
-			Player playerEntity = (Player) entity;
+		if (entity instanceof Player playerEntity) {
 			if (playerEntity.getAbilities().flying)
 				return false;
 		}

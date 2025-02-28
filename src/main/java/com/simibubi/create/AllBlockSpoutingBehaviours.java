@@ -1,14 +1,17 @@
 package com.simibubi.create;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.simibubi.create.api.behaviour.spouting.BlockSpoutingBehaviour;
 import com.simibubi.create.api.behaviour.spouting.CauldronSpoutingBehavior;
 import com.simibubi.create.api.behaviour.spouting.StateChangingBehavior;
 import com.simibubi.create.compat.Mods;
+import com.simibubi.create.compat.botania.ApothecaryFilling;
 import com.simibubi.create.compat.tconstruct.SpoutCasting;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -17,8 +20,6 @@ import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class AllBlockSpoutingBehaviours {
 	static void registerDefaults() {
@@ -33,17 +34,30 @@ public class AllBlockSpoutingBehaviours {
 		BlockSpoutingBehaviour.BY_BLOCK.register(Blocks.WATER_CAULDRON, StateChangingBehavior.incrementingState(250, isWater, LayeredCauldronBlock.LEVEL));
 		BlockSpoutingBehaviour.BY_BLOCK.register(Blocks.CAULDRON, CauldronSpoutingBehavior.INSTANCE);
 
+		if (Mods.BOTANIA.isLoaded()) {
+			getTypeForCompat(Mods.BOTANIA, "altar").ifPresent(
+				type -> BlockSpoutingBehaviour.BY_BLOCK_ENTITY.register(type, ApothecaryFilling.INSTANCE)
+			);
+		}
+
 		if (!Mods.TCONSTRUCT.isLoaded())
 			return;
 
 		for (String name : List.of("table", "basin")) {
-			ResourceLocation id = Mods.TCONSTRUCT.rl(name);
-			if (ForgeRegistries.BLOCK_ENTITY_TYPES.containsKey(id)) {
-				BlockEntityType<?> table = ForgeRegistries.BLOCK_ENTITY_TYPES.getValue(id);
-				BlockSpoutingBehaviour.BY_BLOCK_ENTITY.register(table, SpoutCasting.INSTANCE);
-			} else {
-				Create.LOGGER.warn("Block entity {} wasn't found. Outdated compat?", id);
-			}
+			getTypeForCompat(Mods.TCONSTRUCT, name).ifPresent(
+				type -> BlockSpoutingBehaviour.BY_BLOCK_ENTITY.register(type, SpoutCasting.INSTANCE)
+			);
+		}
+	}
+
+	private static Optional<BlockEntityType<?>> getTypeForCompat(Mods mod, String name) {
+		ResourceLocation id = mod.rl(name);
+		BlockEntityType<?> type = BuiltInRegistries.BLOCK_ENTITY_TYPE.get(id);
+		if (type != null) {
+			return Optional.of(type);
+		} else {
+			Create.LOGGER.warn("Block entity {} wasn't found. Outdated compat?", id);
+			return Optional.empty();
 		}
 	}
 }

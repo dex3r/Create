@@ -1,13 +1,10 @@
 package com.simibubi.create.compat.botania;
 
-import com.simibubi.create.api.behaviour.BlockSpoutingBehaviour;
-import com.simibubi.create.compat.Mods;
+import com.simibubi.create.api.behaviour.spouting.BlockSpoutingBehaviour;
 import com.simibubi.create.content.fluids.spout.SpoutBlockEntity;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
@@ -18,28 +15,20 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 
-public class ApothecaryFilling extends BlockSpoutingBehaviour {
-
-	static Boolean BOTANIA_PRESENT = null;
-
-	private final ResourceLocation APOTHECARY = new ResourceLocation("botania", "altar");
+public enum ApothecaryFilling implements BlockSpoutingBehaviour {
+	INSTANCE;
 
 	@Override
-	public long fillBlock(Level level, BlockPos pos, SpoutBlockEntity spout, FluidStack availableFluid,
-						  boolean simulate) {
+	public long fillBlock(Level level, BlockPos pos, SpoutBlockEntity spout, FluidStack availableFluid, boolean simulate) {
 		if (!enabled())
 			return 0;
 
-		BlockEntity te = level.getBlockEntity(pos);
-		if (te == null)
-			return 0;
-
-		ResourceLocation registryName = CatnipServices.REGISTRIES.getKeyOrThrow(te.getType());
-		if (!registryName.equals(APOTHECARY))
+		BlockEntity be = level.getBlockEntity(pos);
+		if (be == null)
 			return 0;
 
 		// this shouldn't fail but... better safe than sorry.
-		if (!(te instanceof PetalApothecary apothecary))
+		if (!(be instanceof PetalApothecary apothecary))
 			return 0;
 		// don't insert if it's not empty
 		if (apothecary.getFluid() != PetalApothecary.State.EMPTY)
@@ -61,20 +50,14 @@ public class ApothecaryFilling extends BlockSpoutingBehaviour {
 			return 0;
 		}
 
-		long inserted = FluidConstants.BUCKET;
 		if (!simulate) {
-			availableFluid.shrink(inserted);
 			apothecary.setFluid(fluidState);
 		}
 
-		return inserted;
+		return FluidConstants.BUCKET;
 	}
 
 	private boolean enabled() {
-		if (BOTANIA_PRESENT == null)
-			BOTANIA_PRESENT = Mods.BOTANIA.isLoaded();
-		if (!BOTANIA_PRESENT)
-			return false;
 		return AllConfigs.server().recipes.allowFillingBySpout.get();
 	}
 

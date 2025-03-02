@@ -66,7 +66,7 @@ public class RedstoneRequesterMenu extends GhostItemMenu<RedstoneRequesterBlockE
 
 		addPlayerSlots(playerX, playerY);
 		for (int i = 0; i < 9; i++)
-			addSlot(new SlotItemHandler(ghostInventory, i, slotX + 20 * i, slotY));
+			addSlot(new SorterProofSlot(ghostInventory, i, slotX + 20 * i, slotY));
 	}
 
 	@Override
@@ -81,4 +81,11 @@ public class RedstoneRequesterMenu extends GhostItemMenu<RedstoneRequesterBlockE
 		contentHolder.sendData();
 	}
 
+	// this is used to prevent InventorySorter from interfering with scrolling on the slots.
+	// we just need a class to use as a marker, see InventorySorterCompat
+	public static class SorterProofSlot extends SlotItemHandler {
+		public SorterProofSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+			super(itemHandler, index, xPosition, yPosition);
+		}
+	}
 }

@@ -14,6 +14,8 @@ import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.foundation.utility.worldWrappers.WrappedBlockAndTintGetter;
 import com.simibubi.create.foundation.virtualWorld.VirtualRenderWorld;
 
+import net.minecraftforge.client.model.data.ModelData;
+
 import dev.engine_room.flywheel.api.material.CardinalLightingMode;
 import dev.engine_room.flywheel.api.model.Model;
 import dev.engine_room.flywheel.api.task.Plan;
@@ -132,7 +134,7 @@ public class ContraptionVisual<E extends AbstractContraptionEntity> extends Abst
 	}
 
 	@SuppressWarnings("unchecked")
-	protected  <T extends BlockEntity> void setupVisualizer(T be, float partialTicks) {
+	protected <T extends BlockEntity> void setupVisualizer(T be, float partialTicks) {
 		BlockEntityVisualizer<? super T> visualizer = (BlockEntityVisualizer<? super T>) VisualizerRegistry.getVisualizer(be.getType());
 		if (visualizer == null) {
 			return;
@@ -182,17 +184,17 @@ public class ContraptionVisual<E extends AbstractContraptionEntity> extends Abst
 	@Override
 	public Plan<TickableVisual.Context> planTick() {
 		return NestedPlan.of(
-				ForEachPlan.of(() -> actors, ActorVisual::tick),
-				tickableVisuals
+			ForEachPlan.of(() -> actors, ActorVisual::tick),
+			tickableVisuals
 		);
 	}
 
 	@Override
 	public Plan<DynamicVisual.Context> planFrame() {
 		return NestedPlan.of(
-				RunnablePlan.of(this::beginFrame),
-				ForEachPlan.of(() -> actors, ActorVisual::beginFrame),
-				dynamicVisuals
+			RunnablePlan.of(this::beginFrame),
+			ForEachPlan.of(() -> actors, ActorVisual::beginFrame),
+			dynamicVisuals
 		);
 	}
 
@@ -201,7 +203,7 @@ public class ContraptionVisual<E extends AbstractContraptionEntity> extends Abst
 		setEmbeddingMatrices(partialTick);
 
 		if (hasMovedSections()) {
- 			sectionCollector.sections(collectLightSections());
+			sectionCollector.sections(collectLightSections());
 		}
 
 		if (hasMovedBlocks()) {
@@ -282,13 +284,13 @@ public class ContraptionVisual<E extends AbstractContraptionEntity> extends Abst
 		int maxY = maxLight(boundingBox.maxY);
 		int maxZ = maxLight(boundingBox.maxZ);
 
-		return minBlock != BlockPos.asLong(minX, minY, minZ) || maxBlock !=  BlockPos.asLong(maxX, maxY, maxZ);
+		return minBlock != BlockPos.asLong(minX, minY, minZ) || maxBlock != BlockPos.asLong(maxX, maxY, maxZ);
 	}
 
 	protected boolean hasMovedSections() {
 		var boundingBox = entity.getBoundingBox();
 
-        var minSectionX = minLightSection(boundingBox.minX);
+		var minSectionX = minLightSection(boundingBox.minX);
 		var minSectionY = minLightSection(boundingBox.minY);
 		var minSectionZ = minLightSection(boundingBox.minZ);
 		int maxSectionX = maxLightSection(boundingBox.maxX);

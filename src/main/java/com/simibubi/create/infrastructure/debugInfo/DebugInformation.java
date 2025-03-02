@@ -16,6 +16,11 @@ import com.simibubi.create.infrastructure.debugInfo.element.DebugInfoSection;
 import com.simibubi.create.infrastructure.debugInfo.element.InfoElement;
 import com.simibubi.create.infrastructure.debugInfo.element.InfoEntry;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.forgespi.language.IModInfo;
+
 import dev.engine_room.flywheel.api.Flywheel;
 import dev.engine_room.flywheel.api.backend.Backend;
 import dev.engine_room.flywheel.api.backend.BackendManager;
@@ -77,32 +82,32 @@ public class DebugInformation {
 
 		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
 			DebugInfoSection.builder("Graphics")
-					.put("Flywheel Version", FabricLoader.getInstance()
-							.getModContainer(Flywheel.ID)
-							.map(c -> c.getMetadata()
-									.getVersion()
-									.toString())
-							.orElse("None"))
-					.put("Flywheel Backend", () -> Backend.REGISTRY.getIdOrThrow(BackendManager.currentBackend()).toString())
-					.put("OpenGL Renderer", GlUtil::getRenderer)
-					.put("OpenGL Version", GlUtil::getOpenGLVersion)
-					.put("Graphics Mode", () -> Minecraft.getInstance().options.graphicsMode().get().getKey())
-					.buildTo(DebugInformation::registerClientInfo);
+				.put("Flywheel Version", FabricLoader.getInstance()
+					.getModContainer(Flywheel.ID)
+					.map(c -> c.getMetadata()
+						.getVersion()
+						.toString())
+					.orElse("None"))
+				.put("Flywheel Backend", () -> Backend.REGISTRY.getIdOrThrow(BackendManager.currentBackend()).toString())
+				.put("OpenGL Renderer", GlUtil::getRenderer)
+				.put("OpenGL Version", GlUtil::getOpenGLVersion)
+				.put("Graphics Mode", () -> I18n.get(Minecraft.getInstance().options.graphicsMode().get().getKey()))
+				.buildTo(DebugInformation::registerClientInfo);
 		});
 
 		DebugInfoSection.builder("System Information")
-				.put("Operating System", SystemReportAccessor.getOPERATING_SYSTEM())
-				.put("Java Version", SystemReportAccessor.getJAVA_VERSION())
-				.put("JVM Flags", getMcSystemInfo("JVM Flags"))
-				.put("Memory", () -> getMcSystemInfo("Memory"))
-				.put("Total Memory", getTotalRam())
-				.put("CPU", getCpuInfo())
-				.putAll(listAllGraphicsCards())
-				.buildTo(DebugInformation::registerBothInfo);
+			.put("Operating System", SystemReportAccessor.getOPERATING_SYSTEM())
+			.put("Java Version", SystemReportAccessor.getJAVA_VERSION())
+			.put("JVM Flags", getMcSystemInfo("JVM Flags"))
+			.put("Memory", () -> getMcSystemInfo("Memory"))
+			.put("Total Memory", getTotalRam())
+			.put("CPU", getCpuInfo())
+			.putAll(listAllGraphicsCards())
+			.buildTo(DebugInformation::registerBothInfo);
 
 		DebugInfoSection.builder("Other Mods")
-				.putAll(listAllOtherMods())
-				.buildTo(DebugInformation::registerBothInfo);
+			.putAll(listAllOtherMods())
+			.buildTo(DebugInformation::registerBothInfo);
 	}
 
 	public static String getVersionOfMod(String id) {

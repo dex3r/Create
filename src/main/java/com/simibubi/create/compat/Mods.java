@@ -35,6 +35,7 @@ public enum Mods {
 	FTBCHUNKS,
 	JOURNEYMAP,
 	FTBLIBRARY,
+	INVENTORYSORTER,
 
 	// fabric mods
 	SANDWICHABLE,

@@ -96,13 +96,13 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 		}
 
 		return super.getStateForPlacement(context).setValue(POWERED, context.getLevel()
-			.hasNeighborSignal(context.getClickedPos()))
+				.hasNeighborSignal(context.getClickedPos()))
 			.setValue(FACING, preferredFacing);
 	}
 
 	@Override
 	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
+								 BlockHitResult hit) {
 		if (player == null)
 			return InteractionResult.PASS;
 
@@ -111,7 +111,7 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 			return InteractionResult.PASS;
 		if (AllBlocks.FACTORY_GAUGE.isIn(itemInHand))
 			return InteractionResult.PASS;
-		if (AllBlocks.STOCK_LINK.isIn(itemInHand) && !state.getValue(LINKED))
+		if (AllBlocks.STOCK_LINK.isIn(itemInHand) && !(state.hasProperty(LINKED) && state.getValue(LINKED)))
 			return InteractionResult.PASS;
 		if (AllBlocks.PACKAGE_FROGPORT.isIn(itemInHand))
 			return InteractionResult.PASS;
@@ -159,14 +159,14 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 	@Override
 	public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
 		if (neighbor.relative(state.getOptionalValue(FACING)
-			.orElse(Direction.UP))
+				.orElse(Direction.UP))
 			.equals(pos))
 			withBlockEntityDo(level, pos, PackagerBlockEntity::triggerStockCheck);
 	}
 
 	@Override
 	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
-		boolean isMoving) {
+								boolean isMoving) {
 		if (worldIn.isClientSide)
 			return;
 		boolean previouslyPowered = state.getValue(POWERED);
@@ -210,12 +210,12 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
 	@Override
 	public int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
 		return getBlockEntityOptional(pLevel, pPos).map(pbe -> {
-			boolean empty = pbe.inventory.getStackInSlot(0)
-				.isEmpty();
-			if (pbe.animationTicks != 0)
-				empty = false;
-			return empty ? 0 : 15;
-		})
+				boolean empty = pbe.inventory.getStackInSlot(0)
+					.isEmpty();
+				if (pbe.animationTicks != 0)
+					empty = false;
+				return empty ? 0 : 15;
+			})
 			.orElse(0);
 	}
 

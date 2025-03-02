@@ -1,4 +1,28 @@
 ------------------------------------------------------
+Create 6.0.1
+------------------------------------------------------
+
+#### Bug Fixes
+
+- Fixed Shopping lists not updating when adding purchases (1.21) #7449 #7393
+- Fixed Frogport ponder scene not animating correctly (1.21)
+- Fixed broken address filter in second stock ticker ponder scene (1.21)
+- Added a tooltip for the stock keeper address input
+- Fixed crash when re-packaging a duplicated package fragment #7456
+- Fixed crash when ctrl-click copying a gauge #7431
+- Safety check for unexpected string modifications in address edit boxes #7409
+- Fixed crash with fluid propagator
+- Fixed a crash when using factory gauges
+- Fixed debug info command not translating the graphics mode text
+- Fixed cardboard sword not being able to damage arthropod mobs other than the spider
+- Fixed a crash that occurred when placing a stock link on a re-packager
+- Fixed an issue where wearing diving boots and sprinting would force you into the swim position and then out of it
+  right away
+- Fixed item group attribute filters crashing
+- Fixed mixin conflict with immersive portals
+- Fixed processing output not supporting itemstack components
+
+------------------------------------------------------
 Create 6.0.0
 ------------------------------------------------------
 

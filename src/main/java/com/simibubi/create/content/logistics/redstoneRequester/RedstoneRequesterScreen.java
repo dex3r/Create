@@ -181,7 +181,7 @@ public class RedstoneRequesterScreen extends AbstractSimiContainerScreen<Redston
 
 		if (addressBox.mouseScrolled(mouseX, mouseY, pDelta))
 			return true;
-		
+
 		for (int i = 0; i < amounts.size(); i++) {
 			int inputX = x + 27 + i * 20;
 			int inputY = y + 28;
@@ -196,15 +196,6 @@ public class RedstoneRequesterScreen extends AbstractSimiContainerScreen<Redston
 		}
 
 		return super.mouseScrolled(mouseX, mouseY, pDelta);
-	}
-
-	/*
-	 * Fixes InventorySorter nabbing the scroll event. This screen needs it for
-	 * amount control
-	 */
-	@Override
-	public @Nullable Slot getSlotUnderMouse() {
-		return null;
 	}
 
 	@Override

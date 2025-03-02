@@ -17,12 +17,13 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStack.TooltipPart;
 import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -67,7 +68,7 @@ public class CardboardSwordItem extends SwordItem implements CustomEnchantingBeh
 		Entity attacker = event.getSource()
 			.getEntity();
 		LivingEntity target = event.getEntity();
-		if (target == null || target instanceof Spider)
+		if (target == null || target.getMobType() == MobType.ARTHROPOD)
 			return;
 		if (!(attacker instanceof LivingEntity livingAttacker
 			&& AllItems.CARDBOARD_SWORD.isIn(livingAttacker.getItemInHand(InteractionHand.MAIN_HAND))))

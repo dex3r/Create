@@ -38,6 +38,7 @@ import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.ScreenWithStencils;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
@@ -488,9 +489,12 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 
 		// Render text input hints
 		if (addressBox.getValue()
-			.isBlank())
-			graphics.drawString(font, addressBox.getMessage(), addressBox.getX(), addressBox.getY(), 0x88dddddd);
-
+			.isBlank() && !addressBox.isFocused()) {
+			graphics.drawString(Minecraft.getInstance().font, CreateLang.translate("gui.stock_keeper.package_adress")
+				.style(ChatFormatting.ITALIC)
+				.component(), addressBox.getX(), addressBox.getY(), 0xff_CDBCA8, false);
+		}
+		
 		// Render keeper
 		int entitySizeOffset = 0;
 		LivingEntity keeper = stockKeeper.get();
@@ -804,6 +808,19 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 						.style(ChatFormatting.DARK_GRAY)
 						.style(ChatFormatting.ITALIC)
 						.component()),
+				mouseX, mouseY);
+		}
+
+		// Render tooltip of address input
+		if (addressBox.getValue()
+			.isBlank() && !addressBox.isFocused() && addressBox.isHovered()) {
+			graphics.renderComponentTooltip(font, List.of(CreateLang.translate("gui.factory_panel.restocker_address")
+				.color(ScrollInput.HEADER_RGB)
+				.component(),
+				CreateLang.translate("gui.schedule.lmb_edit")
+					.style(ChatFormatting.DARK_GRAY)
+					.style(ChatFormatting.ITALIC)
+					.component()),
 				mouseX, mouseY);
 		}
 	}

@@ -48,9 +48,9 @@ jobs:
       - name: Publish to Maven [Snapshots]
         if: ${{ !github.event.inputs.release }}
         run: >-
-          ./gradlew publishAllPublicationsToDevOsReleasesRepository
-          -PdevOsReleasesUsername="${{ secrets.MAVEN_USER }}"
-          -PdevOsReleasesPassword="${{ secrets.MAVEN_PASS }}"
+          ./gradlew publishAllPublicationsToDevOsSnapshotsRepository
+          -PdevOsSnapshotsUsername="${{ secrets.MAVEN_USER }}"
+          -PdevOsSnapshotsPassword="${{ secrets.MAVEN_PASS }}"
 
       # TODO: add back CF and MR publishing at some point
 

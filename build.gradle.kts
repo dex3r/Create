@@ -251,6 +251,7 @@ tasks.named<JavaCompile>("compileJava") {
 publishing {
     publications {
         register<MavenPublication>("mavenJava") {
+            artifactId = "create-fabric-$minecraftVersion"
             from(components["java"])
         }
     }

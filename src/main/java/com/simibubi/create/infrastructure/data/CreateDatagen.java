@@ -20,9 +20,6 @@ import com.simibubi.create.foundation.ponder.CreatePonderPlugin;
 import com.simibubi.create.foundation.utility.FilesHelper;
 import com.tterrag.registrate.providers.ProviderType;
 
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.data.event.GatherDataEvent;
-
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.core.RegistrySetBuilder;
 
@@ -36,7 +33,7 @@ public class CreateDatagen implements DataGeneratorEntrypoint {
 	public void onInitializeDataGenerator(FabricDataGenerator generator) {
 		ExistingFileHelper helper = ExistingFileHelper.withResourcesFromArg();
 		FabricDataGenerator.Pack pack = generator.createPack();
-		Create.REGISTRATE.setupDatagen(pack, helper);
+		Create.registrate().setupDatagen(pack, helper);
 		gatherData(pack, helper);
 	}
 

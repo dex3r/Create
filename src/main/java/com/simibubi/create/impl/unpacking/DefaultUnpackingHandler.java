@@ -14,9 +14,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 public enum DefaultUnpackingHandler implements UnpackingHandler {
 	INSTANCE;
@@ -24,73 +25,23 @@ public enum DefaultUnpackingHandler implements UnpackingHandler {
 	@Override
 	public boolean unpack(Level level, BlockPos pos, BlockState state, Direction side, List<ItemStack> items, @Nullable PackageOrder order, boolean simulate) {
 		BlockEntity targetBE = level.getBlockEntity(pos);
-		if (targetBE == null)
-			return false;
 
-		IItemHandler targetInv = targetBE.getCapability(ForgeCapabilities.ITEM_HANDLER, side).resolve().orElse(null);
+		Storage<ItemVariant> targetInv = ItemStorage.SIDED.find(level, pos, state, targetBE, side);
 		if (targetInv == null)
 			return false;
-		
-		if (!simulate) {
-			/*
-			 * Some mods do not support slot-by-slot precision during simulate = false. 
-			 * Faulty interactions may lead to voiding of items, but the simulate pass should
-			 * already have correctly identified there to be enough space for everything.
-			 */
-			for (ItemStack itemStack : items)
-				ItemHandlerHelper.insertItemStacked(targetInv, itemStack.copy(), false);
-			return true;
-		}
 
-		for (int slot = 0; slot < targetInv.getSlots(); slot++) {
-			ItemStack itemInSlot = targetInv.getStackInSlot(slot);
-			int itemsAddedToSlot = 0;
-
-			for (int boxSlot = 0; boxSlot < items.size(); boxSlot++) {
-				ItemStack toInsert = items.get(boxSlot);
-				if (toInsert.isEmpty())
-					continue;
-
-				if (targetInv.insertItem(slot, toInsert, true)
-					.getCount() == toInsert.getCount())
-					continue;
-
-				if (itemInSlot.isEmpty()) {
-					int maxStackSize = targetInv.getSlotLimit(slot);
-					if (maxStackSize < toInsert.getCount()) {
-						toInsert.shrink(maxStackSize);
-						toInsert = ItemHandlerHelper.copyStackWithSize(toInsert, maxStackSize);
-					} else
-						items.set(boxSlot, ItemStack.EMPTY);
-
-					itemInSlot = toInsert;
-					targetInv.insertItem(slot, toInsert, simulate);
-					continue;
+		try (Transaction t = Transaction.openOuter()) {
+			for (ItemStack stack : items) {
+				long inserted = targetInv.insert(ItemVariant.of(stack), stack.getCount(), t);
+				if (inserted != stack.getCount()) {
+					return false;
 				}
-
-				if (!ItemHandlerHelper.canItemStacksStack(toInsert, itemInSlot))
-					continue;
-
-				int insertedAmount = toInsert.getCount() - targetInv.insertItem(slot, toInsert, simulate)
-					.getCount();
-				int slotLimit = (int) ((targetInv.getStackInSlot(slot)
-					.isEmpty() ? itemInSlot.getMaxStackSize() / 64f : 1) * targetInv.getSlotLimit(slot));
-				int insertableAmountWithPreviousItems =
-					Math.min(toInsert.getCount(), slotLimit - itemInSlot.getCount() - itemsAddedToSlot);
-
-				int added = Math.min(insertedAmount, Math.max(0, insertableAmountWithPreviousItems));
-				itemsAddedToSlot += added;
-
-				items.set(boxSlot,
-					ItemHandlerHelper.copyStackWithSize(toInsert, toInsert.getCount() - added));
 			}
-		}
 
-		for (ItemStack stack : items) {
-			if (!stack.isEmpty()) {
-				// something failed to be inserted
-				return false;
+			if (!simulate) {
+				t.commit();
 			}
+
 		}
 
 		return true;

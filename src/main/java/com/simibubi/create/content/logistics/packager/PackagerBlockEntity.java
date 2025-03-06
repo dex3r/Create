@@ -59,7 +59,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
@@ -357,51 +356,24 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 
 			UnpackingHandler handler = UnpackingHandler.REGISTRY.get(targetState);
 		UnpackingHandler toUse = handler != null ? handler : UnpackingHandler.DEFAULT;
+
+		// fabric: copy the items to actually unpack later
+		List<ItemStack> copy = items.stream().map(ItemStack::copy).toList();
+
 		// note: handler may modify the passed items
-		boolean unpacked = toUse.unpack(level, target, targetState, facing, items, orderContext, simulate);
+		boolean unpacked = toUse.unpack(level, target, targetState, facing, items, orderContext, true);
 
-		if (unpacked && !simulate) {previouslyUnwrapped = box;
-			animationInward = true;
-			animationTicks = CYCLE;
-			notifyUpdate();}
-
-		});
-
-		return true;
-	}
-
-	private boolean unwrapIntoCrafter(MechanicalCrafterBlockEntity be, ItemStackHandler box, PackageOrder order, TransactionContext ctx) {
-		CombinedStorage<ItemVariant, Inventory> combined = be.input.getItemHandler(be.getLevel(), be.getBlockPos());
-		if (combined == null)
-			return false;
-
-		try (Transaction t = ctx.openNested()) {
-			for (int crafter = 0; crafter < combined.parts.size(); crafter++) {
-				Inventory storage = combined.parts.get(crafter);
-
-				for (int slot = 0; slot < box.getSlotCount(); slot++) {
-					ItemStack toInsert = box.getStackInSlot(slot);
-					if (toInsert.isEmpty())
-						continue;
-
-					if (crafter < order.stacks().size()) {
-						BigItemStack targetStack = order.stacks().get(crafter);
-						if (targetStack.stack.isEmpty())
-							break;
-						if (!ItemHandlerHelper.canItemStacksStack(toInsert, targetStack.stack))
-							continue;
-
-						long inserted = storage.insert(ItemVariant.of(toInsert), toInsert.getCount(), ctx);
-						if (inserted != toInsert.getCount()) {
-							return false;
-						}
-					}
-				}
-			}
-			t.commit();
+		if (unpacked) {
+			TransactionCallback.onSuccess(ctx, () -> {
+				toUse.unpack(level, target, targetState, facing, copy, orderContext, false);
+				previouslyUnwrapped = box;
+				animationInward = true;
+				animationTicks = CYCLE;
+				notifyUpdate();
+			});
 		}
 
-		return unpacked;
+		return true;
 	}
 
 	public void attemptToSend(List<PackagingRequest> queuedRequests) {

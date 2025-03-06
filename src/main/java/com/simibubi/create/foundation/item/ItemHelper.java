@@ -33,6 +33,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 
 public class ItemHelper {
@@ -353,7 +354,7 @@ public class ItemHelper {
 
 	public static List<ItemStack> getNonEmptyStacks(ItemStackHandler handler) {
 		List<ItemStack> stacks = new ArrayList<>();
-		for (int i = 0; i < handler.getSlots(); i++) {
+		for (int i = 0; i < handler.getSlotCount(); i++) {
 			ItemStack stack = handler.getStackInSlot(i);
 			if (!stack.isEmpty()) {
 				stacks.add(stack);

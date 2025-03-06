@@ -13,14 +13,13 @@ import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.utility.CreateLang;
-import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import mezz.jei.api.fabric.constants.FabricTypes;
+import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotRichTooltipCallback;
-import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
@@ -38,8 +37,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.material.Fluid;
 
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -125,7 +122,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements IReci
 	}
 
 	public static IRecipeSlotBuilder addFluidSlot(IRecipeLayoutBuilder builder, int x, int y, FluidIngredient ingredient) {
-		int amount = ingredient.getRequiredAmount();
+		long amount = ingredient.getRequiredAmount();
 		return builder.addSlot(RecipeIngredientRole.OUTPUT, x, y)
 			.setBackground(getRenderedSlot(), -1, -1)
 			.addIngredients(FabricTypes.FLUID_STACK, toJei(ingredient.getMatchingFluidStacks()))
@@ -140,6 +137,37 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements IReci
 	}
 
 	// fabric: don't need potion tooltip stuff, handled by attribute handler
+
+	public static FluidStack fromJei(IJeiFluidIngredient jei) {
+		return new FluidStack(jei.getFluid(), jei.getAmount(), jei.getTag().orElse(null));
+	}
+
+	public static IJeiFluidIngredient toJei(FluidStack stack) {
+		return new IJeiFluidIngredient() {
+			@Override
+			public Fluid getFluid() {
+				return stack.getFluid();
+			}
+
+			@Override
+			public long getAmount() {
+				return stack.getAmount();
+			}
+
+			@Override
+			public Optional<CompoundTag> getTag() {
+				return Optional.ofNullable(stack.getTag());
+			}
+		};
+	}
+
+	public static List<FluidStack> fromJei(List<IJeiFluidIngredient> stacks) {
+		return stacks.stream().map(CreateRecipeCategory::fromJei).toList();
+	}
+
+	public static List<IJeiFluidIngredient> toJei(Collection<FluidStack> stacks) {
+		return stacks.stream().map(CreateRecipeCategory::toJei).toList();
+	}
 
 	protected static IDrawable asDrawable(AllGuiTextures texture) {
 		return new IDrawable() {

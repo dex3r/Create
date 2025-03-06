@@ -71,6 +71,7 @@ import net.minecraft.world.phys.Vec3;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags;
 
 import io.github.fabricators_of_create.porting_lib.item.UseFirstBehaviorItem;
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.BucketItemAccessor;
@@ -427,7 +428,7 @@ public class DeployerHandler {
 		if (honeyLevel < 5)
 			return InteractionResult.PASS;
 
-		if (prevHeldItem.canPerformAction(ToolActions.SHEARS_HARVEST)) {
+		if (prevHeldItem.is(ConventionalItemTags.SHEARS)) {
 			world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.BEEHIVE_SHEAR,
 				SoundSource.NEUTRAL, 1.0F, 1.0F);
 			// <> BeehiveBlock#dropHoneycomb

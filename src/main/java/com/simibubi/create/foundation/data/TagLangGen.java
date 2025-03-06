@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class TagLangGen {
 	public static void datagen() {
-		Create.REGISTRATE.addDataGenerator(ProviderType.LANG, TagLangGen::genItemTagLang);
+		Create.registrate().addDataGenerator(ProviderType.LANG, TagLangGen::genItemTagLang);
 	}
 
 	private static void genItemTagLang(RegistrateLangProvider prov) {

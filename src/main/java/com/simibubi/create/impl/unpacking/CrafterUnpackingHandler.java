@@ -18,7 +18,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 
 public enum CrafterUnpackingHandler implements UnpackingHandler {
 	INSTANCE;
@@ -38,26 +41,28 @@ public enum CrafterUnpackingHandler implements UnpackingHandler {
 		if (inventories.isEmpty())
 			return false;
 
-		// insert in the order's defined ordering
-		int max = Math.min(inventories.size(), order.stacks().size());
-		outer: for (int i = 0; i < max; i++) {
-			BigItemStack targetStack = order.stacks().get(i);
-			if (targetStack.stack.isEmpty())
-				continue;
+		try (Transaction t = Transaction.openOuter()) {
+			// insert in the order's defined ordering
+			int max = Math.min(inventories.size(), order.stacks().size());
+			outer: for (int i = 0; i < max; i++) {
+				BigItemStack targetStack = order.stacks().get(i);
+				if (targetStack.stack.isEmpty())
+					continue;
 
-			Inventory inventory = inventories.get(i);
-			// if there's already an item here, no point in trying
-			if (!inventory.getStackInSlot(0).isEmpty())
-				continue;
+				Inventory inventory = inventories.get(i);
+				// if there's already an item here, no point in trying
+				if (!inventory.getStackInSlot(0).isEmpty())
+					continue;
 
-			// go through each item in the box and try insert if it matches the target
-			for (ItemStack stack : items) {
-				if (ItemHandlerHelper.canItemStacksStack(stack, targetStack.stack)) {
-					ItemStack toInsert = stack.copyWithCount(1);
-					if (inventory.insertItem(0, toInsert, simulate).isEmpty()) {
-						stack.shrink(1);
-						// one item per crafter, move to next once successful
-						continue outer;
+				// go through each item in the box and try insert if it matches the target
+				for (ItemStack stack : items) {
+					if (ItemHandlerHelper.canItemStacksStack(stack, targetStack.stack)) {
+						ItemStack toInsert = stack.copyWithCount(1);
+						if (inventory.insert(ItemVariant.of(toInsert), 1, t) == 1) {
+							stack.shrink(1);
+							// one item per crafter, move to next once successful
+							continue outer;
+						}
 					}
 				}
 			}

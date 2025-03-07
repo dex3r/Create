@@ -11,11 +11,6 @@ val flywheelVersion = "1.0.1-11"
 val ponderVersion = "1.0.44"
 val registrateVersion = "1.3.77-MC1.21.1"
 val milkLibVersion = "1.2.60"
-val portLibVersion = "2.3.8+1.20.1"
-val portLibModules = listOf(
-    "accessors", "base", "entity", "extensions", "networking", "obj_loader",
-    "tags", "transfer", "models", "tool_actions", "client_events", "brewing"
-)
 
 // external dependencies
 val configApiVersion = "21.1.3"
@@ -75,7 +70,6 @@ repositories {
     maven("https://maven.fabricmc.net") // FAPI, Loader
     maven("https://maven.createmod.net") // Ponder, Flywheel
     maven("https://mvn.devos.one/snapshots") // Registrate, Forge Tags, Milk Lib
-    maven("https://mvn.devos.one/releases") // Porting Lib
     maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven") // Forge Config API Port
     maven("https://maven.shedaniel.me") // REI and deps
     maven("https://api.modrinth.com/maven") { // LazyDFU, Sodium, Sandwichable
@@ -106,12 +100,8 @@ dependencies {
 
     // dependencies
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion")
-    for (module in portLibModules) {
-        modApi(include("io.github.fabricators_of_create.Porting-Lib:$module:$portLibVersion")!!)
-    }
-    modApi(include("com.tterrag.registrate_fabric:Registrate:$registrateVersion") {
-        exclude(mapOf("group" to "io.github.fabricators_of_create")) // avoid duplicate Porting Lib
-    })
+
+    modApi(include("com.tterrag.registrate_fabric:Registrate:$registrateVersion")!!)
     modApi(include("com.electronwill.night-config:core:$nightConfigVersion")!!)
     modApi(include("com.electronwill.night-config:toml:$nightConfigVersion")!!)
     modApi(include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$configApiVersion")!!)
@@ -193,7 +183,6 @@ loom {
             vmArg("-Dfabric-api.datagen")
             vmArg("-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}")
             vmArg("-Dfabric-api.datagen.modid=create")
-            vmArg("-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
         }
 
         register("gametestServer") {
@@ -237,11 +226,6 @@ tasks.named<ProcessResources>("processResources") {
         "forge_config_version" to configApiVersion,
         "milk_lib_version" to milkLibVersion
     )
-
-    for (module in portLibModules) {
-        properties["port_lib_${module}_version"] = portLibVersion
-    }
-    properties["port_lib_tags_version"] = "3.0" // the weird one
 
     inputs.properties(properties)
 

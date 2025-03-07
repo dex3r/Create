@@ -101,7 +101,11 @@ dependencies {
     // dependencies
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion")
 
-    modApi(include("com.tterrag.registrate_fabric:Registrate:$registrateVersion")!!)
+    modRuntimeOnly(include("com.tterrag.registrate_fabric:Registrate:$registrateVersion")!!)
+    modCompileOnly("com.tterrag.registrate_fabric:Registrate:$registrateVersion") {
+        exclude(group = "io.github.fabricators_of_create.Porting-Lib")
+    }
+
     modApi(include("com.electronwill.night-config:core:$nightConfigVersion")!!)
     modApi(include("com.electronwill.night-config:toml:$nightConfigVersion")!!)
     modApi(include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$configApiVersion")!!)
@@ -113,7 +117,10 @@ dependencies {
         implementation("net.createmod.ponder:Ponder-Fabric-$minecraftVersion:$ponderVersion") { isTransitive = false }
         implementation("net.createmod.ponder:Ponder-Common-$minecraftVersion:$ponderVersion")
     } else {
-        modApi(include("net.createmod.ponder:Ponder-Fabric-$minecraftVersion:$ponderVersion")!!)
+        modRuntimeOnly(include("net.createmod.ponder:Ponder-Fabric-$minecraftVersion:$ponderVersion")!!)
+        modCompileOnly("net.createmod.ponder:Ponder-Fabric-$minecraftVersion:$ponderVersion") {
+            exclude(group = "io.github.fabricators_of_create.Porting-Lib")
+        }
     }
 
     // compat

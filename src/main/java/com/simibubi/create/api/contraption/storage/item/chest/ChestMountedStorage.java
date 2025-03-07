@@ -2,7 +2,7 @@ package com.simibubi.create.api.contraption.storage.item.chest;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllMountedStorageTypes;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorage;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageType;
@@ -36,7 +36,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackSto
  * Mounted storage that handles opening a combined GUI for double chests.
  */
 public class ChestMountedStorage extends SimpleMountedStorage {
-	public static final Codec<ChestMountedStorage> CODEC = SimpleMountedStorage.codec(ChestMountedStorage::new);
+	public static final MapCodec<ChestMountedStorage> CODEC = SimpleMountedStorage.codec(ChestMountedStorage::new);
 
 	protected ChestMountedStorage(MountedItemStorageType<?> type, ItemStackHandler handler) {
 		super(type, handler);

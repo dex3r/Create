@@ -1,20 +1,19 @@
 package com.simibubi.create.content.logistics.filter;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
+import com.simibubi.create.foundation.item.ItemHelper;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 public abstract class AbstractFilterMenu extends GhostItemMenu<ItemStack> {
 
-	protected AbstractFilterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	protected AbstractFilterMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id, inv, extraData);
 	}
 
@@ -35,9 +34,9 @@ public abstract class AbstractFilterMenu extends GhostItemMenu<ItemStack> {
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
-	protected ItemStack createOnClient(FriendlyByteBuf extraData) {
-		return extraData.readItem();
+	@OnlyIn(Dist.CLIENT)
+	protected ItemStack createOnClient(RegistryFriendlyByteBuf extraData) {
+		return ItemStack.STREAM_CODEC.decode(extraData);
 	}
 
 	protected abstract int getPlayerInventoryXOffset();
@@ -54,8 +53,13 @@ public abstract class AbstractFilterMenu extends GhostItemMenu<ItemStack> {
 
 	@Override
 	protected void saveData(ItemStack contentHolder) {
-		contentHolder.getOrCreateTag()
-				.put("Items", ghostInventory.serializeNBT());
+		for (int i = 0; i < ghostInventory.getSlots(); i++) {
+			if (!ghostInventory.getStackInSlot(i).isEmpty()) {
+				contentHolder.set(AllDataComponents.FILTER_ITEMS, ItemHelper.containerContentsFromHandler(ghostInventory));
+				return;
+			}
+		}
+		contentHolder.remove(AllDataComponents.FILTER_ITEMS);
 	}
 
 	@Override

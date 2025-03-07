@@ -2,6 +2,9 @@ package com.simibubi.create.content.trains.schedule.condition;
 
 import java.util.List;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import com.google.common.collect.ImmutableList;
@@ -104,7 +107,7 @@ public class TimeOfDayCondition extends ScheduleWaitCondition {
 		int displayHr = (intData("Hour") + 12) % 24;
 		float progress = (displayHr * 60f + intData("Minute")) / (24 * 60);
 		ResourceLocation location =
-			new ResourceLocation("textures/item/clock_" + twoDigits(Mth.clamp((int) (progress * 64), 0, 63)) + ".png");
+			ResourceLocation.withDefaultNamespace("textures/item/clock_" + twoDigits(Mth.clamp((int) (progress * 64), 0, 63)) + ".png");
 		graphics.blit(location, x, y, 0, 0, 0, 16, 16, 16, 16);
 		return true;
 	}

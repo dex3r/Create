@@ -8,6 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+
+import net.createmod.catnip.platform.CatnipServices;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlocks;
@@ -76,7 +82,8 @@ public class TrackMaterial {
 		this.particle = particle;
 		this.trackType = trackType;
 		this.customFactory = customFactory;
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> this.modelHolder = modelHolder.get().get());
+		if (CatnipServices.PLATFORM.getEnv().isClient())
+			this.modelHolder = modelHolder.get().get();
 		ALL.put(this.id, this);
 	}
 

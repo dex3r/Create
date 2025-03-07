@@ -15,6 +15,10 @@ import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.fluid.FluidHelper.FluidExchange;
 
 import net.createmod.catnip.lang.Lang;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -26,6 +30,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -161,38 +166,36 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-								 BlockHitResult ray) {
-		ItemStack heldItem = player.getItemInHand(hand);
-		boolean onClient = world.isClientSide;
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		boolean onClient = level.isClientSide;
 
-		if (heldItem.isEmpty())
-			return InteractionResult.PASS;
+		if (stack.isEmpty())
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (!player.isCreative() && !creative)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		FluidExchange exchange = null;
-		FluidTankBlockEntity be = ConnectivityHandler.partAt(getBlockEntityType(), world, pos);
+		FluidTankBlockEntity be = ConnectivityHandler.partAt(getBlockEntityType(), level, pos);
 		if (be == null)
-			return InteractionResult.FAIL;
+			return ItemInteractionResult.FAIL;
 
 		Direction direction = ray.getDirection();
 		Storage<FluidVariant> fluidTank = be.getFluidStorage(direction);
 		if (fluidTank == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		io.github.fabricators_of_create.porting_lib.fluids.FluidStack prevFluidInTank = TransferUtil.firstCopyOrEmpty(fluidTank);
 
-		if (FluidHelper.tryEmptyItemIntoBE(world, player, hand, heldItem, be, direction))
+		if (FluidHelper.tryEmptyItemIntoBE(level, player, hand, stack, be, direction))
 			exchange = FluidExchange.ITEM_TO_TANK;
-		else if (FluidHelper.tryFillItemFromBE(world, player, hand, heldItem, be, direction))
+		else if (FluidHelper.tryFillItemFromBE(level, player, hand, stack, be, direction))
 			exchange = FluidExchange.TANK_TO_ITEM;
 
 		if (exchange == null) {
-			if (GenericItemEmptying.canItemBeEmptied(world, heldItem)
-				|| GenericItemFilling.canItemBeFilled(world, heldItem))
-				return InteractionResult.SUCCESS;
-			return InteractionResult.PASS;
+			if (GenericItemEmptying.canItemBeEmptied(level, stack)
+				|| GenericItemFilling.canItemBeFilled(level, stack))
+				return ItemInteractionResult.SUCCESS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 
 		SoundEvent soundevent = null;
@@ -201,10 +204,10 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 		if (exchange == FluidExchange.ITEM_TO_TANK) {
 			if (creative && !onClient) {
-				FluidStack fluidInItem = GenericItemEmptying.emptyItem(world, heldItem, true)
+				FluidStack fluidInItem = GenericItemEmptying.emptyItem(level, stack, true)
 					.getFirst();
-				if (!fluidInItem.isEmpty() && fluidTank instanceof CreativeSmartFluidTank)
-					((CreativeSmartFluidTank) fluidTank).setContainedFluid(fluidInItem);
+				if (!fluidInItem.isEmpty() && tankCapability instanceof CreativeSmartFluidTank)
+					((CreativeSmartFluidTank) tankCapability).setContainedFluid(fluidInItem);
 			}
 
 			Fluid fluid = fluidInTank.getFluid();
@@ -215,8 +218,8 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 		if (exchange == FluidExchange.TANK_TO_ITEM) {
 			if (creative && !onClient)
-				if (fluidTank instanceof CreativeSmartFluidTank)
-					((CreativeSmartFluidTank) fluidTank).setContainedFluid(FluidStack.EMPTY);
+				if (tankCapability instanceof CreativeSmartFluidTank)
+					((CreativeSmartFluidTank) tankCapability).setContainedFluid(FluidStack.EMPTY);
 
 			Fluid fluid = prevFluidInTank.getFluid();
 			fluidState = fluid.defaultFluidState()
@@ -229,32 +232,32 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 				.clamp(1 - (1f * fluidInTank.getAmount() / (FluidTankBlockEntity.getCapacityMultiplier() * 16)), 0, 1);
 			pitch /= 1.5f;
 			pitch += .5f;
-			pitch += (world.random.nextFloat() - .5f) / 4f;
-			world.playSound(null, pos, soundevent, SoundSource.BLOCKS, .5f, pitch);
+			pitch += (level.random.nextFloat() - .5f) / 4f;
+			level.playSound(null, pos, soundevent, SoundSource.BLOCKS, .5f, pitch);
 		}
 
-		if (!fluidInTank.isFluidEqual(prevFluidInTank)) {
+		if (!FluidStack.isSameFluidSameComponents(fluidInTank, prevFluidInTank)) {
 			if (be instanceof FluidTankBlockEntity) {
 				FluidTankBlockEntity controllerBE = ((FluidTankBlockEntity) be).getControllerBE();
 				if (controllerBE != null) {
 					if (fluidState != null && onClient) {
 						BlockParticleOption blockParticleData =
 							new BlockParticleOption(ParticleTypes.BLOCK, fluidState);
-						float level = (float) fluidInTank.getAmount() / TransferUtil.firstCapacity(fluidTank);
+						float fluidLevel = (float) fluidInTank.getAmount() / TransferUtil.firstCapacity(fluidTank);
 
 						boolean reversed = FluidVariantAttributes.isLighterThanAir(fluidInTank.getType());
 						if (reversed)
-							level = 1 - level;
+							fluidLevel = 1 - fluidLevel;
 
-						Vec3 vec = ray.getLocation();
+						Vec3 vec = hitResult.getLocation();
 						vec = new Vec3(vec.x, controllerBE.getBlockPos()
-							.getY() + level * (controllerBE.height - .5f) + .25f, vec.z);
+							.getY() + fluidLevel * (controllerBE.height - .5f) + .25f, vec.z);
 						Vec3 motion = player.position()
 							.subtract(vec)
 							.scale(1 / 20f);
 						vec = vec.add(motion);
-						world.addParticle(blockParticleData, vec.x, vec.y, vec.z, motion.x, motion.y, motion.z);
-						return InteractionResult.SUCCESS;
+						level.addParticle(blockParticleData, vec.x, vec.y, vec.z, motion.x, motion.y, motion.z);
+						return ItemInteractionResult.SUCCESS;
 					}
 
 					controllerBE.sendDataImmediately();
@@ -263,7 +266,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 			}
 		}
 
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	@Override

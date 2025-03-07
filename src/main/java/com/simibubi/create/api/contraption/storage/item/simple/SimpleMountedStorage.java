@@ -38,7 +38,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandle
  * It is also possible to extend this class to create your own implementation.
  */
 public class SimpleMountedStorage extends WrapperMountedItemStorage<ItemStackHandler> {
-	public static final Codec<SimpleMountedStorage> CODEC = codec(SimpleMountedStorage::new);
+	public static final MapCodec<SimpleMountedStorage> CODEC = codec(SimpleMountedStorage::new);
 
 	public SimpleMountedStorage(MountedItemStorageType<?> type, ItemStackHandler handler) {
 		super(type, handler);
@@ -83,6 +83,6 @@ public class SimpleMountedStorage extends WrapperMountedItemStorage<ItemStackHan
 	}
 
 	public static <T extends SimpleMountedStorage> Codec<T> codec(Function<ItemStackHandler, T> factory) {
-		return CreateCodecs.ITEM_STACK_HANDLER.xmap(factory, storage -> storage.wrapped);
+		return CreateCodecs.ITEM_STACK_HANDLER.xmap(factory, storage -> storage.wrapped).fieldOf("value");
 	}
 }

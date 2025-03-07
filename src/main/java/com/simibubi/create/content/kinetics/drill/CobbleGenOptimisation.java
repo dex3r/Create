@@ -93,7 +93,7 @@ public class CobbleGenOptimisation {
 		ServerLevel owLevel = level.getServer().getLevel(Level.OVERWORLD);
 		if (owLevel == null)
 			owLevel = level;
-		
+
 		if (cachedLevel == null || cachedLevel.getLevel() != owLevel)
 			cachedLevel = new CobbleGenLevel(level);
 

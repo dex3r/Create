@@ -7,11 +7,11 @@ import java.util.List;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPoint.Mode;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.outliner.Outliner;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -81,8 +81,6 @@ public class ArmInteractionPointHandler {
 			return InteractionResult.PASS;
 //		BlockPos pos = event.getPos();
 		if (remove(pos) != null) {
-//			event.setCanceled(true);
-//			event.setCancellationResult(InteractionResult.SUCCESS);
 			return InteractionResult.SUCCESS;
 		}
 		return InteractionResult.PASS;
@@ -124,7 +122,7 @@ public class ArmInteractionPointHandler {
 					.sendStatus(player);
 		}
 
-		AllPackets.getChannel().sendToServer(new ArmPlacementPacket(currentSelection, pos));
+		CatnipServices.NETWORK.sendToServer(new ArmPlacementPacket(currentSelection, pos));
 		currentSelection.clear();
 		currentItem = null;
 	}

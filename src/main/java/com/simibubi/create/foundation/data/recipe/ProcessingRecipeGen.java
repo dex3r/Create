@@ -12,9 +12,15 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
@@ -28,20 +34,20 @@ public abstract class ProcessingRecipeGen extends CreateRecipeProvider {
 	protected static final long BUCKET = FluidConstants.BUCKET;
 	protected static final long BOTTLE = FluidConstants.BOTTLE;
 
-	public static DataProvider registerAll(FabricDataOutput output) {
-		GENERATORS.add(new CrushingRecipeGen(output));
-		GENERATORS.add(new MillingRecipeGen(output));
-		GENERATORS.add(new CuttingRecipeGen(output));
-		GENERATORS.add(new WashingRecipeGen(output));
-		GENERATORS.add(new PolishingRecipeGen(output));
-		GENERATORS.add(new DeployingRecipeGen(output));
-		GENERATORS.add(new MixingRecipeGen(output));
-		GENERATORS.add(new CompactingRecipeGen(output));
-		GENERATORS.add(new PressingRecipeGen(output));
-		GENERATORS.add(new FillingRecipeGen(output));
-		GENERATORS.add(new EmptyingRecipeGen(output));
-		GENERATORS.add(new HauntingRecipeGen(output));
-		GENERATORS.add(new ItemApplicationRecipeGen(output));
+	public static void registerAll(DataGenerator gen, PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		GENERATORS.add(new CrushingRecipeGen(output, registries));
+		GENERATORS.add(new MillingRecipeGen(output, registries));
+		GENERATORS.add(new CuttingRecipeGen(output, registries));
+		GENERATORS.add(new WashingRecipeGen(output, registries));
+		GENERATORS.add(new PolishingRecipeGen(output, registries));
+		GENERATORS.add(new DeployingRecipeGen(output, registries));
+		GENERATORS.add(new MixingRecipeGen(output, registries));
+		GENERATORS.add(new CompactingRecipeGen(output, registries));
+		GENERATORS.add(new PressingRecipeGen(output, registries));
+		GENERATORS.add(new FillingRecipeGen(output, registries));
+		GENERATORS.add(new EmptyingRecipeGen(output, registries));
+		GENERATORS.add(new HauntingRecipeGen(output, registries));
+		GENERATORS.add(new ItemApplicationRecipeGen(output, registries));
 
 		return new DataProvider() {
 
@@ -59,8 +65,8 @@ public abstract class ProcessingRecipeGen extends CreateRecipeProvider {
 		};
 	}
 
-	public ProcessingRecipeGen(FabricDataOutput generator) {
-		super(generator);
+	public ProcessingRecipeGen(PackOutput generator, CompletableFuture<HolderLookup.Provider> registries) {
+		super(generator, registries);
 	}
 
 	/**
@@ -74,7 +80,7 @@ public abstract class ProcessingRecipeGen extends CreateRecipeProvider {
 			ItemLike itemLike = singleIngredient.get();
 			transform
 				.apply(new ProcessingRecipeBuilder<>(serializer.getFactory(),
-					new ResourceLocation(namespace, CatnipServices.REGISTRIES.getKeyOrThrow(itemLike.asItem())
+					ResourceLocation.fromNamespaceAndPath(namespace, RegisteredObjectsHelper.getKeyOrThrow(itemLike.asItem())
 						.getPath())).withItemIngredients(Ingredient.of(itemLike)))
 				.build(c);
 		};
@@ -127,7 +133,7 @@ public abstract class ProcessingRecipeGen extends CreateRecipeProvider {
 
 	protected Supplier<ResourceLocation> idWithSuffix(Supplier<ItemLike> item, String suffix) {
 		return () -> {
-			ResourceLocation registryName = CatnipServices.REGISTRIES.getKeyOrThrow(item.get()
+			ResourceLocation registryName = RegisteredObjectsHelper.getKeyOrThrow(item.get()
 					.asItem());
 			return Create.asResource(registryName.getPath() + suffix);
 		};

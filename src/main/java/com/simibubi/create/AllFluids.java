@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.simibubi.create.AllTags.AllFluidTags;
 import com.simibubi.create.content.decoration.palettes.AllPaletteStoneTypes;
 import com.simibubi.create.content.fluids.VirtualFluid;
 import com.simibubi.create.content.fluids.potion.PotionFluid;
@@ -18,6 +17,8 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.util.entry.FluidEntry;
+
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
 
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.nbt.NBTHelper;
@@ -72,7 +73,7 @@ public class AllFluids {
 
 	public static final FluidEntry<VirtualFluid> TEA = REGISTRATE.virtualFluid("tea")
 			.lang("Builder's Tea")
-			.tag(AllTags.forgeFluidTag("tea"))
+		.tag(AllTags.commonFluidTag("teas"))
 			.fluidAttributes(() -> new CreateAttributeHandler("fluid.create.tea"))
 			.onRegisterAfter(Registries.ITEM, tea -> {
 				Fluid still = tea.getSource();
@@ -91,10 +92,10 @@ public class AllFluids {
 							.flowSpeed(3)
 							.blastResistance(100f))
 					.fluidAttributes(() -> new CreateAttributeHandler("block.create.honey", 2000, 1400))
-					.tag(AllFluidTags.HONEY.tag, FluidTags.WATER) // fabric: water tag controls physics
+					.tag(Tags.Fluids.HONEY, FluidTags.WATER) // fabric: water tag controls physics
 					.source(SimpleFlowableFluid.Source::new) // TODO: remove when Registrate fixes FluidBuilder
 					.bucket()
-					.tag(AllTags.forgeItemTag("honey_buckets"))
+					.tag(AllTags.commonItemTag("buckets/honey"))
 					.build()
 					.onRegisterAfter(Registries.ITEM, honey -> {
 						Fluid source = honey.getSource();
@@ -112,7 +113,7 @@ public class AllFluids {
 	public static final FluidEntry<SimpleFlowableFluid.Flowing> CHOCOLATE =
 			REGISTRATE.standardFluid("chocolate")
 					.lang("Chocolate")
-					.tag(AllTags.forgeFluidTag("chocolate"), FluidTags.WATER) // fabric: water tag controls physics
+					.tag(AllTags.commonFluidTag("chocolates"), FluidTags.WATER) // fabric: water tag controls physics
 					.fluidProperties(p -> p.levelDecreasePerBlock(2)
 							.tickRate(25)
 							.flowSpeed(3)

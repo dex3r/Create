@@ -1,7 +1,6 @@
 package com.simibubi.create.content.logistics.packagePort;
 
-import com.simibubi.create.AllPackets;
-
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +20,7 @@ public class PackagePortItem extends BlockItem {
 	protected boolean updateCustomBlockEntityTag(BlockPos pos, Level world, Player player, ItemStack p_195943_4_,
 		BlockState p_195943_5_) {
 		if (!world.isClientSide && player instanceof ServerPlayer sp)
-			AllPackets.getChannel().sendToClient(new PackagePortPlacementPacket.ClientBoundRequest(pos), sp);
+			CatnipServices.NETWORK.sendToClient(sp, new PackagePortPlacementPacket.ClientBoundRequest(pos));
 		return super.updateCustomBlockEntityTag(pos, world, player, p_195943_4_, p_195943_5_);
 	}
 

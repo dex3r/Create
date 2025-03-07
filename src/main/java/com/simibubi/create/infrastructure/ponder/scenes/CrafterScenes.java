@@ -323,8 +323,7 @@ public class CrafterScenes {
 		scene.idle(60);
 		scene.overlay().showControls(util.vector().centerOf(util.grid().at(4, 2, 2)), Pointing.DOWN, 40).withItem(planks);
 		scene.idle(7);
-		scene.world().createItemOnBelt(util.grid().at(4, 1, 2), Direction.EAST,
-									   ItemHandlerHelper.copyStackWithSize(planks, 16));
+		scene.world().createItemOnBelt(util.grid().at(4, 1, 2), Direction.EAST, planks.copyWithCount(16));
 		scene.idle(22);
 
 		scene.world().removeItemsFromBelt(util.grid().at(3, 1, 2));

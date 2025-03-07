@@ -20,10 +20,11 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.fabric.constants.FabricTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.runtime.IIngredientManager;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -49,18 +50,20 @@ public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
 		super(info);
 	}
 
-	public static void consumeRecipes(Consumer<FillingRecipe> consumer, IIngredientManager ingredientManager) {
-		Collection<FluidStack> fluidStacks = ingredientManager.getAllIngredients(FabricTypes.FLUID_STACK)
+	public static void consumeRecipes(Consumer<RecipeHolder<FillingRecipe>> consumer, IIngredientManager ingredientManager) {
+		Collection<FluidStack> fluidStacks = ingredientManager.getAllIngredients(NeoForgeTypes.FLUID_STACK)
 			.stream().map(CreateRecipeCategory::fromJei).toList();
 		for (ItemStack stack : ingredientManager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
 			if (PotionFluidHandler.isPotionItem(stack)) {
 				FluidStack fluidFromPotionItem = PotionFluidHandler.getFluidFromPotionItem(stack);
 				Ingredient bottle = Ingredient.of(Items.GLASS_BOTTLE);
-				consumer.accept(new ProcessingRecipeBuilder<>(FillingRecipe::new, Create.asResource("potions"))
-					.withItemIngredients(bottle)
-					.withFluidIngredients(FluidIngredient.fromFluidStack(fluidFromPotionItem))
-					.withSingleItemOutput(stack)
-					.build());
+				ResourceLocation id = Create.asResource("potions");
+				FillingRecipe recipe = new ProcessingRecipeBuilder<>(FillingRecipe::new, id)
+						.withItemIngredients(bottle)
+						.withFluidIngredients(FluidIngredient.fromFluidStack(fluidFromPotionItem))
+						.withSingleItemOutput(stack)
+						.build();
+				consumer.accept(new RecipeHolder<>(id, recipe));
 				continue;
 			}
 
@@ -74,9 +77,9 @@ public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
 			for (FluidStack fluidStack : fluidStacks) {
 				// Hoist the fluid equality check to avoid the work of copying the stack + populating capabilities
 				// when most fluids will not match
-				if (numTanks == 1 && (!existingFluid.isEmpty() && !existingFluid.isFluidEqual(fluidStack))) {
+				if (numTanks == 1 && (!existingFluid.isEmpty() && !FluidStack.isSameFluidSameComponents(existingFluid, fluidStack)))
 					continue;
-				}
+
 				ItemStack copy = stack.copy();
 				MutableContainerItemContext context = new MutableContainerItemContext(stack);
 				Storage<FluidVariant> copyStorage = context.find(FluidStorage.ITEM);

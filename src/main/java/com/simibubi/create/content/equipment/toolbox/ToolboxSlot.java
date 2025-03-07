@@ -6,15 +6,17 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler
 public class ToolboxSlot extends SlotItemHandler {
 
 	private ToolboxMenu toolboxMenu;
+	private boolean isVisible;
 
-	public ToolboxSlot(ToolboxMenu menu, ItemStackHandler itemHandler, int index, int xPosition, int yPosition) {
+	public ToolboxSlot(ToolboxMenu menu, ItemStackHandler itemHandler, int index, int xPosition, int yPosition, boolean isVisible) {
 		super(itemHandler, index, xPosition, yPosition);
 		this.toolboxMenu = menu;
+		this.isVisible = isVisible;
 	}
 
 	@Override
 	public boolean isActive() {
-		return !toolboxMenu.renderPass && super.isActive();
+		return !toolboxMenu.renderPass && super.isActive() && isVisible;
 	}
 
 }

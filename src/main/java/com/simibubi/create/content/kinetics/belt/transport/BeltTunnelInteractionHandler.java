@@ -22,8 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-
 public class BeltTunnelInteractionHandler {
 
 	public static boolean flapTunnelsAndCheckIfStuck(BeltInventory beltInventory, TransportedItemStack current,
@@ -84,7 +82,7 @@ public class BeltTunnelInteractionHandler {
 					if (!behaviour.canInsertFromSide(d))
 						continue;
 
-					ItemStack toinsert = ItemHandlerHelper.copyStackWithSize(current.stack, 1);
+					ItemStack toinsert = current.stack.copyWithCount(1);
 					if (!behaviour.handleInsertion(toinsert, d, false)
 						.isEmpty())
 						return true;

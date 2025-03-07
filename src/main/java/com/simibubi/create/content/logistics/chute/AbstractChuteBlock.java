@@ -19,7 +19,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -40,11 +40,6 @@ public abstract class AbstractChuteBlock extends Block implements IWrenchable, I
 	public AbstractChuteBlock(Properties p_i48440_1_) {
 		super(p_i48440_1_);
 	}
-
-//	@Environment(EnvType.CLIENT)
-//	public void initializeClient(Consumer<IClientBlockExtensions> consumer) {
-//		consumer.accept(new ReducedDestroyEffects());
-//	}
 
 	public static boolean isChute(BlockState state) {
 		return state.getBlock() instanceof AbstractChuteBlock;
@@ -175,10 +170,6 @@ public abstract class AbstractChuteBlock extends Block implements IWrenchable, I
 		if (pos.below()
 			.equals(neighbourPos))
 			withBlockEntityDo(world, pos, ChuteBlockEntity::blockBelowChanged);
-		// fabric: unnecessary, not how it works here
-//		else if (pos.above()
-//				.equals(neighbourPos))
-//			withBlockEntityDo(world, pos, chute -> chute.capAbove = LazyOptional.empty());
 	}
 
 	public abstract BlockState updateChuteState(BlockState state, BlockState above, BlockGetter world, BlockPos pos);
@@ -201,23 +192,20 @@ public abstract class AbstractChuteBlock extends Block implements IWrenchable, I
 	}
 
 	@Override
-	public InteractionResult use(BlockState p_225533_1_, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult p_225533_6_) {
-		if (AdventureUtil.isAdventure(player))
-			return InteractionResult.PASS;
-		if (!player.getItemInHand(hand)
-			.isEmpty())
-			return InteractionResult.PASS;
-		if (world.isClientSide)
-			return InteractionResult.SUCCESS;
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+											  InteractionHand hand, BlockHitResult hitResult) {
+		if (!stack.isEmpty() || AdventureUtil.isAdventure(player))
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		if (level.isClientSide)
+			return ItemInteractionResult.SUCCESS;
 
-		return onBlockEntityUse(world, pos, be -> {
+		return onBlockEntityUseItemOn(level, pos, be -> {
 			if (be.item.isEmpty())
-				return InteractionResult.PASS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 			player.getInventory()
 				.placeItemBackInInventory(be.item);
 			be.setItem(ItemStack.EMPTY);
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		});
 	}
 

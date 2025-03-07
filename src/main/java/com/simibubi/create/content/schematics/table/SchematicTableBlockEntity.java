@@ -8,8 +8,8 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.foundation.utility.IInteractionChecker;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -49,16 +49,10 @@ public class SchematicTableBlockEntity extends SmartBlockEntity implements MenuP
 		uploadingProgress = 0;
 	}
 
-	public void sendToMenu(FriendlyByteBuf buffer) {
-		buffer.writeBlockPos(getBlockPos());
-		buffer.writeNbt(getUpdateTag());
-	}
-
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		inventory.deserializeNBT(compound.getCompound("Inventory"));
-		super.read(compound, clientPacket);
-
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		inventory.deserializeNBT(registries, compound.getCompound("Inventory"));
+		super.read(compound, registries, clientPacket);
 		if (!clientPacket)
 			return;
 		if (compound.contains("Uploading")) {
@@ -73,10 +67,9 @@ public class SchematicTableBlockEntity extends SmartBlockEntity implements MenuP
 	}
 
 	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
-		compound.put("Inventory", inventory.serializeNBT());
-		super.write(compound, clientPacket);
-
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		compound.put("Inventory", inventory.serializeNBT(registries));
+		super.write(compound, registries, clientPacket);
 		if (clientPacket && isUploading) {
 			compound.putBoolean("Uploading", true);
 			compound.putString("Schematic", uploadingSchematic);

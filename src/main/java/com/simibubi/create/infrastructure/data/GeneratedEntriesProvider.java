@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import com.simibubi.create.AllDamageTypes;
+import com.simibubi.create.AllEnchantments;
 import com.simibubi.create.Create;
 import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileTypes;
@@ -26,10 +27,11 @@ public class GeneratedEntriesProvider extends DatapackBuiltinEntriesProvider {
 
 	// fabric: this must be reused in the entrypoint, moved to a method
 	public static RegistrySetBuilder addBootstraps(RegistrySetBuilder builder) {
-		return builder.add(Registries.DAMAGE_TYPE, AllDamageTypes::bootstrap)
-				.add(Registries.CONFIGURED_FEATURE, AllConfiguredFeatures::bootstrap)
-				.add(Registries.PLACED_FEATURE, AllPlacedFeatures::bootstrap)
-				.add(CreateRegistries.POTATO_PROJECTILE_TYPE, AllPotatoProjectileTypes::bootstrap);
+		return builder.add(Registries.ENCHANTMENT, AllEnchantments::bootstrap)
+			.add(Registries.DAMAGE_TYPE, AllDamageTypes::bootstrap)
+			.add(Registries.CONFIGURED_FEATURE, AllConfiguredFeatures::bootstrap)
+			.add(Registries.PLACED_FEATURE, AllPlacedFeatures::bootstrap)
+			.add(CreateRegistries.POTATO_PROJECTILE_TYPE, AllPotatoProjectileTypes::bootstrap);
 		// fabric: biome modifiers are not a registry, remove
 	}
 

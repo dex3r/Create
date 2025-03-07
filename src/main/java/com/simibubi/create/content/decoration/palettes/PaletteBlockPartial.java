@@ -111,7 +111,7 @@ public abstract class PaletteBlockPartial<B extends Block> {
 
 		@Override
 		protected StairBlock createBlock(Supplier<? extends Block> block) {
-			return new StairBlock(block.get().defaultBlockState(), Properties.copy(block.get()));
+			return new StairBlock(block.get().defaultBlockState(), Properties.ofFullCopy(block.get()));
 		}
 
 		@Override
@@ -151,7 +151,7 @@ public abstract class PaletteBlockPartial<B extends Block> {
 
 		@Override
 		protected SlabBlock createBlock(Supplier<? extends Block> block) {
-			return new SlabBlock(Properties.copy(block.get()));
+			return new SlabBlock(Properties.ofFullCopy(block.get()));
 		}
 
 		@Override
@@ -201,9 +201,9 @@ public abstract class PaletteBlockPartial<B extends Block> {
 			p.stonecutting(DataIngredient.tag(type.materialTag), category, c::get, 2);
 			DataIngredient ingredient = DataIngredient.items(c.get());
 			ShapelessRecipeBuilder.shapeless(category, patternBlock.get())
-				.requires(ingredient)
-				.requires(ingredient)
-				.unlockedBy("has_" + c.getName(), ingredient.getCritereon(p))
+				.requires(ingredient.toVanilla())
+				.requires(ingredient.toVanilla())
+				.unlockedBy("has_" + c.getName(), ingredient.getCriterion(p))
 				.save(p, Create.ID + ":" + c.getName() + "_recycling");
 		}
 
@@ -225,7 +225,7 @@ public abstract class PaletteBlockPartial<B extends Block> {
 
 		@Override
 		protected WallBlock createBlock(Supplier<? extends Block> block) {
-			return new WallBlock(Properties.copy(block.get()).forceSolidOn());
+			return new WallBlock(Properties.ofFullCopy(block.get()).forceSolidOn());
 		}
 
 		@Override
@@ -261,8 +261,8 @@ public abstract class PaletteBlockPartial<B extends Block> {
 			ShapedRecipeBuilder.shaped(category, c.get(), 6)
 				.pattern("XXX")
 				.pattern("XXX")
-				.define('X', ingredient)
-				.unlockedBy("has_" + p.safeName(ingredient), ingredient.getCritereon(p))
+				.define('X', ingredient.toVanilla())
+				.unlockedBy("has_" + p.safeName(ingredient), ingredient.getCriterion(p))
 				.save(p, p.safeId(c.get()));
 		}
 

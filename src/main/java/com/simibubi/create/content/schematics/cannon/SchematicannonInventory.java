@@ -3,6 +3,8 @@ package com.simibubi.create.content.schematics.cannon;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+
 import net.minecraft.world.item.Items;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;

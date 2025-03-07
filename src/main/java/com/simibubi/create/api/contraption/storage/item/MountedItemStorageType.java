@@ -1,5 +1,7 @@
 package com.simibubi.create.api.contraption.storage.item;
 
+import com.mojang.serialization.MapCodec;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
@@ -22,12 +24,11 @@ public abstract class MountedItemStorageType<T extends MountedItemStorage> {
 	public static final Codec<MountedItemStorageType<?>> CODEC = CreateBuiltInRegistries.MOUNTED_ITEM_STORAGE_TYPE.byNameCodec();
 	public static final SimpleRegistry<Block, MountedItemStorageType<?>> REGISTRY = SimpleRegistry.create();
 
-	public final Codec<? extends T> codec;
-	public final Holder.Reference<MountedItemStorageType<?>> holder;
+	public final MapCodec<? extends T> codec;
+	public final Holder.Reference<MountedItemStorageType<?>> holder = CreateBuiltInRegistries.MOUNTED_ITEM_STORAGE_TYPE.createIntrusiveHolder(this);
 
-	protected MountedItemStorageType(Codec<? extends T> codec) {
+	protected MountedItemStorageType(MapCodec<? extends T> codec) {
 		this.codec = codec;
-		this.holder = CreateBuiltInRegistries.MOUNTED_ITEM_STORAGE_TYPE.createIntrusiveHolder(this);
 	}
 
 	public final boolean is(TagKey<MountedItemStorageType<?>> tag) {
@@ -41,7 +42,7 @@ public abstract class MountedItemStorageType<T extends MountedItemStorage> {
 	 * Utility for use with Registrate builders. Creates a builder transformer
 	 * that will register the given MountedItemStorageType to a block when ready.
 	 */
-	public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> mountedItemStorage(RegistryEntry<? extends MountedItemStorageType<?>> type) {
+	public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> mountedItemStorage(RegistryEntry<MountedItemStorageType<?>, ? extends MountedItemStorageType<?>> type) {
 		return builder -> builder.onRegisterAfter(CreateRegistries.MOUNTED_ITEM_STORAGE_TYPE, block -> REGISTRY.register(block, type.get()));
 	}
 }

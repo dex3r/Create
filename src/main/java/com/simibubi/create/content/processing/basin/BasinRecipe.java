@@ -21,12 +21,13 @@ import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.Container;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -39,7 +40,7 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
-public class BasinRecipe extends ProcessingRecipe<Container> {
+public class BasinRecipe extends ProcessingRecipe<RecipeInput> {
 
 	public static boolean match(BasinBlockEntity basin, Recipe<?> recipe) {
 		FilteringBehaviour filter = basin.getFilter();
@@ -139,26 +140,28 @@ public class BasinRecipe extends ProcessingRecipe<Container> {
 				});
 			}
 
-			CraftingContainer remainderContainer = new DummyCraftingContainer(consumedItems);
+			CraftingInput remainderInput = new DummyCraftingContainer(availableItems, extractedItemsFromSlot)
+					.asCraftInput();
 
 			if (recipe instanceof BasinRecipe basinRecipe) {
 				recipeOutputItems.addAll(basinRecipe.rollResults());
 
-				for (FluidStack fluidStack : basinRecipe.getFluidResults())
-					if (!fluidStack.isEmpty())
-						recipeOutputFluids.add(fluidStack);
-				for (ItemStack stack : basinRecipe.getRemainingItems(remainderContainer))
-					if (!stack.isEmpty())
-						recipeOutputItems.add(stack);
+					for (FluidStack fluidStack : basinRecipe.getFluidResults())
+						if (!fluidStack.isEmpty())
+							recipeOutputFluids.add(fluidStack);
+					for (ItemStack stack : basinRecipe.getRemainingItems(remainderInput))
+						if (!stack.isEmpty())
+							recipeOutputItems.add(stack);
 
 			} else {
 				recipeOutputItems.add(recipe.getResultItem(basin.getLevel()
 					.registryAccess()));
 
-				if (recipe instanceof CraftingRecipe craftingRecipe) {
-					for (ItemStack stack : craftingRecipe.getRemainingItems(remainderContainer))
-						if (!stack.isEmpty())
-							recipeOutputItems.add(stack);
+					if (recipe instanceof CraftingRecipe craftingRecipe) {
+						for (ItemStack stack : craftingRecipe.getRemainingItems(remainderInput))
+							if (!stack.isEmpty())
+								recipeOutputItems.add(stack);
+					}
 				}
 			}
 
@@ -174,12 +177,12 @@ public class BasinRecipe extends ProcessingRecipe<Container> {
 		}
 	}
 
-	public static BasinRecipe convertShapeless(Recipe<?> recipe) {
+	public static RecipeHolder<BasinRecipe> convertShapeless(RecipeHolder<?> recipe) {
 		BasinRecipe basinRecipe =
-			new ProcessingRecipeBuilder<>(BasinRecipe::new, recipe.getId()).withItemIngredients(recipe.getIngredients())
-				.withSingleItemOutput(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()))
+			new ProcessingRecipeBuilder<>(BasinRecipe::new, recipe.id()).withItemIngredients(recipe.value().getIngredients())
+				.withSingleItemOutput(recipe.value().getResultItem(Minecraft.getInstance().level.registryAccess()))
 				.build();
-		return basinRecipe;
+		return new RecipeHolder<>(recipe.id(), basinRecipe);
 	}
 
 	protected BasinRecipe(IRecipeTypeInfo type, ProcessingRecipeParams params) {
@@ -221,7 +224,7 @@ public class BasinRecipe extends ProcessingRecipe<Container> {
 	}
 
 	@Override
-	public boolean matches(Container inv, @Nonnull Level worldIn) {
+	public boolean matches(RecipeInput input, @Nonnull Level worldIn) {
 		return false;
 	}
 

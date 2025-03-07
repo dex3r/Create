@@ -10,7 +10,14 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -18,6 +25,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -41,32 +49,29 @@ public class SharedDepotBlockMethods {
 		return BlockEntityBehaviour.get(worldIn, pos, DepotBehaviour.TYPE);
 	}
 
-	public static InteractionResult onUse(BlockState state, Level world, BlockPos pos, Player player,
-		InteractionHand hand, BlockHitResult ray) {
-		if (ray.getDirection() != Direction.UP)
-			return InteractionResult.PASS;
-		if (world.isClientSide)
-			return InteractionResult.SUCCESS;
-		if (AdventureUtil.isAdventure(player))
-			return InteractionResult.PASS;
+	public static ItemInteractionResult onUse(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+											  InteractionHand hand, BlockHitResult ray) {
+		if (ray.getDirection() != Direction.UP || AdventureUtil.isAdventure(player))
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		if (level.isClientSide)
+			return ItemInteractionResult.SUCCESS;
 
-		DepotBehaviour behaviour = get(world, pos);
+		DepotBehaviour behaviour = get(level, pos);
 		if (behaviour == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (!behaviour.canAcceptItems.get())
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 
-		ItemStack heldItem = player.getItemInHand(hand);
-		boolean wasEmptyHanded = heldItem.isEmpty();
-		boolean shouldntPlaceItem = AllBlocks.MECHANICAL_ARM.isIn(heldItem);
+		boolean wasEmptyHanded = stack.isEmpty();
+		boolean shouldntPlaceItem = AllBlocks.MECHANICAL_ARM.isIn(stack);
 
 		ItemStack mainItemStack = behaviour.getHeldItemStack();
 		if (!mainItemStack.isEmpty()) {
 			player.getInventory()
 				.placeItemBackInInventory(mainItemStack);
 			behaviour.removeHeldItem();
-			world.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
-				1f + Create.RANDOM.nextFloat());
+			level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
+				1f + level.getRandom().nextFloat());
 		}
 		ItemStackHandler outputs = behaviour.processingOutputBuffer;
 		try (Transaction t = TransferUtil.getTransaction()) {
@@ -80,17 +85,17 @@ public class SharedDepotBlockMethods {
 		}
 
 		if (!wasEmptyHanded && !shouldntPlaceItem) {
-			TransportedItemStack transported = new TransportedItemStack(heldItem);
+			TransportedItemStack transported = new TransportedItemStack(stack);
 			transported.insertedFrom = player.getDirection();
 			transported.prevBeltPosition = .25f;
 			transported.beltPosition = .25f;
 			behaviour.setHeldItem(transported);
 			player.setItemInHand(hand, ItemStack.EMPTY);
-			AllSoundEvents.DEPOT_SLIDE.playOnServer(world, pos);
+			AllSoundEvents.DEPOT_SLIDE.playOnServer(level, pos);
 		}
 
 		behaviour.blockEntity.notifyUpdate();
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	public static void onLanded(BlockGetter worldIn, Entity entityIn) {

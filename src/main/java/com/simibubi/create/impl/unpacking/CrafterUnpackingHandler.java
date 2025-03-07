@@ -56,7 +56,7 @@ public enum CrafterUnpackingHandler implements UnpackingHandler {
 
 				// go through each item in the box and try insert if it matches the target
 				for (ItemStack stack : items) {
-					if (ItemHandlerHelper.canItemStacksStack(stack, targetStack.stack)) {
+					if (ItemStack.isSameItemSameComponents(stack, targetStack.stack)) {
 						ItemStack toInsert = stack.copyWithCount(1);
 						if (inventory.insert(ItemVariant.of(toInsert), 1, t) == 1) {
 							stack.shrink(1);

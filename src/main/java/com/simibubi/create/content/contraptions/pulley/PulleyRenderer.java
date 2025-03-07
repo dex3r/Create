@@ -71,10 +71,10 @@ public class PulleyRenderer extends AbstractPulleyRenderer<PulleyBlockEntity> {
 
 		return offset;
 	}
-
+	
 	@Override
 	public int getViewDistance() {
 		return 128;
 	}
-
+	
 }

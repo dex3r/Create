@@ -1,0 +1,19 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "minecraft:oxidized_copper_trapdoor"
+    },
+    {
+      "tag": "minecraft:axes"
+    }
+  ],
+  "keep_held_item": true,
+  "results": [
+    {
+      "item": {
+        "id": "minecraft:weathered_copper_trapdoor"
+      }
+    }
+  ]
+}

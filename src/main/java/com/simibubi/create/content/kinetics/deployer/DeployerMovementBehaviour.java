@@ -6,9 +6,17 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
@@ -44,6 +52,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -121,14 +130,13 @@ public class DeployerMovementBehaviour implements MovementBehaviour {
 
 	protected void activateAsSchematicPrinter(MovementContext context, BlockPos pos, DeployerFakePlayer player,
 		Level world, ItemStack filter) {
-		if (!filter.hasTag())
+		if (!filter.has(AllDataComponents.SCHEMATIC_ANCHOR))
 			return;
 		if (!world.getBlockState(pos)
 			.canBeReplaced())
 			return;
 
-		CompoundTag tag = filter.getTag();
-		if (!tag.getBoolean("Deployed"))
+		if (!filter.getOrDefault(AllDataComponents.SCHEMATIC_DEPLOYED, false))
 			return;
 		SchematicLevel schematicWorld = SchematicInstances.get(world, filter);
 		if (schematicWorld == null)
@@ -269,7 +277,7 @@ public class DeployerMovementBehaviour implements MovementBehaviour {
 		DeployerFakePlayer player = getPlayer(context);
 		if (player == null)
 			return;
-		context.data.put("HeldItem", NBTSerializer.serializeNBT(player.getMainHandItem()));
+		context.data.put("HeldItem", player.getMainHandItem().saveOptional(context.world.registryAccess()));
 	}
 
 	private DeployerFakePlayer getPlayer(MovementContext context) {
@@ -281,7 +289,7 @@ public class DeployerMovementBehaviour implements MovementBehaviour {
 				.load(context.blockEntityData.getList("Inventory", Tag.TAG_COMPOUND));
 			if (context.data.contains("HeldItem"))
 				deployerFakePlayer.setItemInHand(InteractionHand.MAIN_HAND,
-					ItemStack.of(context.data.getCompound("HeldItem")));
+					ItemStack.parseOptional(context.world.registryAccess(), context.data.getCompound("HeldItem")));
 			context.blockEntityData.remove("Inventory");
 			context.temporaryData = deployerFakePlayer;
 		}

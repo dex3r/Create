@@ -1,49 +1,35 @@
 package com.simibubi.create.content.fluids.transfer;
 
+import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.fluids.FluidFX;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import com.tterrag.registrate.fabric.EnvExecutor;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.fluids.FluidStack;
 
-import net.fabricmc.api.EnvType;
+public record FluidSplashPacket(BlockPos pos, FluidStack fluid) implements ClientboundPacketPayload {
+	public static final StreamCodec<RegistryFriendlyByteBuf, FluidSplashPacket> STREAM_CODEC = StreamCodec.composite(
+	        BlockPos.STREAM_CODEC, FluidSplashPacket::pos,
+			FluidStack.OPTIONAL_STREAM_CODEC, FluidSplashPacket::fluid,
+	        FluidSplashPacket::new
+	);
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-
-
-public class FluidSplashPacket extends SimplePacketBase {
-
-	private BlockPos pos;
-	private FluidStack fluid;
-
-	public FluidSplashPacket(BlockPos pos, FluidStack fluid) {
-		this.pos = pos;
-		this.fluid = fluid;
-	}
-
-	public FluidSplashPacket(FriendlyByteBuf buffer) {
-		pos = buffer.readBlockPos();
-		fluid =FluidStack.readFromPacket(buffer);
+	@Override
+	@OnlyIn(Dist.CLIENT)
+	public void handle(LocalPlayer player) {
+		if (player.position().distanceTo(new Vec3(pos.getX(), pos.getY(), pos.getZ())) > 100)
+			return;
+		FluidFX.splash(pos, fluid);
 	}
 
 	@Override
-	public void write(FriendlyByteBuf buffer) {
-		buffer.writeBlockPos(pos);
-		fluid.writeToPacket(buffer);
+	public PacketTypeProvider getTypeProvider() {
+		return AllPackets.FLUID_SPLASH;
 	}
-
-	@Override
-	public boolean handle(Context context) {
-		context.enqueueWork(() -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
-			if (Minecraft.getInstance().player.position()
-				.distanceTo(new Vec3(pos.getX(), pos.getY(), pos.getZ())) > 100)
-				return;
-			FluidFX.splash(pos, fluid);
-		}));
-		return true;
-	}
-
 }

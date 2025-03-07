@@ -2,6 +2,8 @@ package com.simibubi.create.content.logistics.packagePort.frogport;
 
 import java.util.function.Consumer;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -14,11 +16,12 @@ import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.model.Models;
 import dev.engine_room.flywheel.lib.visual.AbstractBlockEntityVisual;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
+
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class FrogportVisual extends AbstractBlockEntityVisual<FrogportBlockEntity> implements SimpleDynamicVisual {
 	private final TransformedInstance body;
@@ -70,7 +73,7 @@ public class FrogportVisual extends AbstractBlockEntityVisual<FrogportBlockEntit
 
 	private void animate(float partialTicks) {
 		updateGoggles();
-		
+
 		float yaw = blockEntity.getYaw();
 
 		float headPitch = 80;
@@ -183,7 +186,7 @@ if (yaw != lastYaw) {
 			updateLight(0);
 			lastGoggles = true;
 		}
-		
+
 		if (!blockEntity.goggles && lastGoggles) {
 			head.delete();
 			head = instancerProvider()
@@ -204,7 +207,7 @@ if (yaw != lastYaw) {
 			return;
 		}
 		ResourceLocation key = BuiltInRegistries.ITEM.getKey(blockEntity.animatedPackage.getItem());
-		if (key == null) {
+		if (key == BuiltInRegistries.ITEM.getDefaultKey()) {
 			rig.handle()
 				.setVisible(false);
 			box.handle()

@@ -16,14 +16,20 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
 import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -91,19 +97,19 @@ public class WhistleBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 			|| isVirtual());
 		animation.chase(powered ? 1 : 0, powered ? .5f : .4f, powered ? Chaser.EXP : Chaser.LINEAR);
 		animation.tickChaser();
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> this.tickAudio(getOctave(), powered));
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> this.tickAudio(getOctave(), powered));
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		tag.putInt("Pitch", pitch);
-		super.write(tag, clientPacket);
+		super.write(tag, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		pitch = tag.getInt("Pitch");
-		super.read(tag, clientPacket);
+		super.read(tag, registries, clientPacket);
 	}
 
 	@Override

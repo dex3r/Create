@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "simplefarming"
+    }
+  ],
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "type": "neoforge:compound",
+      "ingredients": [
+        {
+          "item": "simplefarming:oat"
+        }
+      ]
+    }
+  ],
+  "processing_time": 150,
+  "results": [
+    {
+      "item": {
+        "id": "create:wheat_flour"
+      }
+    },
+    {
+      "chance": 0.25,
+      "count": 2,
+      "item": {
+        "id": "create:wheat_flour"
+      }
+    },
+    {
+      "chance": 0.25,
+      "item": "simplefarming:oat_seeds"
+    }
+  ]
+}

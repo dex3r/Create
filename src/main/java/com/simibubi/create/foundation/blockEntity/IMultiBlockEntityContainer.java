@@ -2,6 +2,8 @@ package com.simibubi.create.foundation.blockEntity;
 
 import javax.annotation.Nullable;
 
+import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;

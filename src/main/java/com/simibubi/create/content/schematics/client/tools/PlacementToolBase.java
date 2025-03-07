@@ -3,6 +3,7 @@ package com.simibubi.create.content.schematics.client.tools;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.phys.Vec3;
 
@@ -24,8 +25,8 @@ public abstract class PlacementToolBase extends SchematicToolBase {
 	}
 
 	@Override
-	public void renderOverlay(GuiGraphics graphics, float partialTicks, int width, int height) {
-		super.renderOverlay(graphics, partialTicks, width, height);
+	public void renderOverlay(Gui gui, GuiGraphics graphics, float partialTicks, int width, int height) {
+		super.renderOverlay(gui, graphics, partialTicks, width, height);
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -35,7 +36,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FactoryPanelBlockEntity extends SmartBlockEntity {
-
 	public EnumMap<PanelSlot, FactoryPanelBehaviour> panels;
 
 	public boolean redraw;
@@ -196,8 +196,8 @@ public class FactoryPanelBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		super.read(tag, clientPacket);
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(tag, registries, clientPacket);
 		restocker = tag.getBoolean("Restocker");
 		if (clientPacket && tag.contains("Redraw")) {
 			lastShape = null;
@@ -206,13 +206,12 @@ public class FactoryPanelBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
-		super.write(tag, clientPacket);
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(tag, registries, clientPacket);
 		tag.putBoolean("Restocker", restocker);
 		if (clientPacket && redraw) {
 			NBTHelper.putMarker(tag, "Redraw");
 			redraw = false;
 		}
 	}
-
 }

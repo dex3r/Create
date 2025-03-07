@@ -13,19 +13,22 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlockEntity.Inventory;
 
 import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -217,15 +220,20 @@ public class ConnectedInputHandler {
 		public void write(CompoundTag nbt) {
 			nbt.putBoolean("Controller", isController);
 			ListTag list = new ListTag();
-			data.forEach(pos -> list.add(NbtUtils.writeBlockPos(pos)));
+			data.forEach(pos -> {
+				CompoundTag data = new CompoundTag();
+				data.putInt("X", pos.getX());
+				data.putInt("Y", pos.getY());
+				data.putInt("Z", pos.getZ());
+				list.add(data);
+			});
 			nbt.put("Data", list);
 		}
 
 		public void read(CompoundTag nbt) {
 			isController = nbt.getBoolean("Controller");
-			data.clear();
-			nbt.getList("Data", Tag.TAG_COMPOUND)
-				.forEach(inbt -> data.add(NbtUtils.readBlockPos((CompoundTag) inbt)));
+			data = NBTHelper.readCompoundList(nbt.getList("Data", Tag.TAG_COMPOUND),
+				c -> new BlockPos(c.getInt("X"), c.getInt("Y"), c.getInt("Z")));
 
 			// nbt got wiped -> reset
 			if (data.isEmpty()) {

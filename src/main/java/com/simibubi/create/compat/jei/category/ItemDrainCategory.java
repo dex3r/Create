@@ -17,10 +17,11 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.runtime.IIngredientManager;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -46,17 +47,19 @@ public class ItemDrainCategory extends CreateRecipeCategory<EmptyingRecipe> {
 		super(info);
 	}
 
-	public static void consumeRecipes(Consumer<EmptyingRecipe> consumer, IIngredientManager ingredientManager) {
+	public static void consumeRecipes(Consumer<RecipeHolder<EmptyingRecipe>> consumer, IIngredientManager ingredientManager) {
 		ObjectOpenCustomHashSet<ItemStack> emptiedItems = new ObjectOpenCustomHashSet<>(ItemStackLinkedSetAccessor.getTYPE_AND_TAG());
 		for (ItemStack stack : ingredientManager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
 			if (PotionFluidHandler.isPotionItem(stack)) {
 				FluidStack fluidFromPotionItem = PotionFluidHandler.getFluidFromPotionItem(stack);
 				Ingredient potion = Ingredient.of(stack);
-				consumer.accept(new ProcessingRecipeBuilder<>(EmptyingRecipe::new, Create.asResource("potions"))
-					.withItemIngredients(potion)
-					.withFluidOutputs(fluidFromPotionItem)
-					.withSingleItemOutput(new ItemStack(Items.GLASS_BOTTLE))
-					.build());
+				ResourceLocation id = Create.asResource("potions");
+				EmptyingRecipe recipe = new ProcessingRecipeBuilder<>(EmptyingRecipe::new, id)
+						.withItemIngredients(potion)
+						.withFluidOutputs(fluidFromPotionItem)
+						.withSingleItemOutput(new ItemStack(Items.GLASS_BOTTLE))
+						.build();
+				consumer.accept(new RecipeHolder<>(id, recipe));
 				continue;
 			}
 
@@ -81,15 +84,17 @@ public class ItemDrainCategory extends CreateRecipeCategory<EmptyingRecipe> {
 			result = ItemHelper.sameItem(stack, result) ? stack : emptiedItems.addOrGet(result);
 
 			Ingredient ingredient = Ingredient.of(stack);
-			ResourceLocation itemName = CatnipServices.REGISTRIES.getKeyOrThrow(stack.getItem());
-			ResourceLocation fluidName = CatnipServices.REGISTRIES.getKeyOrThrow(extracted.getFluid());
+			ResourceLocation itemName = RegisteredObjectsHelper.getKeyOrThrow(stack.getItem());
+			ResourceLocation fluidName = RegisteredObjectsHelper.getKeyOrThrow(extracted.getFluid());
 
-			consumer.accept(new ProcessingRecipeBuilder<>(EmptyingRecipe::new,
-				Create.asResource("empty_" + itemName.getNamespace() + "_" + itemName.getPath() + "_of_"
-					+ fluidName.getNamespace() + "_" + fluidName.getPath())).withItemIngredients(ingredient)
-						.withFluidOutputs(extracted)
-						.withSingleItemOutput(result)
-						.build());
+			ResourceLocation id = Create.asResource("empty_" + itemName.getNamespace() + "_" + itemName.getPath() + "_of_"
+					+ fluidName.getNamespace() + "_" + fluidName.getPath());
+			EmptyingRecipe recipe = new ProcessingRecipeBuilder<>(EmptyingRecipe::new, id)
+					.withItemIngredients(ingredient)
+					.withFluidOutputs(extracted)
+					.withSingleItemOutput(result)
+					.build();
+			consumer.accept(new RecipeHolder<>(id, recipe));
 		}
 	}
 

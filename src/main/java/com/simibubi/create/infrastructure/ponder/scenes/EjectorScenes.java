@@ -184,7 +184,7 @@ public class EjectorScenes {
 			scene.world().createItemOnBeltLike(beltPos, Direction.UP, copperBlock);
 		}
 		scene.idle(20);
-		scene.world().createItemOnBeltLike(beltPos, Direction.UP, ItemHandlerHelper.copyStackWithSize(copperBlock, 15));
+		scene.world().createItemOnBeltLike(beltPos, Direction.UP, copperBlock.copyWithCount(15));
 		scene.idle(80);
 
 		scene.world().hideSection(util.select().fromTo(5, 1, 0, 4, 1, 1), Direction.UP);
@@ -271,7 +271,6 @@ public class EjectorScenes {
 		scene.overlay().showControls(util.vector().topOf(util.grid().at(4, 1, 3)), Pointing.DOWN, 20)
 			.withItem(new ItemStack(Items.COPPER_INGOT));
 		scene.world().showSection(coverbelt, Direction.SOUTH);
-
 		scene.idle(7);
 		scene.world().createItemOnBelt(util.grid().at(4, 1, 3), Direction.UP, new ItemStack(Items.COPPER_INGOT, 64));
 		scene.idle(40);

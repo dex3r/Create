@@ -1,5 +1,9 @@
 package com.simibubi.create.content.equipment.symmetryWand;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.vertex.PoseStack;

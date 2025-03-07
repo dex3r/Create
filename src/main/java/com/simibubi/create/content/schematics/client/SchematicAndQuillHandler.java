@@ -6,12 +6,12 @@ import java.nio.file.Path;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllKeys;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSpecialTextures;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.schematics.SchematicExport;
 import com.simibubi.create.content.schematics.SchematicExport.SchematicExportResult;
 import com.simibubi.create.content.schematics.packet.InstantSchematicPacket;
+import net.createmod.catnip.platform.CatnipServices;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.foundation.utility.RaycastHelper;
 import com.simibubi.create.foundation.utility.RaycastHelper.PredicateTraceResult;
@@ -56,7 +56,7 @@ public class SchematicAndQuillHandler {
 		if (selectedFace == null)
 			return true;
 
-		AABB bb = new AABB(firstPos, secondPos);
+		AABB bb = new AABB(Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos));
 		Vec3i vec = selectedFace.getNormal();
 		Vec3 projectedView = Minecraft.getInstance().gameRenderer.getMainCamera()
 			.getPosition();
@@ -164,7 +164,7 @@ public class SchematicAndQuillHandler {
 
 		selectedFace = null;
 		if (secondPos != null) {
-			AABB bb = new AABB(firstPos, secondPos).expandTowards(1, 1, 1)
+			AABB bb = new AABB(Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos)).expandTowards(1, 1, 1)
 				.inflate(.45f);
 			Vec3 projectedView = Minecraft.getInstance().gameRenderer.getMainCamera()
 				.getPosition();
@@ -189,9 +189,9 @@ public class SchematicAndQuillHandler {
 		if (secondPos == null) {
 			if (firstPos == null)
 				return selectedPos == null ? null : new AABB(selectedPos);
-			return selectedPos == null ? new AABB(firstPos) : new AABB(firstPos, selectedPos).expandTowards(1, 1, 1);
+			return selectedPos == null ? new AABB(firstPos) : new AABB(Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(selectedPos)).expandTowards(1, 1, 1);
 		}
-		return new AABB(firstPos, secondPos).expandTowards(1, 1, 1);
+		return new AABB(Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos)).expandTowards(1, 1, 1);
 	}
 
 	private boolean isActive() {
@@ -216,7 +216,7 @@ public class SchematicAndQuillHandler {
 			return;
 		}
 		Path file = result.file();
-		CreateLang.translate("schematicAndQuill.saved", file.getFileName())
+		CreateLang.translate("schematicAndQuill.saved", file.getFileName().toString())
 				.sendStatus(player);
 		firstPos = null;
 		secondPos = null;
@@ -225,8 +225,7 @@ public class SchematicAndQuillHandler {
 		try {
 			if (!ClientSchematicLoader.validateSizeLimitation(Files.size(file)))
 				return;
-			AllPackets.getChannel()
-				.sendToServer(new InstantSchematicPacket(result.fileName(), result.origin(), result.bounds()));
+			CatnipServices.NETWORK.sendToServer(new InstantSchematicPacket(result.fileName(), result.origin(), result.bounds()));
 		} catch (IOException e) {
 			Create.LOGGER.error("Error instantly uploading Schematic file: " + file, e);
 		}

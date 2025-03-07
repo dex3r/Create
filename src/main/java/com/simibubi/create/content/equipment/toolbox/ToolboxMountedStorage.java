@@ -2,7 +2,7 @@ package com.simibubi.create.content.equipment.toolbox;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllMountedStorageTypes;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageType;
 import com.simibubi.create.api.contraption.storage.item.WrapperMountedItemStorage;
@@ -10,6 +10,7 @@ import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.foundation.item.ItemHelper;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -19,9 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
 public class ToolboxMountedStorage extends WrapperMountedItemStorage<ToolboxInventory> {
-	public static final Codec<ToolboxMountedStorage> CODEC = ToolboxInventory.CODEC.xmap(
+	public static final MapCodec<ToolboxMountedStorage> CODEC = ToolboxInventory.CODEC.xmap(
 		ToolboxMountedStorage::new, storage -> storage.wrapped
-	);
+	).fieldOf("value");
 
 	protected ToolboxMountedStorage(MountedItemStorageType<?> type, ToolboxInventory wrapped) {
 		super(type, wrapped);
@@ -52,9 +53,9 @@ public class ToolboxMountedStorage extends WrapperMountedItemStorage<ToolboxInve
 		return new ToolboxMountedStorage(copy);
 	}
 
-	public static ToolboxMountedStorage fromLegacy(CompoundTag nbt) {
+	public static ToolboxMountedStorage fromLegacy(HolderLookup.Provider registries, CompoundTag nbt) {
 		ToolboxInventory inv = new ToolboxInventory(null);
-		inv.deserializeNBT(nbt);
+		inv.deserializeNBT(registries, nbt);
 		return new ToolboxMountedStorage(inv);
 	}
 }

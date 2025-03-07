@@ -1,54 +1,34 @@
 package com.simibubi.create.content.contraptions.glue;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import com.simibubi.create.AllPackets;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
 
-import net.minecraft.client.Minecraft;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-
-public class GlueEffectPacket extends SimplePacketBase {
-
-	private BlockPos pos;
-	private Direction direction;
-	private boolean fullBlock;
-
-	public GlueEffectPacket(BlockPos pos, Direction direction, boolean fullBlock) {
-		this.pos = pos;
-		this.direction = direction;
-		this.fullBlock = fullBlock;
-	}
-
-	public GlueEffectPacket(FriendlyByteBuf buffer) {
-		pos = buffer.readBlockPos();
-		direction = Direction.from3DDataValue(buffer.readByte());
-		fullBlock = buffer.readBoolean();
-	}
+public record GlueEffectPacket(BlockPos pos, Direction direction, boolean fullBlock) implements ClientboundPacketPayload {
+	public static final StreamCodec<ByteBuf, com.simibubi.create.content.contraptions.glue.GlueEffectPacket> STREAM_CODEC = StreamCodec.composite(
+			BlockPos.STREAM_CODEC, com.simibubi.create.content.contraptions.glue.GlueEffectPacket::pos,
+			Direction.STREAM_CODEC, com.simibubi.create.content.contraptions.glue.GlueEffectPacket::direction,
+			ByteBufCodecs.BOOL, com.simibubi.create.content.contraptions.glue.GlueEffectPacket::fullBlock,
+			com.simibubi.create.content.contraptions.glue.GlueEffectPacket::new
+	);
 
 	@Override
-	public void write(FriendlyByteBuf buffer) {
-		buffer.writeBlockPos(pos);
-		buffer.writeByte(direction.get3DDataValue());
-		buffer.writeBoolean(fullBlock);
-	}
-
-	@Override
-	public boolean handle(Context context) {
-		context.enqueueWork(() -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::handleClient));
-		return true;
-	}
-
-	@Environment(EnvType.CLIENT)
-	public void handleClient() {
-		Minecraft mc = Minecraft.getInstance();
-		if (!mc.player.blockPosition().closerThan(pos, 100))
+	@OnlyIn(Dist.CLIENT)
+	public void handle(LocalPlayer player) {
+		if (!player.blockPosition().closerThan(pos, 100))
 			return;
-		SuperGlueItem.spawnParticles(mc.level, pos, direction, fullBlock);
+		SuperGlueItem.spawnParticles(player.clientLevel, pos, direction, fullBlock);
 	}
-
+@Override
+	public PacketTypeProvider getTypeProvider() {
+		return AllPackets.GLUE_EFFECT;
+	}
 }

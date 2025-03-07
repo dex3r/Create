@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.gui.TickableGuiEventListener;
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.client.Minecraft;
@@ -30,7 +31,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.client.accessor.ScreenAccessor;
 
@@ -101,11 +101,15 @@ public abstract class AbstractSimiContainerScreen<T extends AbstractContainerMen
 		}
 	}
 
+	/*@Override
+	public void renderBackground(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+		NeoForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, pGuiGraphics, pMouseX, pMouseY));
+		renderBg(pGuiGraphics, pPartialTick, pMouseX, pMouseY);
+	}*/
+
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		partialTicks = minecraft.getFrameTime();
-
-		renderBackground(graphics);
+		partialTicks = AnimationTickHolder.getPartialTicksUI();
 
 		super.render(graphics, mouseX, mouseY, partialTicks);
 

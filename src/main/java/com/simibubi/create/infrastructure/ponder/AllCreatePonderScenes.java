@@ -64,13 +64,10 @@ import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
-import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
-import net.minecraft.resources.ResourceLocation;
-
 public class AllCreatePonderScenes {
 
 	public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-		PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+		PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
 		HELPER.forComponents(AllBlocks.SHAFT)
 			.addStoryBoard("shaft/relay", KineticsScenes::shaftAsRelay, AllCreatePonderTags.KINETIC_RELAYS);
@@ -392,10 +389,10 @@ public class AllCreatePonderScenes {
 		HELPER.forComponents(TrackMaterial.allBlocks()
 				.stream()
 				.map((trackSupplier) -> new BlockEntry<TrackBlock>(
-						// note: these blocks probably WON'T be in the Create Registrate, but a simple
-						// code trace reveals the Entry's registrate isn't used
-						Create.registrate(),
-						RegistryObject.of(BuiltInRegistries.BLOCK.getKey(trackSupplier.get()), BuiltInRegistries.BLOCK)
+					// note: these blocks probably WON'T be in the Create Registrate, but a simple
+					// code trace reveals the Entry's registrate isn't used
+					Create.registrate(),
+					RegistryObject.of(BuiltInRegistries.BLOCK.getKey(trackSupplier.get()), BuiltInRegistries.BLOCK)
 				))
 				.toArray(BlockEntry[]::new))
 			.addStoryBoard("train_track/placement", TrackScenes::placement)

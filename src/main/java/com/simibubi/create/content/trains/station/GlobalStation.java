@@ -17,8 +17,19 @@ import com.simibubi.create.content.trains.graph.DimensionPalette;
 import com.simibubi.create.content.trains.graph.TrackNode;
 import com.simibubi.create.content.trains.signal.SingleBlockEntityEdgePoint;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+
 import net.createmod.catnip.nbt.NBTHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -61,8 +72,8 @@ public class GlobalStation extends SingleBlockEntityEdgePoint {
 	}
 
 	@Override
-	public void read(CompoundTag nbt, boolean migration, DimensionPalette dimensions) {
-		super.read(nbt, migration, dimensions);
+	public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean migration, DimensionPalette dimensions) {
+		super.read(nbt, registries, migration, dimensions);
 		name = nbt.getString("Name");
 		assembling = nbt.getBoolean("Assembling");
 		nearestTrain = new WeakReference<>(null);
@@ -72,9 +83,9 @@ public class GlobalStation extends SingleBlockEntityEdgePoint {
 		NBTHelper.iterateCompoundList(portList, c -> {
 			GlobalPackagePort port = new GlobalPackagePort();
 			port.address = c.getString("Address");
-			port.offlineBuffer.deserializeNBT(c.getCompound("OfflineBuffer"));
+			port.offlineBuffer.deserializeNBT(registries, c.getCompound("OfflineBuffer"));
 			port.primed = c.getBoolean("Primed");
-			connectedPorts.put(NbtUtils.readBlockPos(c.getCompound("Pos")), port);
+			connectedPorts.put(NBTHelper.readBlockPos(c, "Pos"), port);
 		});
 	}
 
@@ -88,15 +99,15 @@ public class GlobalStation extends SingleBlockEntityEdgePoint {
 	}
 
 	@Override
-	public void write(CompoundTag nbt, DimensionPalette dimensions) {
-		super.write(nbt, dimensions);
+	public void write(CompoundTag nbt, HolderLookup.Provider registries, DimensionPalette dimensions) {
+		super.write(nbt, registries, dimensions);
 		nbt.putString("Name", name);
 		nbt.putBoolean("Assembling", assembling);
 
 		nbt.put("Ports", NBTHelper.writeCompoundList(connectedPorts.entrySet(), e -> {
 			CompoundTag c = new CompoundTag();
 			c.putString("Address", e.getValue().address);
-			c.put("OfflineBuffer", e.getValue().offlineBuffer.serializeNBT());
+			c.put("OfflineBuffer", e.getValue().offlineBuffer.serializeNBT(registries));
 			c.putBoolean("Primed", e.getValue().primed);
 			c.put("Pos", NbtUtils.writeBlockPos(e.getKey()));
 			return c;

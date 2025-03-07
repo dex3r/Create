@@ -3,6 +3,10 @@ package com.simibubi.create.content.contraptions.glue;
 import com.simibubi.create.content.contraptions.chassis.AbstractChassisBlock;
 
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -46,11 +50,6 @@ public class SuperGlueItem extends Item {
 	@Override
 	public boolean canAttackBlock(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer) {
 		return false;
-	}
-
-	@Override
-	public boolean canBeDepleted() {
-		return true;
 	}
 
 	public static void onBroken(Player player) {}

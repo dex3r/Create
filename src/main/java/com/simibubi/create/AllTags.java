@@ -1,6 +1,6 @@
 package com.simibubi.create;
 
-import static com.simibubi.create.AllTags.NameSpace.FORGE;
+import static com.simibubi.create.AllTags.NameSpace.COMMON;
 import static com.simibubi.create.AllTags.NameSpace.MOD;
 import static com.simibubi.create.AllTags.NameSpace.QUARK;
 import static com.simibubi.create.AllTags.NameSpace.TIC;
@@ -30,31 +30,30 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
 public class AllTags {
-	public static <T> TagKey<T> optionalTag(Registry<T> registry,
-											ResourceLocation id) {
+	public static <T> TagKey<T> optionalTag(Registry<T> registry, ResourceLocation id) {
 		return TagKey.create(registry.key(), id);
 	}
 
-	public static <T> TagKey<T> forgeTag(Registry<T> registry, String path) {
-		return optionalTag(registry, new ResourceLocation("c", path));
+	public static <T> TagKey<T> commonTag(Registry<T> registry, String path) {
+		return optionalTag(registry, ResourceLocation.fromNamespaceAndPath("c", path));
 	}
 
-	public static TagKey<Block> forgeBlockTag(String path) {
-		return forgeTag(BuiltInRegistries.BLOCK, path);
+	public static TagKey<Block> commonBlockTag(String path) {
+		return commonTag(BuiltInRegistries.BLOCK, path);
 	}
 
-	public static TagKey<Item> forgeItemTag(String path) {
-		return forgeTag(BuiltInRegistries.ITEM, path);
+	public static TagKey<Item> commonItemTag(String path) {
+		return commonTag(BuiltInRegistries.ITEM, path);
 	}
 
-	public static TagKey<Fluid> forgeFluidTag(String path) {
-		return forgeTag(BuiltInRegistries.FLUID, path);
+	public static TagKey<Fluid> commonFluidTag(String path) {
+		return commonTag(BuiltInRegistries.FLUID, path);
 	}
 
 	public enum NameSpace {
 
 		MOD(Create.ID, false, true),
-		FORGE("c"),
+		COMMON("c"),
 		TIC("tconstruct"),
 		QUARK("quark"),
 		GS("galosphere"),
@@ -112,8 +111,7 @@ public class AllTags {
 
 		CORALS,
 
-		RELOCATION_NOT_SUPPORTED(FORGE),
-		WG_STONE(FORGE),
+		RELOCATION_NOT_SUPPORTED(COMMON),
 
 		SLIMY_LOGS(TIC),
 		NON_DOUBLE_DOOR(QUARK),
@@ -140,7 +138,7 @@ public class AllTags {
 		}
 
 		AllBlockTags(NameSpace namespace, String path, boolean optional, boolean alwaysDatagen) {
-			ResourceLocation id = new ResourceLocation(namespace.id, path == null ? Lang.asId(name()) : path);
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace.id, path == null ? Lang.asId(name()) : path);
 			tag = optionalTag(BuiltInRegistries.BLOCK, id);
 			this.alwaysDatagen = alwaysDatagen;
 		}
@@ -172,10 +170,9 @@ public class AllTags {
 		CONTRAPTION_CONTROLLED,
 		CREATE_INGOTS,
 		CRUSHED_RAW_MATERIALS,
+		DIVING_ARMOR,
 		INVALID_FOR_TRACK_PAVING,
 		DEPLOYABLE_DRINK,
-		MODDED_STRIPPED_LOGS,
-		MODDED_STRIPPED_WOOD,
 		PRESSURIZED_AIR_SOURCES,
 		SANDPAPER,
 		SEATS,
@@ -190,15 +187,11 @@ public class AllTags {
 		TRACKS,
 		UPRIGHT_ON_BELT,
 		VALVE_HANDLES,
-		VANILLA_STRIPPED_LOGS,
-		VANILLA_STRIPPED_WOOD,
 		DISPENSE_BEHAVIOR_WRAP_BLACKLIST,
 
-		STRIPPED_LOGS(FORGE),
-		STRIPPED_WOOD(FORGE),
-		PLATES(FORGE),
-		OBSIDIAN_DUST(FORGE, "dusts/obsidian"),
-		WRENCH(FORGE, "wrenches"),
+		PLATES(COMMON),
+		OBSIDIAN_DUST(COMMON, "dusts/obsidian"),
+		WRENCH(COMMON, "tools/wrench"),
 
 		ALLURITE(MOD, "stone_types/galosphere/allurite"),
 		AMETHYST(MOD, "stone_types/galosphere/amethyst"),
@@ -229,7 +222,7 @@ public class AllTags {
 		}
 
 		AllItemTags(NameSpace namespace, String path, boolean optional, boolean alwaysDatagen) {
-			ResourceLocation id = new ResourceLocation(namespace.id, path == null ? Lang.asId(name()) : path);
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace.id, path == null ? Lang.asId(name()) : path);
 			tag = optionalTag(BuiltInRegistries.ITEM, id);
 
 			this.alwaysDatagen = alwaysDatagen;
@@ -251,6 +244,8 @@ public class AllTags {
 	}
 
 	public enum AllFluidTags {
+		// fabric: extra tag for diving helmet behavior
+		DIVING_FLUIDS,
 
 		BOTTOMLESS_ALLOW(MOD, "bottomless/allow"),
 		BOTTOMLESS_DENY(MOD, "bottomless/deny"),
@@ -259,10 +254,7 @@ public class AllTags {
 		FAN_PROCESSING_CATALYSTS_SMOKING(MOD, "fan_processing_catalysts/smoking"),
 		FAN_PROCESSING_CATALYSTS_SPLASHING(MOD, "fan_processing_catalysts/splashing"),
 
-		// fabric: extra tag for diving helmet behavior
-		DIVING_FLUIDS,
-
-		HONEY(FORGE);
+		;
 
 		public final TagKey<Fluid> tag;
 		public final boolean alwaysDatagen;
@@ -284,7 +276,7 @@ public class AllTags {
 		}
 
 		AllFluidTags(NameSpace namespace, String path, boolean optional, boolean alwaysDatagen) {
-			ResourceLocation id = new ResourceLocation(namespace.id, path == null ? Lang.asId(name()) : path);
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace.id, path == null ? Lang.asId(name()) : path);
 			tag = optionalTag(BuiltInRegistries.FLUID, id);
 			this.alwaysDatagen = alwaysDatagen;
 		}
@@ -329,7 +321,7 @@ public class AllTags {
 		}
 
 		AllEntityTags(NameSpace namespace, String path, boolean optional, boolean alwaysDatagen) {
-			ResourceLocation id = new ResourceLocation(namespace.id, path == null ? Lang.asId(name()) : path);
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace.id, path == null ? Lang.asId(name()) : path);
 			if (optional) {
 				tag = optionalTag(BuiltInRegistries.ENTITY_TYPE, id);
 			} else {
@@ -377,7 +369,7 @@ public class AllTags {
 		}
 
 		AllRecipeSerializerTags(NameSpace namespace, String path, boolean optional, boolean alwaysDatagen) {
-			ResourceLocation id = new ResourceLocation(namespace.id, path == null ? Lang.asId(name()) : path);
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace.id, path == null ? Lang.asId(name()) : path);
 			if (optional) {
 				tag = optionalTag(BuiltInRegistries.RECIPE_SERIALIZER, id);
 			} else {

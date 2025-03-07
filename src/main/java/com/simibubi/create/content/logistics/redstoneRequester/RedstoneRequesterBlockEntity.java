@@ -1,6 +1,5 @@
 package com.simibubi.create.content.logistics.redstoneRequester;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
@@ -9,11 +8,14 @@ import com.simibubi.create.content.logistics.packagerLink.WiFiParticle;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.StockCheckingBlockEntity;
 
+import net.createmod.catnip.codecs.CatnipCodecUtils;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -72,47 +74,48 @@ public class RedstoneRequesterBlockEntity extends StockCheckingBlockEntity imple
 				anySucceeded = true;
 				continue;
 			}
-			if (!allowPartialRequests) {
-				AllPackets.sendToNear(level, worldPosition, 32,
+			if (!allowPartialRequests && level instanceof ServerLevel serverLevel) {
+				CatnipServices.NETWORK.sendToClientsAround(serverLevel, worldPosition, 32,
 					new RedstoneRequesterEffectPacket(worldPosition, false));
 				return;
 			}
 		}
 
 		broadcastPackageRequest(RequestType.REDSTONE, encodedRequest, null, encodedTargetAdress, encodedRequestContext.isEmpty() ? null : encodedRequestContext);
-		AllPackets.sendToNear(level, worldPosition, 32, new RedstoneRequesterEffectPacket(worldPosition, anySucceeded));
+		if (level instanceof ServerLevel serverLevel)
+			CatnipServices.NETWORK.sendToClientsAround(serverLevel, worldPosition, 32, new RedstoneRequesterEffectPacket(worldPosition, anySucceeded));
 		lastRequestSucceeded = true;
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		super.read(tag, clientPacket);
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(tag, registries, clientPacket);
 		redstonePowered = tag.getBoolean("Powered");
 		lastRequestSucceeded = tag.getBoolean("Success");
 		allowPartialRequests = tag.getBoolean("AllowPartial");
-		encodedRequest = PackageOrder.read(tag.getCompound("EncodedRequest"));
-		encodedRequestContext = PackageOrder.read(tag.getCompound("EncodedRequestContext"));
+		encodedRequest = CatnipCodecUtils.decode(PackageOrder.CODEC, tag.getCompound("EncodedRequest")).orElse(PackageOrder.empty());
+		encodedRequestContext = CatnipCodecUtils.decode(PackageOrder.CODEC, tag.getCompound("EncodedRequestContext")).orElse(PackageOrder.empty());
 		encodedTargetAdress = tag.getString("EncodedAddress");
 	}
 
 	@Override
-	public void writeSafe(CompoundTag tag) {
-		super.writeSafe(tag);
+	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+		super.writeSafe(tag, registries);
 		tag.putBoolean("AllowPartial", allowPartialRequests);
 		tag.putString("EncodedAddress", encodedTargetAdress);
-		tag.put("EncodedRequest", encodedRequest.write());
-		tag.put("EncodedRequestContext", encodedRequestContext.write());
+		tag.put("EncodedRequest", CatnipCodecUtils.encode(PackageOrder.CODEC, encodedRequest).orElseThrow());
+		tag.put("EncodedRequestContext", CatnipCodecUtils.encode(PackageOrder.CODEC, encodedRequestContext).orElseThrow());
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
-		super.write(tag, clientPacket);
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(tag, registries, clientPacket);
 		tag.putBoolean("Powered", redstonePowered);
 		tag.putBoolean("Success", lastRequestSucceeded);
 		tag.putBoolean("AllowPartial", allowPartialRequests);
 		tag.putString("EncodedAddress", encodedTargetAdress);
-		tag.put("EncodedRequest", encodedRequest.write());
-		tag.put("EncodedRequestContext", encodedRequestContext.write());
+		tag.put("EncodedRequest", CatnipCodecUtils.encode(PackageOrder.CODEC, encodedRequest).orElseThrow());
+		tag.put("EncodedRequestContext", CatnipCodecUtils.encode(PackageOrder.CODEC, encodedRequestContext).orElseThrow());
 	}
 
 	public InteractionResult use(Player player) {
@@ -125,7 +128,7 @@ public class RedstoneRequesterBlockEntity extends StockCheckingBlockEntity imple
 		if (!behaviour.mayInteractMessage(player))
 			return InteractionResult.SUCCESS;
 
-		NetworkHooks.openScreen((ServerPlayer) player, this, worldPosition);
+		player.openMenu(this, worldPosition);
 		return InteractionResult.SUCCESS;
 	}
 

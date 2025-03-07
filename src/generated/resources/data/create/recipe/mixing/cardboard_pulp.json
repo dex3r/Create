@@ -1,0 +1,29 @@
+{
+  "type": "create:mixing",
+  "ingredients": [
+    {
+      "tag": "create:pulpifiable"
+    },
+    {
+      "tag": "create:pulpifiable"
+    },
+    {
+      "tag": "create:pulpifiable"
+    },
+    {
+      "tag": "create:pulpifiable"
+    },
+    {
+      "type": "fluid_stack",
+      "amount": 250,
+      "fluid": "minecraft:water"
+    }
+  ],
+  "results": [
+    {
+      "item": {
+        "id": "create:pulp"
+      }
+    }
+  ]
+}

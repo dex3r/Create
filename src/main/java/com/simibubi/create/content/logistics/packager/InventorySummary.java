@@ -8,17 +8,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.collect.Lists;
-import com.simibubi.create.AllPackets;
+import com.mojang.serialization.Codec;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.LogisticalStockResponsePacket;
 
-import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +33,17 @@ import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 
 public class InventorySummary {
+	public static Codec<InventorySummary> CODEC = Codec.list(BigItemStack.CODEC)
+		.xmap(i -> {
+				InventorySummary summary = new InventorySummary();
+				summary.addAllBigItemStacks(i);
+				return summary;
+			},
+			i -> {
+				List<BigItemStack> all = new ArrayList<>();
+				i.items.forEach((key, list) -> all.addAll(list));
+				return all;
+			});
 
 	public static final InventorySummary EMPTY = new InventorySummary();
 
@@ -65,6 +79,16 @@ public class InventorySummary {
 		return items;
 	}
 
+	public void addAllItemStacks(List<ItemStack> list) {
+		for (ItemStack stack : list)
+			add(stack, stack.getCount());
+	}
+
+	public void addAllBigItemStacks(List<BigItemStack> list) {
+		for (BigItemStack entry : list)
+			add(entry.stack, entry.count);
+	}
+
 	public InventorySummary copy() {
 		InventorySummary inventorySummary = new InventorySummary();
 		items.forEach((i, list) -> list.forEach(entry -> inventorySummary.add(entry.stack, entry.count)));
@@ -81,7 +105,7 @@ public class InventorySummary {
 		List<BigItemStack> stacks = items.computeIfAbsent(stack.getItem(), $ -> Lists.newArrayList());
 		for (BigItemStack existing : stacks) {
 			ItemStack existingStack = existing.stack;
-			if (ItemHandlerHelper.canItemStacksStack(existingStack, stack)) {
+			if (ItemStack.isSameItemSameComponents(existingStack, stack)) {
 				if (existing.count < BigItemStack.INF)
 					existing.count += count;
 				return;
@@ -102,7 +126,7 @@ public class InventorySummary {
 		for (Iterator<BigItemStack> iterator = stacks.iterator(); iterator.hasNext();) {
 			BigItemStack existing = iterator.next();
 			ItemStack existingStack = existing.stack;
-			if (!ItemHandlerHelper.canItemStacksStack(existingStack, stack))
+			if (!ItemStack.isSameItemSameComponents(existingStack, stack))
 				continue;
 			totalCount -= existing.count;
 			iterator.remove();
@@ -116,7 +140,7 @@ public class InventorySummary {
 		if (list == null)
 			return 0;
 		for (BigItemStack entry : list)
-			if (ItemHandlerHelper.canItemStacksStack(entry.stack, stack))
+			if (ItemStack.isSameItemSameComponents(entry.stack, stack))
 				return entry.count;
 		return 0;
 	}
@@ -134,7 +158,7 @@ public class InventorySummary {
 	public List<BigItemStack> getStacks() {
 		if (stacksByCount == null) {
 			List<BigItemStack> stacks = new ArrayList<>();
-			items.forEach((i, list) -> list.forEach(stacks::add));
+			items.forEach((i, list) -> stacks.addAll(list));
 			return stacks;
 		}
 		return stacksByCount;
@@ -143,8 +167,8 @@ public class InventorySummary {
 	public List<BigItemStack> getStacksByCount() {
 		if (stacksByCount == null) {
 			stacksByCount = new ArrayList<>();
-			items.forEach((i, list) -> list.forEach(stacksByCount::add));
-			Collections.sort(stacksByCount, BigItemStack.comparator());
+			items.forEach((i, list) -> stacksByCount.addAll(list));
+			stacksByCount.sort(BigItemStack.comparator());
 		}
 		return stacksByCount;
 	}
@@ -159,10 +183,8 @@ public class InventorySummary {
 
 		List<BigItemStack> currentList = null;
 
-		if (stacks.isEmpty()) {
-			LogisticalStockResponsePacket packet = new LogisticalStockResponsePacket(true, pos, Collections.emptyList());
-			AllPackets.getChannel().sendToClient(packet, player);
-		}
+		if (stacks.isEmpty())
+			CatnipServices.NETWORK.sendToClient(player, new LogisticalStockResponsePacket(true, pos, Collections.emptyList()));
 
 		for (BigItemStack entry : stacks) {
 			if (currentList == null)
@@ -176,28 +198,12 @@ public class InventorySummary {
 			if (currentList.size() < 100)
 				continue;
 
-			AllPackets.getChannel()
-				.sendToClient(new LogisticalStockResponsePacket(false, pos, currentList), player);
+			CatnipServices.NETWORK.sendToClient(player, new LogisticalStockResponsePacket(false, pos, currentList));
 			currentList = null;
 		}
 
 		if (currentList != null)
-			AllPackets.getChannel()
-				.sendToClient(new LogisticalStockResponsePacket(true, pos, currentList), player);
-	}
-
-	public CompoundTag write() {
-		List<BigItemStack> all = new ArrayList<>();
-		items.forEach((key, list) -> all.addAll(list));
-		CompoundTag tag = new CompoundTag();
-		tag.put("List", NBTHelper.writeCompoundList(all, BigItemStack::write));
-		return tag;
-	}
-
-	public static InventorySummary read(CompoundTag tag) {
-		InventorySummary summary = new InventorySummary();
-		NBTHelper.iterateCompoundList(tag.getList("List", Tag.TAG_COMPOUND), c -> summary.add(BigItemStack.read(c)));
-		return summary;
+			CatnipServices.NETWORK.sendToClient(player, new LogisticalStockResponsePacket(true, pos, currentList));
 	}
 
 	public boolean isEmpty() {

@@ -205,7 +205,7 @@ public class EdgeData {
 
 		if (nbt.contains("Points"))
 			NBTHelper.iterateCompoundList(nbt.getList("Points", Tag.TAG_COMPOUND), tag -> {
-				ResourceLocation location = new ResourceLocation(tag.getString("Type"));
+				ResourceLocation location = ResourceLocation.parse(tag.getString("Type"));
 				EdgePointType<?> type = EdgePointType.TYPES.get(location);
 				if (type == null || !tag.contains("Id"))
 					return;

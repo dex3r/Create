@@ -10,6 +10,7 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
 import com.simibubi.create.compat.archEx.ArchExCompat;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
+import com.simibubi.create.foundation.data.CreateDatamapProvider;
 import com.simibubi.create.foundation.data.DamageTypeTagGen;
 import com.simibubi.create.foundation.data.TagLangGen;
 import com.simibubi.create.foundation.data.recipe.MechanicalCraftingRecipeGen;
@@ -19,6 +20,7 @@ import com.simibubi.create.foundation.data.recipe.StandardRecipeGen;
 import com.simibubi.create.foundation.ponder.CreatePonderPlugin;
 import com.simibubi.create.foundation.utility.FilesHelper;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateDataProvider;
 
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.core.RegistrySetBuilder;
@@ -47,18 +49,24 @@ public class CreateDatagen implements DataGeneratorEntrypoint {
 
 		// fabric: pretty much redone, make sure all providers make it through merges
 
-		pack.addProvider(AllSoundEvents::provider);
-		pack.addProvider(GeneratedEntriesProvider::new);
-		pack.addProvider(CreateRecipeSerializerTagsProvider::new);
-		pack.addProvider(CreateContraptionTypeTagsProvider::new);
-		pack.addProvider(CreateMountedItemStorageTypeTagsProvider::new);
-		pack.addProvider(DamageTypeTagGen::new);
-		pack.addProvider(AllAdvancements::new);
-		pack.addProvider(StandardRecipeGen::new);
-		pack.addProvider(MechanicalCraftingRecipeGen::new);
-		pack.addProvider(SequencedAssemblyRecipeGen::new);
-		pack.addProvider(VanillaHatOffsetGenerator::new);
-		pack.addProvider(ProcessingRecipeGen::registerAll);
+		generator.addProvider(event.includeServer(), new CreateRecipeSerializerTagsProvider(output, lookupProvider, existingFileHelper));
+		generator.addProvider(event.includeServer(), new CreateContraptionTypeTagsProvider(output, lookupProvider, existingFileHelper));
+		generator.addProvider(event.includeServer(), new CreateMountedItemStorageTypeTagsProvider(output, lookupProvider, existingFileHelper));
+		generator.addProvider(event.includeServer(), new DamageTypeTagGen(output, lookupProvider, existingFileHelper));
+		generator.addProvider(event.includeServer(), new AllAdvancements(output, lookupProvider));
+		generator.addProvider(event.includeServer(), new StandardRecipeGen(output, lookupProvider));
+		generator.addProvider(event.includeServer(), new MechanicalCraftingRecipeGen(output, lookupProvider));
+		generator.addProvider(event.includeServer(), new SequencedAssemblyRecipeGen(output, lookupProvider));
+		generator.addProvider(event.includeServer(), new CreateDatamapProvider(output, lookupProvider));
+		generator.addProvider(event.includeServer(), new VanillaHatOffsetGenerator(output));
+		generator.addProvider(event.includeServer(), new CuriosDataGenerator(output, lookupProvider, existingFileHelper));
+		generator.addProvider(event.includeServer(), new CreateEnchantmentTagsProvider(output, lookupProvider, existingFileHelper));
+
+		if (event.includeServer()) {
+			ProcessingRecipeGen.registerAll(generator, output, lookupProvider);
+		}
+
+		event.getGenerator().addProvider(true, Create.registrate().setDataProvider(new RegistrateDataProvider(Create.registrate(), Create.ID, event)));
 	}
 
 	@Override

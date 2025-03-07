@@ -12,9 +12,16 @@ import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.lang.Lang;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -59,7 +66,7 @@ public class ItemThresholdCondition extends CargoThresholdCondition {
 					continue;
 
 				if (stacks)
-					foundItems += view.getAmount() == variant.getItem().getMaxStackSize() ? 1 : 0;
+					foundItems += stackInSlot.getCount() == stackInSlot.getOrDefault(DataComponents.MAX_STACK_SIZE, 64) ? 1 : 0;
 				else
 					foundItems += view.getAmount();
 			}
@@ -70,16 +77,16 @@ public class ItemThresholdCondition extends CargoThresholdCondition {
 	}
 
 	@Override
-	protected void writeAdditional(CompoundTag tag) {
-		super.writeAdditional(tag);
-		tag.put("Item", stack.serializeNBT());
+	protected void writeAdditional(HolderLookup.Provider registries, CompoundTag tag) {
+		super.writeAdditional(registries, tag);
+		tag.put("Item", stack.serializeNBT(registries));
 	}
 
 	@Override
-	protected void readAdditional(CompoundTag tag) {
-		super.readAdditional(tag);
+	protected void readAdditional(HolderLookup.Provider registries, CompoundTag tag) {
+		super.readAdditional(registries, tag);
 		if (tag.contains("Item"))
-			stack = FilterItemStack.of(tag.getCompound("Item"));
+			stack = FilterItemStack.of(registries, tag.getCompound("Item"));
 	}
 
 	@Override

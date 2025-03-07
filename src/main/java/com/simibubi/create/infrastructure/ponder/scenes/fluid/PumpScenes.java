@@ -171,7 +171,7 @@ public class PumpScenes {
 		scene.configureBasePlate(0, 0, 5);
 		scene.showBasePlate();
 		scene.idle(5);
-//		scene.world.showSection(util.select.layersFrom(1), Direction.DOWN);
+//		scene.world().showSection(util.select.layersFrom(1), Direction.DOWN);
 
 		Selection largeCog = util.select().position(5, 0, 3);
 		Selection cogs = util.select().fromTo(5, 1, 4, 2, 1, 4)

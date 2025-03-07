@@ -5,7 +5,7 @@ import java.util.function.Function;
 import com.simibubi.create.Create;
 import com.simibubi.create.compat.Mods;
 
-import me.jellysquid.mods.sodium.client.render.texture.SpriteUtil;
+import net.caffeinemc.mods.sodium.api.texture.SpriteUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -25,42 +25,20 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 
 /**
- * Fixes the Mechanical Saw's sprite and lets players know when Indium isn't installed.
+ * Fixes the Mechanical Saw's sprite and Factory Gauge's sprite
  */
 public class SodiumCompat {
 	public static final ResourceLocation SAW_TEXTURE = Create.asResource("block/saw_reversed");
+	public static final ResourceLocation FACTORY_PANEL_TEXTURE = Create.asResource("block/factory_panel_connections_animated");
 
 	public static void init() {
-		ModContainer container = FabricLoader.getInstance().getModContainer(Mods.SODIUM.id()).orElseThrow();
-
-		if (!Mods.INDIUM.isLoaded()) {
-			ClientPlayConnectionEvents.JOIN.register(SodiumCompat::sendNoIndiumWarning);
-		}
-
 		WorldRenderEvents.START.register(ctx -> {
 			Function<ResourceLocation, TextureAtlasSprite> atlas = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
 			TextureAtlasSprite sawSprite = atlas.apply(SAW_TEXTURE);
-			SpriteUtil.markSpriteActive(sawSprite);
+			SpriteUtil.INSTANCE.markSpriteActive(sawSprite);
+
+			TextureAtlasSprite factoryPanelSprite = atlas.apply(FACTORY_PANEL_TEXTURE);
+			SpriteUtil.INSTANCE.markSpriteActive(factoryPanelSprite);
 		});
-	}
-
-	public static void sendNoIndiumWarning(ClientPacketListener handler, PacketSender sender, Minecraft mc) {
-		if (mc.player == null)
-			return;
-
-		MutableComponent text = ComponentUtils.wrapInSquareBrackets(Component.literal("WARN"))
-				.withStyle(ChatFormatting.GOLD)
-				.append(Component.literal(" Sodium is installed, but Indium is not. This will cause visual issues with Create!")
-				)
-				.withStyle(style -> style
-						.withClickEvent(
-								new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/indium")
-						)
-						.withHoverEvent(
-								new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click here to open Indium's mod page"))
-						)
-				);
-
-		mc.player.displayClientMessage(text, false);
 	}
 }

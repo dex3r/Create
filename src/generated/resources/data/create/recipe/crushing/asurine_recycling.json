@@ -1,0 +1,23 @@
+{
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "tag": "create:stone_types/asurine"
+    }
+  ],
+  "processing_time": 250,
+  "results": [
+    {
+      "chance": 0.3,
+      "item": {
+        "id": "create:crushed_raw_zinc"
+      }
+    },
+    {
+      "chance": 0.3,
+      "item": {
+        "id": "create:zinc_nugget"
+      }
+    }
+  ]
+}

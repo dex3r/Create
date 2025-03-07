@@ -5,8 +5,20 @@ import java.util.function.Consumer;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.foundation.fluid.SmartFluidTank;
 import com.simibubi.create.foundation.utility.CreateCodecs;
+
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import net.minecraft.util.ExtraCodecs;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -25,6 +37,18 @@ public class CreativeFluidTankBlockEntity extends FluidTankBlockEntity {
 		super(type, pos, state);
 	}
 
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.FluidHandler.BLOCK,
+				AllBlockEntityTypes.CREATIVE_FLUID_TANK.get(),
+				(be, context) -> {
+					if (be.fluidCapability == null)
+						be.refreshCapability();
+					return be.fluidCapability;
+				}
+		);
+	}
+
 	@Override
 	protected SmartFluidTank createInventory() {
 		return new CreativeSmartFluidTank(getCapacityMultiplier(), this::onFluidStackChanged);
@@ -37,7 +61,7 @@ public class CreativeFluidTankBlockEntity extends FluidTankBlockEntity {
 
 	public static class CreativeSmartFluidTank extends SmartFluidTank {
 		public static final Codec<CreativeSmartFluidTank> CODEC = RecordCodecBuilder.create(i -> i.group(
-			FluidStack.CODEC.fieldOf("fluid").forGetter(FluidTank::getFluid),
+			FluidStack.OPTIONAL_CODEC.fieldOf("fluid").forGetter(FluidTank::getFluid),
 			CreateCodecs.NON_NEGATIVE_LONG.fieldOf("capacity").forGetter(FluidTank::getCapacity)
 		).apply(i, (fluid, capacity) -> {
 			CreativeSmartFluidTank tank = new CreativeSmartFluidTank(capacity, $ -> {});

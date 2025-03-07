@@ -26,7 +26,6 @@ import net.fabricmc.api.Environment;
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
 
 public enum AllParticleTypes {
-
 	ROTATION_INDICATOR(RotationIndicatorParticleData::new),
 	AIR_FLOW(AirFlowParticleData::new),
 	AIR(AirParticleData::new),
@@ -89,5 +88,4 @@ public enum AllParticleTypes {
 		}
 
 	}
-
 }

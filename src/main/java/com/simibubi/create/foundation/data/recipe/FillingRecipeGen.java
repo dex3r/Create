@@ -1,12 +1,15 @@
 package com.simibubi.create.foundation.data.recipe;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.simibubi.create.AllFluids;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllTags;
-import com.simibubi.create.AllTags.AllFluidTags;
 import com.simibubi.create.content.fluids.potion.PotionFluidHandler;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.material.Fluids;
@@ -20,7 +23,7 @@ public class FillingRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe
 
-	HONEY_BOTTLE = create("honey_bottle", b -> b.require(AllFluidTags.HONEY.tag, AllFluids.HONEY_BOTTLE_AMOUNT)
+	HONEY_BOTTLE = create("honey_bottle", b -> b.require(Tags.Fluids.HONEY, AllFluids.HONEY_BOTTLE_AMOUNT)
 		.require(Items.GLASS_BOTTLE)
 		.output(Items.HONEY_BOTTLE)),
 
@@ -37,7 +40,7 @@ public class FillingRecipeGen extends ProcessingRecipeGen {
 			.require(AllItems.BLAZE_CAKE_BASE.get())
 			.output(AllItems.BLAZE_CAKE.get())),
 
-		HONEYED_APPLE = create("honeyed_apple", b -> b.require(AllFluidTags.HONEY.tag, AllFluids.HONEY_BOTTLE_AMOUNT)
+		HONEYED_APPLE = create("honeyed_apple", b -> b.require(Tags.Fluids.HONEY, AllFluids.HONEY_BOTTLE_AMOUNT)
 			.require(Items.APPLE)
 			.output(AllItems.HONEYED_APPLE.get())),
 
@@ -93,11 +96,11 @@ public class FillingRecipeGen extends ProcessingRecipeGen {
 			.require(Mods.VMP, "cursed_earth")
 			.output(Mods.VMP, "cursed_grass")
 			.whenModLoaded(Mods.VMP.getId())),
-	
+
 		// IE
 
 		IE_TREATED_WOOD = create(Mods.IE.recipeId("treated_wood_in_spout"),
-			b -> b.require(AllTags.forgeFluidTag("creosote"), 125)
+			b -> b.require(AllTags.commonFluidTag("creosote"), 125)
 				.require(I.planks())
 				.output(Mods.IE, "treated_wood_horizontal")
 				.whenModLoaded(Mods.IE.getId()));
@@ -112,8 +115,8 @@ public class FillingRecipeGen extends ProcessingRecipeGen {
 				.whenModLoaded(mod.getId()));
 	}
 
-	public FillingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public FillingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

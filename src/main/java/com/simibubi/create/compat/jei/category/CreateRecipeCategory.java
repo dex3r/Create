@@ -7,6 +7,12 @@ import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.ingredient.IRecipeSlotView;
+import mezz.jei.api.neoforge.NeoForgeTypes;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
@@ -34,6 +40,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.material.Fluid;
 
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
@@ -49,7 +56,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements IReci
 	protected final IDrawable background;
 	protected final IDrawable icon;
 
-	private final Supplier<List<T>> recipes;
+	private final Supplier<List<RecipeHolder<T>>> recipes;
 	private final List<Supplier<? extends ItemStack>> catalysts;
 
 	public CreateRecipeCategory(Info<T> info) {
@@ -83,7 +90,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements IReci
 	}
 
 	public void registerRecipes(IRecipeRegistration registration) {
-		registration.addRecipes(type, recipes.get());
+		registration.addRecipes(type, recipes.get().stream().map(RecipeHolder::value).toList());
 	}
 
 	public void registerCatalysts(IRecipeCatalystRegistration registration) {
@@ -189,7 +196,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements IReci
 	}
 
 	public record Info<T extends Recipe<?>>(RecipeType<T> recipeType, Component title, IDrawable background,
-											IDrawable icon, Supplier<List<T>> recipes,
+											IDrawable icon, Supplier<List<RecipeHolder<T>>> recipes,
 											List<Supplier<? extends ItemStack>> catalysts) {
 	}
 

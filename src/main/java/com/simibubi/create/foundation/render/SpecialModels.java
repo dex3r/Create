@@ -11,7 +11,7 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import dev.engine_room.flywheel.lib.util.RendererReloadCache;
 
 public class SpecialModels {
-	private static final RendererReloadCache<Key, Model> FLAT = new RendererReloadCache<>(it -> BakedModelBuilder.create(it.partial.get())
+	private static final RendererReloadCache<Key, Model> FLAT = new RendererReloadCache<>(it -> new BakedModelBuilder(it.partial.get())
 		.materialFunc((renderType, aBoolean) -> {
 			var material = ModelUtil.getMaterial(renderType, aBoolean);
 			if (material == null) {

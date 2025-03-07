@@ -57,7 +57,7 @@ public class CogwheelBlockItem extends BlockItem implements UseFirstBehaviorItem
 		BlockHitResult ray = new BlockHitResult(context.getClickLocation(), context.getClickedFace(), pos, true);
 		if (helper.matchesState(state) && player != null && !player.isShiftKeyDown()) {
 			return helper.getOffset(player, world, state, pos, ray)
-				.placeInWorld(world, this, player, context.getHand(), ray);
+				.placeInWorld(world, this, player, context.getHand(), ray).result();
 		}
 
 		if (integratedCogHelperId != -1) {
@@ -65,7 +65,7 @@ public class CogwheelBlockItem extends BlockItem implements UseFirstBehaviorItem
 
 			if (helper.matchesState(state) && player != null && !player.isShiftKeyDown()) {
 				return helper.getOffset(player, world, state, pos, ray)
-					.placeInWorld(world, this, player, context.getHand(), ray);
+					.placeInWorld(world, this, player, context.getHand(), ray).result();
 			}
 		}
 

@@ -2,8 +2,6 @@ package com.simibubi.create.content.kinetics.simpleRelays.encased;
 
 import java.util.function.Supplier;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.api.contraption.transformable.TransformableBlock;
@@ -22,6 +20,9 @@ import com.simibubi.create.foundation.block.IBE;
 
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.VoxelShaper;
+
+import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -46,7 +47,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
+import org.jetbrains.annotations.Nullable;
 
 public class EncasedCogwheelBlock extends RotatedPillarKineticBlock
 	implements ICogWheel, IBE<SimpleKineticBlockEntity>, SpecialBlockItemRequirement, TransformableBlock, BlockPickInteractionAware, EncasedBlock {
@@ -74,7 +75,7 @@ public class EncasedCogwheelBlock extends RotatedPillarKineticBlock
 	public ItemStack getPickedStack(BlockState state, BlockGetter view, BlockPos pos, @Nullable Player player, @Nullable HitResult target) {
 		if (target instanceof BlockHitResult)
 			return ((BlockHitResult) target).getDirection()
-				.getAxis() != getRotationAxis(state)
+					.getAxis() != getRotationAxis(state)
 				? isLarge ? AllBlocks.LARGE_COGWHEEL.asStack() : AllBlocks.COGWHEEL.asStack()
 				: getCasing().asItem().getDefaultInstance();
 		return ItemStack.EMPTY;

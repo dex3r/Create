@@ -12,6 +12,8 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class CustomItemModels {
 
@@ -39,6 +41,9 @@ public class CustomItemModels {
 		finalModelFuncs.clear();
 		modelFuncs.asMap().forEach((location, funcList) -> {
 			Item item = BuiltInRegistries.ITEM.get(location);
+			if (item == Items.AIR) {
+				return;
+			}
 
 			NonNullFunction<BakedModel, ? extends BakedModel> finalFunc = null;
 			for (NonNullFunction<BakedModel, ? extends BakedModel> func : funcList) {

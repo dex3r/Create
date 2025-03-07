@@ -25,6 +25,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.registry.LandPathNodeTypesRegistry;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.registry.LandPathNodeTypesRegistry;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicates;
@@ -74,6 +78,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -189,16 +194,18 @@ public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrencha
 	}
 
 	@Override
-	public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
+	public BlockState playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
 		super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
 		if (pLevel.isClientSide())
-			return;
+			return pState;
 		if (!pPlayer.isCreative())
-			return;
+			return pState;
 		withBlockEntityDo(pLevel, pPos, be -> {
 			be.cancelDrops = true;
 			be.removeInboundConnections(true);
 		});
+
+		return pState;
 	}
 
 	@Override
@@ -427,22 +434,20 @@ public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrencha
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult hit) {
-
-		if (world.isClientSide)
-			return InteractionResult.SUCCESS;
-		for (Entry<BlockPos, BoundingBox> entry : StationBlockEntity.assemblyAreas.get(world)
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (level.isClientSide)
+			return ItemInteractionResult.SUCCESS;
+		for (Entry<BlockPos, BoundingBox> entry : StationBlockEntity.assemblyAreas.get(level)
 			.entrySet()) {
 			if (!entry.getValue()
 				.isInside(pos))
 				continue;
-			if (world.getBlockEntity(entry.getKey()) instanceof StationBlockEntity station)
+			if (level.getBlockEntity(entry.getKey()) instanceof StationBlockEntity station)
 				if (station.trackClicked(player, hand, this, state, pos))
-					return InteractionResult.SUCCESS;
+					return ItemInteractionResult.SUCCESS;
 		}
 
-		return InteractionResult.PASS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	private void updateGirders(BlockState pState, Level pLevel, BlockPos pPos, LevelTickAccess<Block> blockTicks) {

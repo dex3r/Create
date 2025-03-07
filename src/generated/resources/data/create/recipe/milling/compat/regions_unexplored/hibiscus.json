@@ -1,0 +1,34 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "regions_unexplored"
+    }
+  ],
+  "type": "create:milling",
+  "ingredients": [
+    {
+      "type": "neoforge:compound",
+      "ingredients": [
+        {
+          "item": "regions_unexplored:hibiscus"
+        }
+      ]
+    }
+  ],
+  "processing_time": 50,
+  "results": [
+    {
+      "count": 2,
+      "item": {
+        "id": "minecraft:yellow_dye"
+      }
+    },
+    {
+      "chance": 0.2,
+      "item": {
+        "id": "minecraft:red_dye"
+      }
+    }
+  ]
+}

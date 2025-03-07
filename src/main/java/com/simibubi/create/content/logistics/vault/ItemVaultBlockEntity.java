@@ -10,15 +10,20 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.simibubi.create.content.logistics.packager.fabric.InventoryIdentifier;
 import com.simibubi.create.content.logistics.packager.fabric.InventoryIdentifier.MultiBlock;
+import com.simibubi.create.foundation.ICapabilityProvider;
 import com.simibubi.create.foundation.blockEntity.IMultiBlockEntityContainer;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryWrapper;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.item.ItemStack;
@@ -183,21 +188,22 @@ public class ItemVaultBlockEntity extends SmartBlockEntity implements IMultiBloc
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 
 		BlockPos controllerBefore = controller;
 		int prevSize = radius;
 		int prevLength = length;
 
 		updateConnectivity = compound.contains("Uninitialized");
-		controller = null;
-		lastKnownPos = null;
 
+		lastKnownPos = null;
 		if (compound.contains("LastKnownPos"))
-			lastKnownPos = NbtUtils.readBlockPos(compound.getCompound("LastKnownPos"));
+			lastKnownPos = NBTHelper.readBlockPos(compound, "LastKnownPos");
+
+		controller = null;
 		if (compound.contains("Controller"))
-			controller = NbtUtils.readBlockPos(compound.getCompound("Controller"));
+			controller = NBTHelper.readBlockPos(compound, "Controller");
 
 		if (isController()) {
 			radius = compound.getInt("Size");
@@ -205,7 +211,7 @@ public class ItemVaultBlockEntity extends SmartBlockEntity implements IMultiBloc
 		}
 
 		if (!clientPacket) {
-			inventory.deserializeNBT(compound.getCompound("Inventory"));
+			inventory.deserializeNBT(registries, compound.getCompound("Inventory"));
 			return;
 		}
 
@@ -216,9 +222,10 @@ public class ItemVaultBlockEntity extends SmartBlockEntity implements IMultiBloc
 	}
 
 	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		if (updateConnectivity)
 			compound.putBoolean("Uninitialized", true);
+
 		if (lastKnownPos != null)
 			compound.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
 		if (!isController())
@@ -228,11 +235,11 @@ public class ItemVaultBlockEntity extends SmartBlockEntity implements IMultiBloc
 			compound.putInt("Length", length);
 		}
 
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 
 		if (!clientPacket) {
 			compound.putString("StorageType", "CombinedInv");
-			compound.put("Inventory", inventory.serializeNBT());
+			compound.put("Inventory", inventory.serializeNBT(registries));
 		}
 	}
 

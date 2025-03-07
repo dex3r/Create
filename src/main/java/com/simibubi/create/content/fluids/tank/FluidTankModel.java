@@ -9,6 +9,9 @@ import com.simibubi.create.foundation.block.connected.CTModel;
 import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 
 import net.createmod.catnip.data.Iterate;
+
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

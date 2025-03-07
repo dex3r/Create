@@ -16,6 +16,9 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public class VersionedInventoryWrapper implements Storage<ItemVariant> {
 
 	public static final AtomicInteger idGenerator = new AtomicInteger();

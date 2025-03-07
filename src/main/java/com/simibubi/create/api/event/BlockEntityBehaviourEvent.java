@@ -1,15 +1,16 @@
 package com.simibubi.create.api.event;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
-import net.minecraft.world.level.block.state.BlockState;
-
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 /**
  * Event that is fired just before a SmartBlockEntity is being deserialized<br>
@@ -23,7 +24,15 @@ import net.fabricmc.fabric.api.event.EventFactory;
  * <br>
  * Because of the earliness of this event, the added behaviours will have access
  * to the initial NBT read (unless the BE was placed, not loaded), thereby
- * allowing block entities to store and retrieve data for injected behaviours.
+ * allowing block entities to store and retrieve data for injected behaviours.<br>
+ * <br>
+ * Example: <pre> {@code
+ * 		neoForgeEventBus.addListener((BlockEntityBehaviourEvent event) -> {
+ * 			event.forType(AllBlockEntityTypes.FUNNEL.get(), be -> {
+ * 				event.attach(new FunFunnelBehaviour(be));
+ * 			});
+ * 		});
+ * } <pre>
  */
 public class BlockEntityBehaviourEvent {
 	public static final Event<Callback> EVENT = EventFactory.createArrayBacked(Callback.class, callbacks -> event -> {
@@ -31,12 +40,18 @@ public class BlockEntityBehaviourEvent {
 			callback.manageBehaviors(event);
 	});
 
-	private SmartBlockEntity smartBlockEntity;
-	private Map<BehaviourType<?>, BlockEntityBehaviour> behaviours;
+	private final SmartBlockEntity smartBlockEntity;
+	private final Map<BehaviourType<?>, BlockEntityBehaviour> behaviours;
 
 	public BlockEntityBehaviourEvent(SmartBlockEntity blockEntity, Map<BehaviourType<?>, BlockEntityBehaviour> behaviours) {
 		smartBlockEntity = blockEntity;
 		this.behaviours = behaviours;
+	}
+
+	public <T extends SmartBlockEntity> void forType(BlockEntityType<T> type, Consumer<T> action) {
+		if (smartBlockEntity.getType() == type) {
+			action.accept((T) smartBlockEntity);
+		}
 	}
 
 	public void attach(BlockEntityBehaviour behaviour) {
@@ -45,14 +60,6 @@ public class BlockEntityBehaviourEvent {
 
 	public BlockEntityBehaviour remove(BehaviourType<?> type) {
 		return behaviours.remove(type);
-	}
-
-	public SmartBlockEntity getBlockEntity() {
-		return smartBlockEntity;
-	}
-
-	public BlockState getBlockState() {
-		return smartBlockEntity.getBlockState();
 	}
 
 	public interface Callback {

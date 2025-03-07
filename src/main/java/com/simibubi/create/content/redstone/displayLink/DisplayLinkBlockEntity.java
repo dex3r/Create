@@ -2,12 +2,11 @@ package com.simibubi.create.content.redstone.displayLink;
 
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.api.registry.CreateBuiltInRegistries;
+import com.simibubi.create.compat.Mods;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
@@ -16,8 +15,11 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
+import dan200.computercraft.api.peripheral.PeripheralCapability;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -44,6 +46,16 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 		targetOffset = BlockPos.ZERO;
 		sourceConfig = new CompoundTag();
 		targetLine = 0;
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		if (Mods.COMPUTERCRAFT.isLoaded()) {
+			event.registerBlockEntity(
+					PeripheralCapability.get(),
+					AllBlockEntityTypes.DISPLAY_LINK.get(),
+					(be, context) -> be.computerBehaviour.getPeripheralCapability()
+			);
+		}
 	}
 
 	@Override
@@ -125,14 +137,14 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 	}
 
 	@Override
-	public void writeSafe(CompoundTag tag) {
-		super.writeSafe(tag);
+	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+		super.writeSafe(tag, registries);
 		writeGatheredData(tag);
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
-		super.write(tag, clientPacket);
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(tag, registries, clientPacket);
 		writeGatheredData(tag);
 		if (clientPacket && activeTarget != null) {
 			ResourceLocation id = CreateBuiltInRegistries.DISPLAY_TARGET.getKey(this.activeTarget);
@@ -157,9 +169,9 @@ public class DisplayLinkBlockEntity extends LinkWithBulbBlockEntity {
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		super.read(tag, clientPacket);
-		targetOffset = NbtUtils.readBlockPos(tag.getCompound("TargetOffset"));
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(tag, registries, clientPacket);
+		targetOffset = NBTHelper.readBlockPos(tag, "TargetOffset");
 		targetLine = tag.getInt("TargetLine");
 
 		if (clientPacket && tag.contains("TargetType"))

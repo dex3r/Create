@@ -52,9 +52,8 @@ public class FrogportBlock extends Block implements IBE<FrogportBlockEntity>, IW
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
-		return onBlockEntityUse(worldIn, pos, be -> be.use(player));
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		return onBlockEntityUseItemOn(level, pos, be -> be.use(player));
 	}
 
 	@Override
@@ -73,7 +72,7 @@ public class FrogportBlock extends Block implements IBE<FrogportBlockEntity>, IW
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

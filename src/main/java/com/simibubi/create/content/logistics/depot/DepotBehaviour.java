@@ -22,10 +22,20 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+
 import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -252,23 +262,23 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		if (heldItem != null)
-			compound.put("HeldItem", heldItem.serializeNBT());
-		compound.put("OutputBuffer", processingOutputBuffer.serializeNBT());
+			compound.put("HeldItem", heldItem.serializeNBT(registries));
+		compound.put("OutputBuffer", processingOutputBuffer.serializeNBT(registries));
 		if (canMergeItems() && !incoming.isEmpty())
-			compound.put("Incoming", NBTHelper.writeCompoundList(incoming, TransportedItemStack::serializeNBT));
+			compound.put("Incoming", NBTHelper.writeCompoundList(incoming, stack -> stack.serializeNBT(registries)));
 	}
 
 	@Override
-	public void read(CompoundTag compound, boolean clientPacket) {
+	public void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		heldItem = null;
 		if (compound.contains("HeldItem"))
-			heldItem = TransportedItemStack.read(compound.getCompound("HeldItem"));
-		processingOutputBuffer.deserializeNBT(compound.getCompound("OutputBuffer"));
+			heldItem = TransportedItemStack.read(compound.getCompound("HeldItem"), registries);
+		processingOutputBuffer.deserializeNBT(registries, compound.getCompound("OutputBuffer"));
 		if (canMergeItems()) {
 			ListTag list = compound.getList("Incoming", Tag.TAG_COMPOUND);
-			incoming = NBTHelper.readCompoundList(list, TransportedItemStack::read);
+			incoming = NBTHelper.readCompoundList(list, c -> TransportedItemStack.read(c, registries));
 		}
 	}
 
@@ -323,7 +333,7 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 			ItemStack returned = ItemStack.EMPTY;
 			snapshotParticipant.updateSnapshots(ctx);
 			if (remainingSpace < inserted.getCount()) {
-				returned = ItemHandlerHelper.copyStackWithSize(heldItem.stack, inserted.getCount() - remainingSpace);
+				returned = heldItem.stack.copyWithCount(inserted.getCount() - remainingSpace);
 				TransportedItemStack copy = heldItem.copy();
 				copy.stack.setCount(remainingSpace);
 				if (this.heldItem != null)
@@ -343,7 +353,7 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 		int maxCount = heldItem.stack.getMaxStackSize();
 		boolean stackTooLarge = maxCount < heldItem.stack.getCount();
 		if (stackTooLarge)
-			returned = ItemHandlerHelper.copyStackWithSize(heldItem.stack, heldItem.stack.getCount() - maxCount);
+			returned = heldItem.stack.copyWithCount(heldItem.stack.getCount() - maxCount);
 
 		if (this.isEmpty()) {
 			if (heldItem.insertedFrom.getAxis()
@@ -378,10 +388,6 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 		this.heldItem.beltPosition = 0.5f;
 		this.heldItem.prevBeltPosition = 0.5f;
 	}
-
-//	public <T> LazyOptional<T> getItemCapability(Capability<T> cap, Direction side) {
-//		return lazyItemHandler.cast();
-//	}
 
 	private boolean isOccupied(Direction side) {
 		if (!getHeldItemStack().isEmpty() && !canMergeItems())

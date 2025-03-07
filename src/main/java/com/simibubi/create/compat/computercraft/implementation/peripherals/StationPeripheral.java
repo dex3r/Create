@@ -6,13 +6,13 @@ import javax.annotation.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.compat.computercraft.implementation.CreateLuaTable;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.schedule.Schedule;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
 import com.simibubi.create.content.trains.station.TrainEditPacket;
+import net.createmod.catnip.platform.CatnipServices;
 import com.simibubi.create.foundation.utility.StringHelper;
 
 import dan200.computercraft.api.lua.IArguments;
@@ -127,8 +127,8 @@ public class StationPeripheral extends SyncedPeripheral<StationBlockEntity> {
 	@LuaFunction(mainThread = true)
 	public final void setTrainName(String name) throws LuaException {
 		Train train = getTrainOrThrow();
-        train.name = Component.literal(name);
-		AllPackets.getChannel().sendToClientsInCurrentServer(new TrainEditPacket.TrainEditReturnPacket(train.id, name, train.icon.getId(), train.mapColorIndex));
+		train.name = Component.literal(name);
+		CatnipServices.NETWORK.sendToAllClients(new TrainEditPacket.TrainEditReturnPacket(train.id, name, train.icon.getId(), train.mapColorIndex));
 	}
 
 	@LuaFunction
@@ -145,7 +145,7 @@ public class StationPeripheral extends SyncedPeripheral<StationBlockEntity> {
 		if (schedule == null)
 			throw new LuaException("train doesn't have a schedule");
 
-		return fromCompoundTag(schedule.write());
+		return fromCompoundTag(schedule.write(blockEntity.getLevel().registryAccess()));
 	}
 
 	@LuaFunction(mainThread = true)
@@ -158,7 +158,7 @@ public class StationPeripheral extends SyncedPeripheral<StationBlockEntity> {
 			throw new LuaException("Schedule must have at least one entry");
 
 		Train train = getTrainOrThrow();
-		Schedule schedule = Schedule.fromTag(toCompoundTag(new CreateLuaTable(arguments.getTable(0))));
+		Schedule schedule = Schedule.fromTag(blockEntity.getLevel().registryAccess(), toCompoundTag(new CreateLuaTable(arguments.getTable(0))));
 		boolean autoSchedule = train.runtime.getSchedule() == null || train.runtime.isAutoSchedule;
 		train.runtime.setSchedule(schedule, autoSchedule);
 	}

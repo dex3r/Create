@@ -5,10 +5,9 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
-
-import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -31,14 +30,18 @@ import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -57,6 +60,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> extends Block implements IBE<T>, ProperWaterloggedBlock, SpecialBlockItemRequirement, IWrenchable {
+	public static final StreamCodec<RegistryFriendlyByteBuf, AbstractBogeyBlock<?>> STREAM_CODEC = ByteBufCodecs.registry(Registries.BLOCK).map(
+			block -> (AbstractBogeyBlock<?>) block, Function.identity()
+	);
 	public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 	static final List<ResourceLocation> BOGEYS = new ArrayList<>();
 	public BogeySizes.BogeySize size;
@@ -161,11 +167,9 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 	}
 
 	@Override
-	public final InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
-								 BlockHitResult hit) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (level.isClientSide)
-			return InteractionResult.PASS;
-		ItemStack stack = player.getItemInHand(hand);
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		if (!player.isShiftKeyDown() && stack.is(AllItems.WRENCH.get()) && !player.getCooldowns().isOnCooldown(stack.getItem())
 				&& AllBogeyStyles.BOGEY_STYLES.size() > 1) {
@@ -173,7 +177,7 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 			BlockEntity be = level.getBlockEntity(pos);
 
 			if (!(be instanceof AbstractBogeyBlockEntity sbbe))
-				return InteractionResult.FAIL;
+				return ItemInteractionResult.FAIL;
 
 			player.getCooldowns().addCooldown(stack.getItem(), 20);
 			BogeyStyle currentStyle = sbbe.getStyle();
@@ -182,7 +186,7 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 
 			BogeyStyle style = this.getNextStyle(currentStyle);
 			if (style == currentStyle)
-				return InteractionResult.PASS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 			Set<BogeySizes.BogeySize> validSizes = style.validSizes();
 
@@ -201,7 +205,7 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 					CompoundTag oldData = sbbe.getBogeyData();
 					level.setBlock(pos, copyProperties(state, getStateOfSize(sbbe, size)), Block.UPDATE_ALL);
 					if (!(level.getBlockEntity(pos) instanceof AbstractBogeyBlockEntity bogeyBlockEntity))
-						return InteractionResult.FAIL;
+						return ItemInteractionResult.FAIL;
 					bogeyBlockEntity.setBogeyData(oldData);
 				}
 				player.displayClientMessage(CreateLang.translateDirect("bogey.style.updated_style")
@@ -210,22 +214,22 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 				CompoundTag oldData = sbbe.getBogeyData();
 				level.setBlock(pos, this.getStateOfSize(sbbe, size), Block.UPDATE_ALL);
 				if (!(level.getBlockEntity(pos) instanceof AbstractBogeyBlockEntity bogeyBlockEntity))
-					return InteractionResult.FAIL;
+					return ItemInteractionResult.FAIL;
 				bogeyBlockEntity.setBogeyData(oldData);
 				player.displayClientMessage(CreateLang.translateDirect("bogey.style.updated_style_and_size")
 						.append(": ").append(style.displayName), true);
 			}
 
-			return InteractionResult.CONSUME;
+			return ItemInteractionResult.CONSUME;
 		}
 
-		return onInteractWithBogey(state, level, pos, player, hand, hit);
+		return onInteractWithBogey(state, level, pos, player, hand, hitResult);
 	}
 
 	// Allows for custom interactions with bogey block to be added simply
-	protected InteractionResult onInteractWithBogey(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+	protected ItemInteractionResult onInteractWithBogey(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
 													BlockHitResult hit) {
-		return InteractionResult.PASS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	/**
@@ -239,7 +243,7 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 	public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
 		Block block = state.getBlock();
 		List<ResourceLocation> bogeyCycle = getBogeyBlockCycle();
-		int indexOf = bogeyCycle.indexOf(CatnipServices.REGISTRIES.getKeyOrThrow(block));
+		int indexOf = bogeyCycle.indexOf(RegisteredObjectsHelper.getKeyOrThrow(block));
 		if (indexOf == -1)
 			return state;
 		int index = (indexOf + 1) % bogeyCycle.size();

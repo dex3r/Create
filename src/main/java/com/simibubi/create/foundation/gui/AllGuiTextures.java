@@ -58,8 +58,8 @@ public enum AllGuiTextures implements ScreenElement, TextureSheetSegment {
 	FROGPORT_BG("frogport_and_mailbox", 0, 47, 220, 82),
 
 	TOOLBOX("toolbox", 188, 171),
-	TOOLBELT_SLOT("minecraft", "widgets", 24, 23, 22, 22),
-	TOOLBELT_SLOT_HIGHLIGHT("minecraft", "widgets", 0, 22, 24, 24),
+	TOOLBELT_SLOT("widgets", 0, 68, 22, 22),
+	TOOLBELT_SLOT_HIGHLIGHT("widgets", 27, 67, 24, 24),
 	TOOLBELT_MAIN_SLOT("widgets", 0, 97, 24, 24),
 	TOOLBELT_EMPTY_SLOT("widgets", 27, 98, 22, 22),
 	TOOLBELT_INACTIVE_SLOT("widgets", 52, 98, 22, 22),
@@ -278,7 +278,7 @@ public enum AllGuiTextures implements ScreenElement, TextureSheetSegment {
 	}
 
 	AllGuiTextures(String namespace, String location, int startX, int startY, int width, int height) {
-		this.location = new ResourceLocation(namespace, "textures/gui/" + location + ".png");
+		this.location = ResourceLocation.fromNamespaceAndPath(namespace, "textures/gui/" + location + ".png");
 		this.width = width;
 		this.height = height;
 		this.startX = startX;

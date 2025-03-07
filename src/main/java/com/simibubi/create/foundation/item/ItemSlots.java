@@ -7,7 +7,9 @@ import java.util.function.IntFunction;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.simibubi.create.foundation.utility.CreateCodecs;
+import com.simibubi.create.foundation.codec.CreateCodecs;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -94,12 +96,9 @@ public class ItemSlots {
 	}
 
 	public static Codec<ItemSlots> maxSizeCodec(int maxSize) {
-		return ExtraCodecs.validate(
-			CODEC,
-			slots -> slots.size <= maxSize
-				? DataResult.success(slots)
-				: DataResult.error(() -> "Slots above maximum of " + maxSize)
-		);
+		return CODEC.validate(slots -> slots.size <= maxSize
+			? DataResult.success(slots)
+			: DataResult.error(() -> "Slots above maximum of " + maxSize));
 	}
 
 	private static ItemSlots deserialize(Map<Integer, ItemStack> map, int size) {

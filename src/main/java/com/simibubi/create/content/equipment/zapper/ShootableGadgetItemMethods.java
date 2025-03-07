@@ -3,7 +3,10 @@ package com.simibubi.create.content.equipment.zapper;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllPackets;
+
+import net.createmod.catnip.platform.CatnipServices;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -28,13 +31,12 @@ public class ShootableGadgetItemMethods {
 	public static void sendPackets(Player player, Function<Boolean, ? extends ShootGadgetPacket> factory) {
 		if (!(player instanceof ServerPlayer))
 			return;
-		AllPackets.getChannel().sendToClientsTracking(factory.apply(false), player);
-		AllPackets.getChannel().sendToClient(factory.apply(true), (ServerPlayer) player);
+		CatnipServices.NETWORK.sendToClientsTrackingEntity(player, factory.apply(false));
+		CatnipServices.NETWORK.sendToClient((ServerPlayer) player, factory.apply(true));
 	}
 
 	public static boolean shouldSwap(Player player, ItemStack item, InteractionHand hand, Predicate<ItemStack> predicate) {
-		boolean isSwap = item.getTag()
-			.contains("_Swap");
+		boolean isSwap = item.has(AllDataComponents.SHAPER_SWAP);
 		boolean mainHand = hand == InteractionHand.MAIN_HAND;
 		boolean gunInOtherHand = predicate.test(player.getItemInHand(mainHand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND));
 
@@ -42,21 +44,18 @@ public class ShootableGadgetItemMethods {
 		if (mainHand && isSwap && gunInOtherHand)
 			return true;
 		if (mainHand && !isSwap && gunInOtherHand)
-			item.getTag()
-				.putBoolean("_Swap", true);
+			item.set(AllDataComponents.SHAPER_SWAP, true);
 		if (!mainHand && isSwap)
-			item.getTag()
-				.remove("_Swap");
+			item.remove(AllDataComponents.SHAPER_SWAP);
 		if (!mainHand && gunInOtherHand)
-			player.getItemInHand(InteractionHand.MAIN_HAND)
-				.getTag()
-				.remove("_Swap");
+			player.getItemInHand(InteractionHand.MAIN_HAND).remove(AllDataComponents.SHAPER_SWAP);
 
 		// (#574) fabric: on forge, this condition is patched into startUsingItem
 		// skipping it causes an item to be used forever, only allowing 1 use before releasing and re-pressing the use button.
 		if (item.getUseDuration() > 0) {
 			player.startUsingItem(hand);
 		}
+
 		return false;
 	}
 

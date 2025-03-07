@@ -6,10 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.kinetics.belt.BeltBlock;
@@ -28,15 +32,30 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.config.CSchematics;
 
+import io.netty.buffer.ByteBuf;
+import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.createmod.catnip.data.Iterate;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap.Builder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
@@ -155,9 +174,9 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		if (!clientPacket) {
-			inventory.deserializeNBT(compound.getCompound("Inventory"));
+			inventory.deserializeNBT(registries, compound.getCompound("Inventory"));
 		}
 
 		// Gui information
@@ -171,27 +190,29 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 		blocksToPlace = compound.getInt("AmountToPlace");
 
 		missingItem = null;
-		if (compound.contains("MissingItem"))
-			missingItem = ItemStack.of(compound.getCompound("MissingItem"));
+		if (compound.contains("MissingItem")) {
+			ItemStack.parse(registries, compound.getCompound("MissingItem")).ifPresent(i -> missingItem = i);
+		}
 
 		// Settings
-		CompoundTag options = compound.getCompound("Options");
-		replaceMode = options.getInt("ReplaceMode");
-		skipMissing = options.getBoolean("SkipMissing");
-		replaceBlockEntities = options.getBoolean("ReplaceTileEntities");
+		SchematicannonOptions options = CatnipCodecUtils.decode(SchematicannonOptions.CODEC, compound.getCompound("Options"))
+			.orElse(new SchematicannonOptions(2, true, false));
+		replaceMode = options.replaceMode;
+		skipMissing = options.skipMissing;
+		replaceBlockEntities = options.replaceBlockEntities;
 
 		// Printer & Flying Blocks
 		if (compound.contains("Printer"))
 			printer.fromTag(compound.getCompound("Printer"), clientPacket);
 		if (compound.contains("FlyingBlocks"))
-			readFlyingBlocks(compound);
+			readFlyingBlocks(compound, registries);
 
 		defaultYaw = compound.getFloat("DefaultYaw");
 
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 	}
 
-	protected void readFlyingBlocks(CompoundTag compound) {
+	protected void readFlyingBlocks(CompoundTag compound, HolderLookup.Provider registries) {
 		ListTag tagBlocks = compound.getList("FlyingBlocks", 10);
 		if (tagBlocks.isEmpty())
 			flyingBlocks.clear();
@@ -200,7 +221,7 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 
 		for (int i = 0; i < tagBlocks.size(); i++) {
 			CompoundTag c = tagBlocks.getCompound(i);
-			LaunchedItem launched = LaunchedItem.fromNBT(c, blockHolderGetter());
+			LaunchedItem launched = LaunchedItem.fromNBT(c, registries, blockHolderGetter());
 			BlockPos readBlockPos = launched.target;
 
 			// Always write to Server block entity
@@ -227,9 +248,9 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		if (!clientPacket) {
-			compound.put("Inventory", inventory.serializeNBT());
+			compound.put("Inventory", inventory.serializeNBT(registries));
 			if (state == State.RUNNING) {
 				compound.putBoolean("Running", true);
 			}
@@ -245,13 +266,10 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 		compound.putInt("AmountToPlace", blocksToPlace);
 
 		if (missingItem != null)
-			compound.put("MissingItem", NBTSerializer.serializeNBT(missingItem));
+			compound.put("MissingItem", missingItem.saveOptional(registries));
 
 		// Settings
-		CompoundTag options = new CompoundTag();
-		options.putInt("ReplaceMode", replaceMode);
-		options.putBoolean("SkipMissing", skipMissing);
-		options.putBoolean("ReplaceTileEntities", replaceBlockEntities);
+		Tag options = CatnipCodecUtils.encode(SchematicannonOptions.CODEC, new SchematicannonOptions(replaceMode, skipMissing, replaceBlockEntities)).orElseThrow();
 		compound.put("Options", options);
 
 		// Printer & Flying Blocks
@@ -261,12 +279,12 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 
 		ListTag tagFlyingBlocks = new ListTag();
 		for (LaunchedItem b : flyingBlocks)
-			tagFlyingBlocks.add(b.serializeNBT());
+			tagFlyingBlocks.add(b.serializeNBT(registries));
 		compound.put("FlyingBlocks", tagFlyingBlocks);
 
 		compound.putFloat("DefaultYaw", defaultYaw);
 
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
@@ -446,15 +464,14 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 	}
 
 	protected void initializePrinter(ItemStack blueprint) {
-		if (!blueprint.hasTag()) {
+		if (!blueprint.has(AllDataComponents.SCHEMATIC_ANCHOR)) {
 			state = State.STOPPED;
 			statusMsg = "schematicInvalid";
 			sendUpdate = true;
 			return;
 		}
 
-		if (!blueprint.getTag()
-				.getBoolean("Deployed")) {
+		if (!blueprint.getOrDefault(AllDataComponents.SCHEMATIC_DEPLOYED, false)) {
 			state = State.STOPPED;
 			statusMsg = "schematicNotPlaced";
 			sendUpdate = true;
@@ -825,11 +842,6 @@ if (printer.isErrored())
 		AllSoundEvents.SCHEMATICANNON_LAUNCH_BLOCK.playOnServer(level, worldPosition);
 	}
 
-	public void sendToMenu(FriendlyByteBuf buffer) {
-		buffer.writeBlockPos(getBlockPos());
-		buffer.writeNbt(getUpdateTag());
-	}
-
 	@Override
 	public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
 		return SchematicannonMenu.create(id, inv, this);
@@ -876,11 +888,41 @@ if (printer.isErrored())
 	@Override
 	@Environment(EnvType.CLIENT)
 	public AABB getRenderBoundingBox() {
-		return INFINITE_EXTENT_AABB;
+		return AABB.INFINITE;
+	}
+
+	@Override
+	protected void applyImplicitComponents(DataComponentInput componentInput) {
+		SchematicannonOptions options = componentInput.getOrDefault(AllDataComponents.SCHEMATICANNON_OPTIONS,
+				new SchematicannonOptions(2, true, false));
+		replaceMode = options.replaceMode;
+		skipMissing = options.skipMissing;
+		replaceBlockEntities = options.replaceBlockEntities;
+	}
+
+	@Override
+	protected void collectImplicitComponents(Builder components) {
+		components.set(AllDataComponents.SCHEMATICANNON_OPTIONS,
+			new SchematicannonOptions(replaceMode, skipMissing, replaceBlockEntities));
 	}
 
 	public enum State {
 		STOPPED, PAUSED, RUNNING;
+	}
+
+	public record SchematicannonOptions(int replaceMode, boolean skipMissing, boolean replaceBlockEntities) {
+		public static final Codec<SchematicannonOptions> CODEC = RecordCodecBuilder.create(i -> i.group(
+				Codec.INT.fieldOf("replace_mode").forGetter(SchematicannonOptions::replaceMode),
+				Codec.BOOL.fieldOf("skip_missing").forGetter(SchematicannonOptions::skipMissing),
+				Codec.BOOL.fieldOf("replace_block_entities").forGetter(SchematicannonOptions::replaceBlockEntities)
+		).apply(i, SchematicannonOptions::new));
+
+		public static final StreamCodec<ByteBuf, SchematicannonOptions> STREAM_CODEC = StreamCodec.composite(
+				ByteBufCodecs.INT, SchematicannonOptions::replaceMode,
+				ByteBufCodecs.BOOL, SchematicannonOptions::skipMissing,
+				ByteBufCodecs.BOOL, SchematicannonOptions::replaceBlockEntities,
+				SchematicannonOptions::new
+		);
 	}
 
 }

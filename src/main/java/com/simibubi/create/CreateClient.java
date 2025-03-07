@@ -58,6 +58,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 
+@Mod(value = Create.ID, dist = Dist.CLIENT)
 public class CreateClient implements ClientModInitializer {
 
 	public static final ModelSwapper MODEL_SWAPPER = new ModelSwapper();
@@ -84,6 +85,9 @@ public class CreateClient implements ClientModInitializer {
 
 		ZAPPER_RENDER_HANDLER.registerListeners();
 		POTATO_CANNON_RENDER_HANDLER.registerListeners();
+
+		Mods.FTBLIBRARY.executeIfInstalled(() -> () -> FTBIntegration.init());
+		Mods.SODIUM.executeIfInstalled(() -> () -> SodiumCompat.init());
 
 		// clientInit start
 
@@ -148,7 +152,7 @@ public class CreateClient implements ClientModInitializer {
 
 	private static void setupConfigUIBackground() {
 		ConfigScreen.backgrounds.put(Create.ID, (screen, graphics, partialTicks) -> {
-			CreateMainMenuScreen.PANORAMA.render(Minecraft.getInstance().getDeltaFrameTime(), 1);
+			CreateMainMenuScreen.PANORAMA.render(graphics, screen.width, screen.height, 1, partialTicks);
 
 			//RenderSystem.setShaderTexture(0, CreateMainMenuScreen.PANORAMA_OVERLAY_TEXTURES);
 			RenderSystem.enableBlend();

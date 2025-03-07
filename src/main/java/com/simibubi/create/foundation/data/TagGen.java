@@ -44,10 +44,10 @@ public class TagGen {
 		String... path) {
 		return b -> {
 			for (String p : path)
-				b.tag(AllTags.forgeBlockTag(p));
+				b.tag(AllTags.commonBlockTag(p));
 			ItemBuilder<BlockItem, BlockBuilder<T, P>> item = b.item();
 			for (String p : path)
-				item.tag(AllTags.forgeItemTag(p));
+				item.tag(AllTags.commonItemTag(p));
 			return item;
 		};
 	}
@@ -65,9 +65,8 @@ public class TagGen {
 	}
 
 	public static class CreateTagsProvider<T> {
-
-		private RegistrateTagsProvider<T> provider;
-		private Function<T, ResourceKey<T>> keyExtractor;
+		private final RegistrateTagsProvider<T> provider;
+		private final Function<T, ResourceKey<T>> keyExtractor;
 
 		public CreateTagsProvider(RegistrateTagsProvider<T> provider, Function<T, Holder.Reference<T>> refExtractor) {
 			this.provider = provider;
@@ -86,7 +85,7 @@ public class TagGen {
 
 	public static class CreateTagAppender<T> extends TagsProvider.TagAppender<T> {
 
-		private Function<T, ResourceKey<T>> keyExtractor;
+		private final Function<T, ResourceKey<T>> keyExtractor;
 		// fabric: take the fabric builder, use it to call forceAddTag instead of addTag
 		private final FabricTagProvider<T>.FabricTagBuilder fabricBuilder;
 

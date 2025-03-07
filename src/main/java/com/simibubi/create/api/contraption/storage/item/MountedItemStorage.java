@@ -13,8 +13,12 @@ import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -32,6 +36,12 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackSto
 public abstract class MountedItemStorage implements SlottedStackStorage {
 	public static final Codec<MountedItemStorage> CODEC = MountedItemStorageType.CODEC.dispatch(
 		storage -> storage.type, type -> type.codec
+	);
+
+	@SuppressWarnings("deprecation")
+	public static final StreamCodec<RegistryFriendlyByteBuf, MountedItemStorage> STREAM_CODEC = StreamCodec.of(
+		(b, t) -> b.writeWithCodec(RegistryOps.create(NbtOps.INSTANCE, b.registryAccess()), CODEC, t),
+		b -> b.readWithCodecTrusted(RegistryOps.create(NbtOps.INSTANCE, b.registryAccess()), CODEC)
 	);
 
 	public final MountedItemStorageType<? extends MountedItemStorage> type;

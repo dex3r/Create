@@ -3,6 +3,9 @@ package com.simibubi.create.content.contraptions.elevator;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import com.simibubi.create.AllBlocks;

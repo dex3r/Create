@@ -1,5 +1,7 @@
 package com.simibubi.create.content.legacy;
 
+import com.simibubi.create.AllDataComponents;
+
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.simibubi.create.AllItems;
@@ -45,8 +47,7 @@ public class ChromaticCompoundItem extends Item implements CustomMaxCountItem, E
 	}
 
 	public int getLight(ItemStack stack) {
-		return stack.getOrCreateTag()
-			.getInt("CollectingLight");
+		return stack.getOrDefault(AllDataComponents.CHROMATIC_COMPOUND_COLLECTING_LIGHT, 0);
 	}
 
 	@Override
@@ -73,13 +74,12 @@ public class ChromaticCompoundItem extends Item implements CustomMaxCountItem, E
 	@Override
 	public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) {
 		Level world = entity.level();
-		CompoundTag itemData = entity.getItem()
-			.getOrCreateTag();
+		ItemStack itemStack = entity.getItem();
 		Vec3 positionVec = entity.position();
 		CRecipes config = AllConfigs.server().recipes;
 
 		if (world.isClientSide) {
-			int light = itemData.getInt("CollectingLight");
+			int light = getLight(itemStack);
 			if (world.random.nextInt(config.lightSourceCountForRefinedRadiance.get() + 20) < light) {
 				Vec3 start = VecHelper.offsetRandomly(positionVec, world.random, 3);
 				Vec3 motion = positionVec.subtract(start)
@@ -107,13 +107,13 @@ public class ChromaticCompoundItem extends Item implements CustomMaxCountItem, E
 			return false;
 
 		// Convert to Refined Radiance if eaten enough light sources
-		if (itemData.getInt("CollectingLight") >= config.lightSourceCountForRefinedRadiance.get()) {
+		if (getLight(itemStack) >= config.lightSourceCountForRefinedRadiance.get()) {
 			ItemStack newStack = AllItems.REFINED_RADIANCE.asStack();
 			ItemEntity newEntity = new ItemEntity(world, entity.getX(), entity.getY(), entity.getZ(), newStack);
 			newEntity.setDeltaMovement(entity.getDeltaMovement());
 			newEntity.getCustomData()
 				.putBoolean("JustCreated", true);
-			itemData.remove("CollectingLight");
+			itemStack.remove(AllDataComponents.CHROMATIC_COMPOUND_COLLECTING_LIGHT);
 			world.addFreshEntity(newEntity);
 
 			stack.split(1);
@@ -173,7 +173,7 @@ public class ChromaticCompoundItem extends Item implements CustomMaxCountItem, E
 
 		// Find a placed light source
 		if (behaviour == null) {
-			if (checkLight(stack, entity, world, itemData, positionVec, randomOffset, state))
+			if (checkLight(stack, entity, world, itemStack, positionVec, randomOffset, state))
 				world.destroyBlock(randomOffset, false);
 			return false;
 		}
@@ -193,7 +193,7 @@ public class ChromaticCompoundItem extends Item implements CustomMaxCountItem, E
 				.defaultBlockState();
 
 			if (!success.getValue()
-				&& checkLight(stack, entity, world, itemData, positionVec, randomOffset, stateToCheck)) {
+				&& checkLight(stack, entity, world, itemStack, positionVec, randomOffset, stateToCheck)) {
 				success.setTrue();
 				if (ts.stack.getCount() == 1)
 					return TransportedResult.removeItem();
@@ -208,7 +208,7 @@ public class ChromaticCompoundItem extends Item implements CustomMaxCountItem, E
 		return false;
 	}
 
-	public boolean checkLight(ItemStack stack, ItemEntity entity, Level world, CompoundTag itemData, Vec3 positionVec,
+	public boolean checkLight(ItemStack stack, ItemEntity entity, Level world, ItemStack itemStack, Vec3 positionVec,
 							  BlockPos randomOffset, BlockState state) {
 		if(state.getBlock() instanceof LightEmissiveBlock lightEmissiveBlock && lightEmissiveBlock.getLightEmission(state, world, randomOffset) == 0)
 			return false;
@@ -226,8 +226,7 @@ public class ChromaticCompoundItem extends Item implements CustomMaxCountItem, E
 			return false;
 
 		ItemStack newStack = stack.split(1);
-		newStack.getOrCreateTag()
-			.putInt("CollectingLight", itemData.getInt("CollectingLight") + 1);
+		newStack.set(AllDataComponents.CHROMATIC_COMPOUND_COLLECTING_LIGHT, getLight(itemStack) + 1);
 		ItemEntity newEntity = new ItemEntity(world, entity.getX(), entity.getY(), entity.getZ(), newStack);
 		newEntity.setDeltaMovement(entity.getDeltaMovement());
 		newEntity.setDefaultPickUpDelay();

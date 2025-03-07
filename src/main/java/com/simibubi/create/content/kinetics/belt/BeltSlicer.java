@@ -27,7 +27,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -53,20 +53,20 @@ public class BeltSlicer {
 		ChatFormatting formatting = ChatFormatting.WHITE;
 	}
 
-	public static InteractionResult useWrench(BlockState state, Level world, BlockPos pos, Player player,
+	public static ItemInteractionResult useWrench(BlockState state, Level world, BlockPos pos, Player player,
 											  InteractionHand handIn, BlockHitResult hit, Feedback feedBack) {
 		BeltBlockEntity controllerBE = BeltHelper.getControllerBE(world, pos);
 		if (controllerBE == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (state.getValue(BeltBlock.CASING) && hit.getDirection() != Direction.UP)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (state.getValue(BeltBlock.PART) == BeltPart.PULLEY && hit.getDirection()
 			.getAxis() != Axis.Y)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		int beltLength = controllerBE.beltLength;
 		if (beltLength == 2)
-			return InteractionResult.FAIL;
+			return ItemInteractionResult.FAIL;
 
 		BlockPos beltVector = BlockPos.containing(BeltHelper.getBeltVector(state));
 		BeltPart part = state.getValue(BeltBlock.PART);
@@ -76,7 +76,7 @@ public class BeltSlicer {
 		// Shorten from End
 		if (hoveringEnd(state, hit)) {
 			if (world.isClientSide)
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
 
 			for (BlockPos blockPos : beltChain) {
 				BeltBlockEntity belt = BeltHelper.getSegmentBE(world, blockPos);
@@ -132,12 +132,12 @@ public class BeltSlicer {
 				}
 			}
 
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		}
 
 		BeltBlockEntity segmentBE = BeltHelper.getSegmentBE(world, pos);
 		if (segmentBE == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		// Split in half
 		int hitSegment = segmentBE.index;
@@ -148,9 +148,9 @@ public class BeltSlicer {
 		BlockPos next = !towardPositive ? pos.subtract(beltVector) : pos.offset(beltVector);
 
 		if (hitSegment == 0 || hitSegment == 1 && !towardPositive)
-			return InteractionResult.FAIL;
+			return ItemInteractionResult.FAIL;
 		if (hitSegment == controllerBE.beltLength - 1 || hitSegment == controllerBE.beltLength - 2 && towardPositive)
-			return InteractionResult.FAIL;
+			return ItemInteractionResult.FAIL;
 
 		// Look for shafts
 		if (!creative) {
@@ -194,7 +194,7 @@ public class BeltSlicer {
 
 				if (!world.isClientSide)
 					player.getInventory().placeItemBackInInventory(AllBlocks.SHAFT.asStack(amountRetrieved));
-				return InteractionResult.FAIL;
+				return ItemInteractionResult.FAIL;
 			}
 		}
 
@@ -235,18 +235,18 @@ public class BeltSlicer {
 			}
 		}
 
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
-	public static InteractionResult useConnector(BlockState state, Level world, BlockPos pos, Player player,
-												 InteractionHand handIn, BlockHitResult hit, Feedback feedBack) {
+	public static ItemInteractionResult useConnector(BlockState state, Level world, BlockPos pos, Player player,
+													 InteractionHand handIn, BlockHitResult hit, Feedback feedBack) {
 		BeltBlockEntity controllerBE = BeltHelper.getControllerBE(world, pos);
 		if (controllerBE == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		int beltLength = controllerBE.beltLength;
 		if (beltLength == BeltConnectorItem.maxLength())
-			return InteractionResult.FAIL;
+			return ItemInteractionResult.FAIL;
 
 		BlockPos beltVector = BlockPos.containing(BeltHelper.getBeltVector(state));
 		BeltPart part = state.getValue(BeltBlock.PART);
@@ -255,7 +255,7 @@ public class BeltSlicer {
 		boolean creative = player.isCreative();
 
 		if (!hoveringEnd(state, hit))
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		BlockPos next = part == BeltPart.START ? pos.subtract(beltVector) : pos.offset(beltVector);
 		BeltBlockEntity mergedController = null;
@@ -265,15 +265,15 @@ public class BeltSlicer {
 		BlockState nextState = world.getBlockState(next);
 		if (!nextState.canBeReplaced()) {
 			if (!AllBlocks.BELT.has(nextState))
-				return InteractionResult.FAIL;
+				return ItemInteractionResult.FAIL;
 			if (!beltStatesCompatible(state, nextState))
-				return InteractionResult.FAIL;
+				return ItemInteractionResult.FAIL;
 
 			mergedController = BeltHelper.getControllerBE(world, next);
 			if (mergedController == null)
-				return InteractionResult.FAIL;
+				return ItemInteractionResult.FAIL;
 			if (mergedController.beltLength + beltLength > BeltConnectorItem.maxLength())
-				return InteractionResult.FAIL;
+				return ItemInteractionResult.FAIL;
 
 			mergedBeltLength = mergedController.beltLength;
 
@@ -301,6 +301,8 @@ public class BeltSlicer {
 							mergedBeltLength - transportedItemStack.prevBeltPosition;
 					}
 				}
+
+				beltChain = BeltBlock.getBeltChain(world, mergedController.getBlockPos());
 			}
 		}
 
@@ -353,6 +355,13 @@ public class BeltSlicer {
 					player.getInventory().placeItemBackInInventory(AllItems.BELT_CONNECTOR.asStack());
 				}
 
+				for (BlockPos blockPos : BeltBlock.getBeltChain(world, controllerBE.getBlockPos())) {
+					BeltBlockEntity belt = BeltHelper.getSegmentBE(world, blockPos);
+					if (belt == null)
+						continue;
+					belt.invalidateItemHandler();
+				}
+
 				// Transfer items to other controller
 				BlockPos search = controllerBE.getBlockPos();
 				for (int i = 0; i < 10000; i++) {
@@ -391,7 +400,7 @@ public class BeltSlicer {
 				}
 			}
 		}
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	static boolean beltStatesCompatible(BlockState state, BlockState nextState) {

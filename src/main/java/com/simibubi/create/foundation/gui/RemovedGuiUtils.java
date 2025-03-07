@@ -39,8 +39,8 @@ public class RemovedGuiUtils {
 	public static void drawHoveringText(GuiGraphics graphics, List<? extends FormattedText> textLines, int mouseX,
 										int mouseY, int screenWidth, int screenHeight, int maxTextWidth, Font font) {
 		drawHoveringText(graphics, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth,
-				ScreenUtils.DEFAULT_BACKGROUND_COLOR, ScreenUtils.DEFAULT_BORDER_COLOR_START, ScreenUtils.DEFAULT_BORDER_COLOR_END,
-				font);
+			ScreenUtils.DEFAULT_BACKGROUND_COLOR, ScreenUtils.DEFAULT_BORDER_COLOR_START, ScreenUtils.DEFAULT_BORDER_COLOR_END,
+			font);
 	}
 
 	public static void drawHoveringText(GuiGraphics graphics, List<? extends FormattedText> textLines, int mouseX,
@@ -54,8 +54,8 @@ public class RemovedGuiUtils {
 										List<? extends FormattedText> textLines, int mouseX, int mouseY, int screenWidth, int screenHeight,
 										int maxTextWidth, Font font) {
 		drawHoveringText(stack, graphics, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth,
-				ScreenUtils.DEFAULT_BACKGROUND_COLOR, ScreenUtils.DEFAULT_BORDER_COLOR_START, ScreenUtils.DEFAULT_BORDER_COLOR_END,
-				font);
+			ScreenUtils.DEFAULT_BACKGROUND_COLOR, ScreenUtils.DEFAULT_BORDER_COLOR_START, ScreenUtils.DEFAULT_BORDER_COLOR_END,
+			font);
 	}
 
 	public static void drawHoveringText(@Nonnull final ItemStack stack, GuiGraphics graphics,
@@ -169,8 +169,7 @@ public class RemovedGuiUtils {
 		graphics.fillGradient(tooltipX - 3, tooltipY + tooltipHeight + 2,
 				tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3, zLevel, borderColorEnd, borderColorEnd);
 
-		MultiBufferSource.BufferSource renderType = MultiBufferSource.immediate(Tesselator.getInstance()
-				.getBuilder());
+		MultiBufferSource.BufferSource renderType = graphics.bufferSource();
 		pStack.translate(0.0D, 0.0D, zLevel);
 
 		for (int lineNumber = 0; lineNumber < list.size(); ++lineNumber) {

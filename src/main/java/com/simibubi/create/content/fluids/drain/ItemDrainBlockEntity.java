@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.kinetics.belt.behaviour.DirectBeltInputBehaviour;
@@ -19,8 +20,17 @@ import com.simibubi.create.foundation.utility.BlockHelper;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -76,6 +86,28 @@ public class ItemDrainBlockEntity extends SmartBlockEntity implements IHaveGoggl
 		}
 	}
 
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.ITEM_DRAIN.get(),
+				(be, context) -> {
+					if (context != null && context.getAxis().isHorizontal())
+						return be.itemHandlers.get(context);
+					return null;
+				}
+		);
+
+		event.registerBlockEntity(
+				Capabilities.FluidHandler.BLOCK,
+				AllBlockEntityTypes.ITEM_DRAIN.get(),
+				(be, context) -> {
+					if (context != Direction.UP)
+						return be.internalTank.getCapability();
+					return null;
+				}
+		);
+	}
+
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		behaviours.add(new DirectBeltInputBehaviour(this).allowingBeltFunnels()
@@ -94,8 +126,8 @@ public class ItemDrainBlockEntity extends SmartBlockEntity implements IHaveGoggl
 			return inserted;
 
 		if (inserted.getCount() > 1 && GenericItemEmptying.canItemBeEmptied(level, inserted)) {
-			returned = ItemHandlerHelper.copyStackWithSize(inserted, inserted.getCount() - 1);
-			inserted = ItemHandlerHelper.copyStackWithSize(inserted, 1);
+			returned = inserted.copyWithCount(inserted.getCount() - 1);
+			inserted = inserted.copyWithCount(1);
 		}
 
 		if (simulate)
@@ -293,20 +325,25 @@ public class ItemDrainBlockEntity extends SmartBlockEntity implements IHaveGoggl
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		compound.putInt("ProcessingTicks", processingTicks);
 		if (heldItem != null)
-			compound.put("HeldItem", heldItem.serializeNBT());
-		super.write(compound, clientPacket);
+			compound.put("HeldItem", heldItem.serializeNBT(registries));
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		heldItem = null;
 		processingTicks = compound.getInt("ProcessingTicks");
 		if (compound.contains("HeldItem"))
-			heldItem = TransportedItemStack.read(compound.getCompound("HeldItem"));
-		super.read(compound, clientPacket);
+			heldItem = TransportedItemStack.read(compound.getCompound("HeldItem"), registries);
+		super.read(compound, registries, clientPacket);
+	}
+
+	@Override
+	public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+		return containedFluidTooltip(tooltip, isPlayerSneaking, getFluidStorage(null));
 	}
 
 	@Nullable
@@ -325,10 +362,5 @@ public class ItemDrainBlockEntity extends SmartBlockEntity implements IHaveGoggl
 			return itemHandlers.get(face);
 		}
 		return null;
-	}
-
-	@Override
-	public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-		return containedFluidTooltip(tooltip, isPlayerSneaking, getFluidStorage(null));
 	}
 }

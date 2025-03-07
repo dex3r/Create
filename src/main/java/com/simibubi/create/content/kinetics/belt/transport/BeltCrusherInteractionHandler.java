@@ -16,7 +16,6 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 
 public class BeltCrusherInteractionHandler {
 
@@ -57,13 +56,11 @@ public class BeltCrusherInteractionHandler {
 			if (!(be instanceof CrushingWheelControllerBlockEntity crusherBE))
 				return true;
 
-
-
             ItemStack toInsert = currentItem.stack.copy();
 			try (Transaction t = TransferUtil.getTransaction()) {
 				long inserted = crusherBE.inventory.insert(ItemVariant.of(toInsert), toInsert.getCount(), t);
 				t.commit();
-				ItemStack remainder = ItemHandlerHelper.copyStackWithSize(toInsert, toInsert.getCount() - (int) inserted);
+				ItemStack remainder = toInsert.copyWithCount(toInsert.getCount() - (int) inserted);
 				if (ItemStack.matches(toInsert, remainder))
 					return true;
 
@@ -71,7 +68,7 @@ public class BeltCrusherInteractionHandler {
 				if (!remainder.isEmpty()) {
 					remainder.grow(notFilled);
 				} else if (notFilled > 0)
-					remainder = ItemHandlerHelper.copyStackWithSize(currentItem.stack, notFilled);
+					remainder = currentItem.stack.copyWithCount(notFilled);
 
 				currentItem.stack = remainder;
 				beltInventory.belt.sendData();

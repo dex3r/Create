@@ -22,6 +22,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public class AllBlockSpoutingBehaviours {
+
 	static void registerDefaults() {
 		Predicate<Fluid> isWater = fluid -> fluid.isSame(Fluids.WATER);
 		BlockSpoutingBehaviour toMud = StateChangingBehavior.setTo(250, isWater, Blocks.MUD);

@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -33,15 +34,15 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		extensionLength = compound.getInt("ExtensionLength");
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		tag.putInt("ExtensionLength", extensionLength);
-		super.write(tag, clientPacket);
+		super.write(tag, registries, clientPacket);
 	}
 
 	@Override
@@ -87,7 +88,7 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 		level.addFreshEntity(movedContraption);
 
 		AllSoundEvents.CONTRAPTION_ASSEMBLE.playOnServer(level, worldPosition);
-		
+
 		if (contraption.containsBlockBreakers())
 			award(AllAdvancements.CONTRAPTION_ACTORS);
 	}

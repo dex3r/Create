@@ -8,7 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 
 import net.createmod.catnip.data.Pair;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +30,7 @@ public interface IScheduleInput {
 
 	public abstract CompoundTag getData();
 
-	public abstract void setData(CompoundTag data);
+	public abstract void setData(HolderLookup.Provider registries, CompoundTag data);
 
 	public default int slotsTargeted() {
 		return 0;

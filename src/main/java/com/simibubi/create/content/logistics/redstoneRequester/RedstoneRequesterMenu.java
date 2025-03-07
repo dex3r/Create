@@ -9,9 +9,12 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 
@@ -29,7 +32,7 @@ public class RedstoneRequesterMenu extends GhostItemMenu<RedstoneRequesterBlockE
 		super(type, id, inv, contentHolder);
 	}
 
-	public RedstoneRequesterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	public RedstoneRequesterMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id, inv, extraData);
 	}
 
@@ -52,8 +55,8 @@ public class RedstoneRequesterMenu extends GhostItemMenu<RedstoneRequesterBlockE
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
-	protected RedstoneRequesterBlockEntity createOnClient(FriendlyByteBuf extraData) {
+	@OnlyIn(Dist.CLIENT)
+	protected RedstoneRequesterBlockEntity createOnClient(RegistryFriendlyByteBuf extraData) {
 		BlockPos blockPos = extraData.readBlockPos();
 		return AllBlocks.REDSTONE_REQUESTER.get()
 			.getBlockEntity(Minecraft.getInstance().level, blockPos);

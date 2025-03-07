@@ -7,13 +7,14 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllPackets;
-
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.IntAttached;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 
@@ -27,39 +28,35 @@ public class HauntedBellPulser {
 		.expireAfterAccess(250, TimeUnit.MILLISECONDS)
 		.build();
 
-	public static void hauntedBellCreatesPulse(ServerLevel world) {
-//		if (event.phase != TickEvent.Phase.END)
-//			return;
-//		if (event.side != LogicalSide.SERVER)
-//			return;
-		PlayerLookup.world(world).forEach(player -> {
-			if (player.isSpectator())
+	public static void hauntedBellCreatesPulse(PlayerTickEvent.Post event) {
+		Player player = event.getEntity();
+
+		if (player.level().isClientSide())
+			return;
+
+		if (player.isSpectator())
+			return;
+		if (!player.isHolding(AllBlocks.HAUNTED_BELL::isIn))
+			return;
+
+		boolean firstPulse = false;
+
+		try {
+			IntAttached<Entity> ticker = WARMUP.get(player.getUUID(), () -> IntAttached.with(WARMUP_TICKS, player));
+			firstPulse = ticker.getFirst() == 1;
+			ticker.decrement();
+			if (!ticker.isOrBelowZero())
 				return;
-			if (!player.isHolding(AllBlocks.HAUNTED_BELL::isIn))
-				return;
+		} catch (ExecutionException ignored) {}
 
-//		Entity player = event.player;
-			boolean firstPulse = false;
-
-			try {
-				IntAttached<Entity> ticker = WARMUP.get(player.getUUID(), () -> IntAttached.with(WARMUP_TICKS, player));
-				firstPulse = ticker.getFirst()
-						.intValue() == 1;
-				ticker.decrement();
-				if (!ticker.isOrBelowZero())
-					return;
-			} catch (ExecutionException e) {
-			}
-
-			long gameTime = player.level().getGameTime();
-			if (firstPulse || gameTime % RECHARGE_TICKS != 0)
-				sendPulse(player.level(), player.blockPosition(), DISTANCE, false);
-		});
+		long gameTime = player.level().getGameTime();
+		if ((firstPulse || gameTime % RECHARGE_TICKS != 0) && player.level() instanceof ServerLevel serverLevel)
+			sendPulse(serverLevel, player.blockPosition(), DISTANCE, false);
 	}
 
-	public static void sendPulse(Level world, BlockPos pos, int distance, boolean canOverlap) {
-//		LevelChunk chunk = world.getChunkAt(pos);
-		AllPackets.getChannel().sendToClientsTracking(new SoulPulseEffectPacket(pos, distance, canOverlap), (ServerLevel) world, pos);
+	public static void sendPulse(ServerLevel world, BlockPos pos, int distance, boolean canOverlap) {
+		ChunkPos chunk = world.getChunkAt(pos).getPos();
+		CatnipServices.NETWORK.sendToClientsTrackingChunk(world, chunk, new SoulPulseEffectPacket(pos, distance, canOverlap));
 	}
 
 }

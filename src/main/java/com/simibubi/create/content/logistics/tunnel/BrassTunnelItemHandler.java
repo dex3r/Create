@@ -2,6 +2,7 @@ package com.simibubi.create.content.logistics.tunnel;
 
 import com.simibubi.create.foundation.item.ItemHelper;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;

@@ -10,10 +10,12 @@ import javax.annotation.Nullable;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.simibubi.create.Create;
+import com.simibubi.create.foundation.utility.RecipeGenericsUtil;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
@@ -26,8 +28,7 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
  * @author simibubi
  */
 public class RecipeFinder {
-
-	private static final Cache<Object, List<Recipe<?>>> CACHED_SEARCHES = CacheBuilder.newBuilder().build();
+	private static final Cache<Object, List<RecipeHolder<? extends Recipe<?>>>> CACHED_SEARCHES = CacheBuilder.newBuilder().build();
 
 	public static final IdentifiableResourceReloadListener LISTENER = new SimpleSynchronousResourceReloadListener() {
 		@Override
@@ -49,7 +50,7 @@ public class RecipeFinder {
 	 * @param cacheKey (can be null to prevent the caching)
 	 * @return A started search to continue with more specific conditions.
 	 */
-	public static List<Recipe<?>> get(@Nullable Object cacheKey, Level level, Predicate<Recipe<?>> conditions) {
+	public static List<RecipeHolder<? extends Recipe<?>>> get(@Nullable Object cacheKey, Level level, Predicate<RecipeHolder<? extends Recipe<?>>> conditions) {
 		if (cacheKey == null)
 			return startSearch(level, conditions);
 
@@ -62,11 +63,10 @@ public class RecipeFinder {
 		return Collections.emptyList();
 	}
 
-	private static List<Recipe<?>> startSearch(Level level, Predicate<? super Recipe<?>> conditions) {
-		return level.getRecipeManager()
-			.getRecipes()
-			.stream()
-			.filter(conditions)
-			.toList();
+	private static List<RecipeHolder<? extends Recipe<?>>> startSearch(Level level, Predicate<? super RecipeHolder<? extends Recipe<?>>> conditions) {
+		return RecipeGenericsUtil.specify(level.getRecipeManager().getRecipes())
+				.stream()
+				.filter(conditions)
+				.toList();
 	}
 }

@@ -2,12 +2,12 @@ package com.simibubi.create.content.contraptions.piston;
 
 import static com.simibubi.create.content.contraptions.piston.MechanicalPistonBlock.isExtensionPole;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.contraptions.piston.MechanicalPistonBlock.PistonState;
 import com.simibubi.create.foundation.block.WrenchableDirectionalBlock;
+
+import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,12 +26,13 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
+import org.jetbrains.annotations.Nullable;
 
 public class MechanicalPistonHeadBlock extends WrenchableDirectionalBlock implements SimpleWaterloggedBlock, BlockPickInteractionAware {
 
@@ -54,7 +55,7 @@ public class MechanicalPistonHeadBlock extends WrenchableDirectionalBlock implem
 	}
 
     @Override
-    public void playerWillDestroy(Level worldIn, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level worldIn, BlockPos pos, BlockState state, Player player) {
         Direction direction = state.getValue(FACING);
         BlockPos pistonHead = pos;
         BlockPos pistonBase = null;
@@ -82,7 +83,7 @@ public class MechanicalPistonHeadBlock extends WrenchableDirectionalBlock implem
                     .setValue(MechanicalPistonBlock.STATE, PistonState.RETRACTED));
         }
 
-        super.playerWillDestroy(worldIn, pos, state, player);
+        return super.playerWillDestroy(worldIn, pos, state, player);
     }
 
     @Override
@@ -110,7 +111,7 @@ public class MechanicalPistonHeadBlock extends WrenchableDirectionalBlock implem
     }
 
     @Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 }

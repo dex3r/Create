@@ -112,8 +112,10 @@ public class TestContraptions {
 		List<BlockPos> dirt = List.of(new BlockPos(4, 2, 6), new BlockPos(2, 2, 4), new BlockPos(4, 2, 2));
 		List<BlockPos> wheat = List.of(new BlockPos(4, 3, 7), new BlockPos(1, 3, 4), new BlockPos(4, 3, 1));
 
-		helper.pressButton(button);
+		helper.whenSecondsPassed(1, () -> helper.pressButton(button));
 		helper.succeedWhen(() -> {
+			helper.assertBlockPresent(Blocks.STONE_BUTTON, button);
+
 			// wait for gearshift to reset
 			helper.assertBlockProperty(gearshift, SequencedGearshiftBlock.STATE, 0);
 			if (step.get() == 4)

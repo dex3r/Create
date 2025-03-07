@@ -18,18 +18,18 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class TrainTrapdoorBlock extends TrapDoorBlock implements IWrenchable {
 
-	public TrainTrapdoorBlock(Properties p_57526_) {
-		super(p_57526_, SlidingDoorBlock.TRAIN_SET_TYPE.get());
+	public TrainTrapdoorBlock(Properties properties) {
+		super(SlidingDoorBlock.TRAIN_SET_TYPE.get(), properties);
 	}
 
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-		BlockHitResult pHit) {
-		pState = pState.cycle(OPEN);
-		pLevel.setBlock(pPos, pState, 2);
-		if (pState.getValue(WATERLOGGED))
-			pLevel.scheduleTick(pPos, Fluids.WATER, Fluids.WATER.getTickDelay(pLevel));
-		playSound(pPlayer, pLevel, pPos, pState.getValue(OPEN));
-		return InteractionResult.sidedSuccess(pLevel.isClientSide);
+	@Override
+	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+		state = state.cycle(OPEN);
+		level.setBlock(pos, state, 2);
+		if (state.getValue(WATERLOGGED))
+			level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+		playSound(player, level, pos, state.getValue(OPEN));
+		return InteractionResult.sidedSuccess(level.isClientSide);
 	}
 
 	@Override

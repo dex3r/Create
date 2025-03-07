@@ -1,15 +1,16 @@
 package com.simibubi.create.foundation.data.recipe;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllTags;
 import com.tterrag.registrate.util.entry.ItemEntry;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -192,13 +193,13 @@ public class MillingRecipeGen extends ProcessingRecipeGen {
 
 		TALL_GRASS = create(() -> Blocks.TALL_GRASS, b -> b.duration(100)
 			.output(.5f, Items.WHEAT_SEEDS)),
-		GRASS = create(() -> Blocks.GRASS, b -> b.duration(50)
+		SHORT_GRASS = create(() -> Blocks.SHORT_GRASS, b -> b.duration(50)
 			.output(.25f, Items.WHEAT_SEEDS)),
 
 		// AE2
 
 		AE2_CERTUS = create(Mods.AE2.recipeId("certus_quartz"), b -> b.duration(200)
-				.require(AllTags.forgeItemTag("certus_quartz"))
+				.require(AllTags.commonItemTag("gems/certus_quartz"))
 				.output(Mods.AE2, "certus_quartz_dust")
 				.whenModLoaded(Mods.AE2.getId())),
 
@@ -727,8 +728,8 @@ public class MillingRecipeGen extends ProcessingRecipeGen {
 
 	protected GeneratedRecipe metalOre(String name, ItemEntry<? extends Item> crushed, int duration) {
 		return create(name + "_ore", b -> b.duration(duration)
-			.withCondition(DefaultResourceConditions.not(DefaultResourceConditions.tagsPopulated(TagKey.create(Registries.ITEM, new ResourceLocation("c", name + "_ores")))))
-			.require(AllTags.forgeItemTag(name + "_ores"))
+			.withCondition(new NotCondition(new TagEmptyCondition("c", "ores/" + name)))
+			.require(AllTags.commonItemTag("ores/" + name))
 			.output(crushed.get()));
 	}
 
@@ -818,7 +819,7 @@ public class MillingRecipeGen extends ProcessingRecipeGen {
 		for (String color : colors) {
 			create(Mods.BTN.recipeId(color + "_petal"), b -> b.duration(50)
 					.require(AllTags.optionalTag(BuiltInRegistries.ITEM,
-							new ResourceLocation(Mods.BTN.getId(), "petals/" + color)))
+							Mods.BTN.asResource("petals/" + color)))
 					.output(Mods.MC, color + "_dye")
 					.whenModLoaded(Mods.BTN.getId()));
 		}
@@ -850,8 +851,8 @@ public class MillingRecipeGen extends ProcessingRecipeGen {
 		}
 	}
 
-	public MillingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public MillingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

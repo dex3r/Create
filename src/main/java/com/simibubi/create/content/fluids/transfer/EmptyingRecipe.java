@@ -4,19 +4,18 @@ import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeParams;
 
-import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.fluids.FluidStack;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-
-public class EmptyingRecipe extends ProcessingRecipe<Container> {
+public class EmptyingRecipe extends ProcessingRecipe<SingleRecipeInput> {
 
 	public EmptyingRecipe(ProcessingRecipeParams params) {
 		super(AllRecipeTypes.EMPTYING, params);
 	}
 
 	@Override
-	public boolean matches(Container inv, Level p_77569_2_) {
+	public boolean matches(SingleRecipeInput inv, Level p_77569_2_) {
 		return ingredients.get(0).test(inv.getItem(0));
 	}
 

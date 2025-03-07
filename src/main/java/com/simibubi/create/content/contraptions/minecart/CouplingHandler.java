@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.AllAttachmentTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
@@ -160,7 +161,7 @@ public class CouplingHandler {
 		boolean forward) {
 		UUID coupledCart = controller.getCoupledCart(forward);
 		if (coupledCart == null)
-			return MinecartController.empty();
+			return MinecartController.EMPTY;
 		return CapabilityMinecartController.getIfPresent(world, coupledCart);
 	}
 

@@ -7,9 +7,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
@@ -28,6 +34,7 @@ import net.createmod.catnip.math.Pointing;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -112,6 +119,21 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 		wasPoweredBefore = true;
 	}
 
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.MECHANICAL_CRAFTER.get(),
+				(be, context) -> be.getInvCapability()
+		);
+	}
+
+	protected IItemHandler getInvCapability() {
+		if (invCap == null) {
+			invCap = input.getItemHandler(getLevel(), getBlockPos());
+		}
+		return invCap;
+	}
+
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
@@ -149,33 +171,33 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 	}
 
 	@Override
-	public void writeSafe(CompoundTag compound) {
-		super.writeSafe(compound);
+	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+		super.writeSafe(tag, registries);
 		if (input == null)
 			return;
 
 		CompoundTag inputNBT = new CompoundTag();
 		input.write(inputNBT);
-		compound.put("ConnectedInput", inputNBT);
+		tag.put("ConnectedInput", inputNBT);
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
-		compound.put("Inventory", inventory.serializeNBT());
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		compound.put("Inventory", inventory.serializeNBT(registries));
 
 		CompoundTag inputNBT = new CompoundTag();
 		input.write(inputNBT);
 		compound.put("ConnectedInput", inputNBT);
 
 		CompoundTag groupedItemsNBT = new CompoundTag();
-		groupedItems.write(groupedItemsNBT);
+		groupedItems.write(groupedItemsNBT, registries);
 		compound.put("GroupedItems", groupedItemsNBT);
 
 		compound.putString("Phase", phase.name());
 		compound.putInt("CountDown", countDown);
 		compound.putBoolean("Cover", covered);
 
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 
 		if (clientPacket && reRender) {
 			compound.putBoolean("Redraw", true);
@@ -184,13 +206,13 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		Phase phaseBefore = phase;
 		GroupedItems before = this.groupedItems;
 
-		inventory.deserializeNBT(compound.getCompound("Inventory"));
+		inventory.deserializeNBT(registries, compound.getCompound("Inventory"));
 		input.read(compound.getCompound("ConnectedInput"));
-		groupedItems = GroupedItems.read(compound.getCompound("GroupedItems"));
+		groupedItems = GroupedItems.read(compound.getCompound("GroupedItems"), registries);
 		phase = Phase.IDLE;
 		String name = compound.getString("Phase");
 		for (Phase phase : Phase.values())
@@ -199,7 +221,7 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 				this.phase = phase;
 		countDown = compound.getInt("CountDown");
 		covered = compound.getBoolean("Cover");
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 		if (!clientPacket)
 			return;
 		if (compound.contains("Redraw"))

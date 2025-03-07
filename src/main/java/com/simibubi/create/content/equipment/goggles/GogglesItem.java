@@ -37,7 +37,7 @@ public class GogglesItem extends Item {
 
 	public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
 		ItemStack itemstack = playerIn.getItemInHand(handIn);
-		EquipmentSlot equipmentslottype = Mob.getEquipmentSlotForItem(itemstack);
+		EquipmentSlot equipmentslottype = playerIn.getEquipmentSlotForItem(itemstack);
 		ItemStack itemstack1 = playerIn.getItemBySlot(equipmentslottype);
 		if (itemstack1.isEmpty()) {
 			playerIn.setItemSlot(equipmentslottype, itemstack.copy());

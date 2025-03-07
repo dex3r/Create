@@ -5,17 +5,22 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.contraptions.sync.ContraptionInteractionPacket;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.content.trains.entity.TrainRelocator;
 import com.simibubi.create.foundation.utility.RaycastHelper;
 import com.simibubi.create.foundation.utility.RaycastHelper.PredicateTraceResult;
 
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.VecHelper;
@@ -43,11 +48,10 @@ public class ContraptionHandlerClient {
 
 	@Environment(EnvType.CLIENT)
 	public static void preventRemotePlayersWalkingAnimations(Player player) {
-//		if (event.phase == Phase.START)
-//			return;
 		if (!(player instanceof RemotePlayer remotePlayer))
 			return;
-		CompoundTag data = remotePlayer.getCustomData();
+
+		CompoundTag data = remotePlayer.getPersistentData();
 		if (!data.contains("LastOverrideLimbSwingUpdate"))
 			return;
 
@@ -123,8 +127,7 @@ public class ContraptionHandlerClient {
 		BlockPos pos = bestResult.getBlockPos();
 
 		if (bestEntity.handlePlayerInteraction(player, pos, face, hand)) {
-			AllPackets.getChannel()
-				.sendToServer(new ContraptionInteractionPacket(bestEntity, hand, pos, face));
+			CatnipServices.NETWORK.sendToServer(new ContraptionInteractionPacket(bestEntity, hand, pos, face));
 		} else
 			handleSpecialInteractions(bestEntity, player, pos, face, hand);
 
@@ -143,7 +146,7 @@ public class ContraptionHandlerClient {
 	public static Couple<Vec3> getRayInputs(LocalPlayer player) {
 		Minecraft mc = Minecraft.getInstance();
 		Vec3 origin = RaycastHelper.getTraceOrigin(player);
-		double reach = ReachEntityAttributes.getReachDistance(player, mc.gameMode.getPickRange());
+		double reach = player.blockInteractionRange();
 		if (mc.hitResult != null && mc.hitResult.getLocation() != null)
 			reach = Math.min(mc.hitResult.getLocation()
 				.distanceTo(origin), reach);

@@ -7,13 +7,15 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import com.mojang.serialization.Codec;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
-import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.codecs.CatnipCodecUtils;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 
 public class FactoryPanelSupportBehaviour extends BlockEntityBehaviour {
 
@@ -123,16 +125,14 @@ public class FactoryPanelSupportBehaviour extends BlockEntityBehaviour {
 	}
 
 	@Override
-	public void write(CompoundTag nbt, boolean clientPacket) {
-		if (!linkedPanels.isEmpty())
-			nbt.put("LinkedGauges", NBTHelper.writeCompoundList(linkedPanels, FactoryPanelPosition::write));
+	public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+		nbt.put("LinkedGauges", CatnipCodecUtils.encode(Codec.list(FactoryPanelPosition.CODEC), linkedPanels).orElseThrow());
 	}
 
 	@Override
-	public void read(CompoundTag nbt, boolean clientPacket) {
+	public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
 		linkedPanels.clear();
-		linkedPanels.addAll(
-			NBTHelper.readCompoundList(nbt.getList("LinkedGauges", Tag.TAG_COMPOUND), FactoryPanelPosition::read));
+		CatnipCodecUtils.decode(Codec.list(FactoryPanelPosition.CODEC), nbt.get("LinkedGauges")).ifPresent(linkedPanels::addAll);
 	}
 
 	@Override

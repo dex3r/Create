@@ -16,7 +16,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.ContraptionHandlerClient;
@@ -37,6 +36,7 @@ import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.ChatFormatting;
@@ -158,8 +158,8 @@ public class TrainRelocator {
 		boolean result = relocate(relocating, mc.level, blockPos, hoveredBezier, direction, lookAngle, true);
 		if (!simulate && result) {
 			relocating.carriages.forEach(c -> c.forEachPresentEntity(e -> e.nonDamageTicks = 10));
-			AllPackets.getChannel().sendToServer(new TrainRelocationPacket(relocatingTrain, blockPos, hoveredBezier,
-				direction, lookAngle, relocatingEntityId));
+			CatnipServices.NETWORK.sendToServer(new TrainRelocationPacket(relocatingTrain, blockPos, lookAngle,
+				relocatingEntityId, direction, hoveredBezier));
 		}
 
 		return lastHoveredResult = result;

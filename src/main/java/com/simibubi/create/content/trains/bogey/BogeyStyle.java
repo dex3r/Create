@@ -6,6 +6,9 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -15,6 +18,7 @@ import com.simibubi.create.content.trains.bogey.BogeySizes.BogeySize;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -55,7 +59,7 @@ public class BogeyStyle {
 		this.defaultData = defaultData;
 		this.sizes = sizes;
 
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> {
 			this.sizeRenderers = new HashMap<>();
 			sizeRenderers.forEach((k, v) -> this.sizeRenderers.put(k, v.get()
 				.get()));
@@ -157,7 +161,7 @@ public class BogeyStyle {
 		public Builder size(BogeySizes.BogeySize size, Supplier<? extends AbstractBogeyBlock<?>> block,
 			 Supplier<Supplier<? extends SizeRenderer>> renderer) {
 			this.sizes.put(size, block);
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> {
 				this.sizeRenderers.put(size, renderer);
 			});
 			return this;

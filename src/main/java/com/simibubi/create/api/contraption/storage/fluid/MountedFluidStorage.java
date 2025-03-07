@@ -7,6 +7,10 @@ import org.jetbrains.annotations.Nullable;
 import com.mojang.serialization.Codec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,6 +21,12 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 public abstract class MountedFluidStorage implements Storage<FluidVariant> {
 	public static final Codec<MountedFluidStorage> CODEC = MountedFluidStorageType.CODEC.dispatch(
 		storage -> storage.type, type -> type.codec
+	);
+
+	@SuppressWarnings("deprecation")
+	public static final StreamCodec<RegistryFriendlyByteBuf, MountedFluidStorage> STREAM_CODEC = StreamCodec.of(
+		(b, t) -> b.writeWithCodec(RegistryOps.create(NbtOps.INSTANCE, b.registryAccess()), CODEC, t),
+		b -> b.readWithCodecTrusted(RegistryOps.create(NbtOps.INSTANCE, b.registryAccess()), CODEC)
 	);
 
 	public final MountedFluidStorageType<? extends MountedFluidStorage> type;

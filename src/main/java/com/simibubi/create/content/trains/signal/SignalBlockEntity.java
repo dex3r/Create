@@ -14,11 +14,13 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class SignalBlockEntity extends SmartBlockEntity implements TransformableBlockEntity {
 
@@ -57,16 +59,16 @@ public class SignalBlockEntity extends SmartBlockEntity implements Transformable
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
-		super.write(tag, clientPacket);
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(tag, registries, clientPacket);
 		NBTHelper.writeEnum(tag, "State", state);
 		NBTHelper.writeEnum(tag, "Overlay", overlay);
 		tag.putBoolean("Power", lastReportedPower);
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		super.read(tag, clientPacket);
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(tag, registries, clientPacket);
 		state = NBTHelper.readEnum(tag, "State", SignalState.class);
 		overlay = NBTHelper.readEnum(tag, "Overlay", OverlayState.class);
 		lastReportedPower = tag.getBoolean("Power");
@@ -157,7 +159,7 @@ public class SignalBlockEntity extends SmartBlockEntity implements Transformable
 
 	@Override
 	protected AABB createRenderBoundingBox() {
-		return new AABB(worldPosition, edgePoint.getGlobalPosition()).inflate(2);
+		return new AABB(Vec3.atLowerCornerOf(worldPosition), Vec3.atLowerCornerOf(edgePoint.getGlobalPosition())).inflate(2);
 	}
 
 	@Override

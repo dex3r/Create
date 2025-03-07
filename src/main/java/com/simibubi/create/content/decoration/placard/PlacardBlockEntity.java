@@ -12,6 +12,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -59,18 +60,18 @@ public class PlacardBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		tag.putInt("PoweredTicks", poweredTicks);
-		tag.put("Item", NBTSerializer.serializeNBTCompound(heldItem));
-		super.write(tag, clientPacket);
+		tag.put("Item", heldItem.saveOptional(registries));
+		super.write(tag, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		int prevTicks = poweredTicks;
 		poweredTicks = tag.getInt("PoweredTicks");
-		heldItem = ItemStack.of(tag.getCompound("Item"));
-		super.read(tag, clientPacket);
+		heldItem = ItemStack.parseOptional(registries, tag.getCompound("Item"));
+		super.read(tag, registries, clientPacket);
 
 		if (clientPacket && prevTicks < poweredTicks)
 			spawnParticles();

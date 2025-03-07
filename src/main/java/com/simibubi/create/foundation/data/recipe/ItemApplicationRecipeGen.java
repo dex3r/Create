@@ -1,11 +1,13 @@
 package com.simibubi.create.foundation.data.recipe;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.AllTags.AllItemTags;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -19,7 +21,7 @@ public class ItemApplicationRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe BOUND_CARDBOARD_BLOCK = create("bound_cardboard_inworld",
 		b -> b.require(AllBlocks.CARDBOARD_BLOCK.asItem())
-			.require(Tags.Items.STRING)
+			.require(Tags.Items.STRINGS)
 			.output(AllBlocks.BOUND_CARDBOARD_BLOCK.asStack()));
 
 	GeneratedRecipe ANDESITE = woodCasing("andesite", I::andesiteAlloy, I::andesiteCasing);
@@ -39,16 +41,16 @@ public class ItemApplicationRecipeGen extends ProcessingRecipeGen {
 
 	protected GeneratedRecipe woodCasingIngredient(String type, Supplier<Ingredient> ingredient,
 		Supplier<ItemLike> output) {
-		create(type + "_casing_from_log", b -> b.require(AllItemTags.STRIPPED_LOGS.tag)
+		create(type + "_casing_from_log", b -> b.require(Tags.Items.STRIPPED_LOGS)
 			.require(ingredient.get())
 			.output(output.get()));
-		return create(type + "_casing_from_wood", b -> b.require(AllItemTags.STRIPPED_WOOD.tag)
+		return create(type + "_casing_from_wood", b -> b.require(Tags.Items.STRIPPED_WOODS)
 			.require(ingredient.get())
 			.output(output.get()));
 	}
 
-	public ItemApplicationRecipeGen(FabricDataOutput output) {
-		super(output);
+	public ItemApplicationRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

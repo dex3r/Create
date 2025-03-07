@@ -3,6 +3,7 @@ package com.simibubi.create.api.equipment.potatoCannon;
 import java.util.function.Function;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 
 import net.minecraft.world.item.ItemStack;
@@ -15,5 +16,5 @@ public interface PotatoProjectileBlockHitAction {
 
 	boolean execute(LevelAccessor level, ItemStack projectile, BlockHitResult ray);
 
-	Codec<? extends PotatoProjectileBlockHitAction> codec();
+	MapCodec<? extends PotatoProjectileBlockHitAction> codec();
 }

@@ -4,6 +4,7 @@ import static net.minecraft.ChatFormatting.GOLD;
 import static net.minecraft.ChatFormatting.GRAY;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -28,12 +29,19 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import dev.engine_room.flywheel.lib.visualization.VisualizationHelper;
 import net.createmod.catnip.lang.FontHelper.Palette;
+import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.platform.CatnipServices;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
@@ -103,7 +111,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 		preventSpeedUpdate = 0;
 
 		if (level.isClientSide) {
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> this.tickAudio());
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> this.tickAudio());
 			return;
 		}
 
@@ -201,7 +209,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	}
 
 	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		compound.putFloat("Speed", speed);
 		if (sequenceContext != null && (!clientPacket || syncSequenceContext()))
 			compound.put("Sequence", sequenceContext.serializeNBT());
@@ -227,7 +235,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 			compound.put("Network", networkTag);
 		}
 
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 	}
 
 	public boolean needsSpeedUpdate() {
@@ -235,21 +243,22 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		boolean overStressedBefore = overStressed;
 		clearKineticInformation();
 
 		// DO NOT READ kinetic information when placed after movement
 		if (wasMoved) {
-			super.read(compound, clientPacket);
+			super.read(compound, registries, clientPacket);
 			return;
 		}
 
 		speed = compound.getFloat("Speed");
 		sequenceContext = SequenceContext.fromNBT(compound.getCompound("Sequence"));
 
+		source = null;
 		if (compound.contains("Source"))
-			source = NbtUtils.readBlockPos(compound.getCompound("Source"));
+			source = NBTHelper.readBlockPos(compound, "Source");
 
 		if (compound.contains("Network")) {
 			CompoundTag networkTag = compound.getCompound("Network");
@@ -262,13 +271,13 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 			overStressed = capacity < stress && StressImpact.isEnabled();
 		}
 
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 
 		if (clientPacket && overStressedBefore != overStressed && speed != 0)
 			effects.triggerOverStressedEffect();
 
 		if (clientPacket)
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> VisualizationHelper.queueUpdate(this));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> VisualizationHelper.queueUpdate(this));
 	}
 
 	public float getGeneratedSpeed() {
@@ -280,7 +289,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	}
 
 	public float getSpeed() {
-		if (overStressed)
+		if (overStressed || (level != null && level.tickRateManager().isFrozen()))
 			return 0;
 		return getTheoreticalSpeed();
 	}
@@ -328,7 +337,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	}
 
 	public void setNetwork(@Nullable Long networkIn) {
-		if (network == networkIn)
+		if (Objects.equals(network, networkIn))
 			return;
 		if (network != null)
 			getOrCreateNetwork().remove(this);
@@ -586,7 +595,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	public void requestModelDataUpdate() {
 //		super.requestModelDataUpdate();
 		if (!this.remove)
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> VisualizationHelper.queueUpdate(this));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> VisualizationHelper.queueUpdate(this));
 	}
 
 	@Environment(EnvType.CLIENT)

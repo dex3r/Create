@@ -2,8 +2,8 @@ package com.simibubi.create.foundation.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,15 +15,18 @@ import org.jetbrains.annotations.ApiStatus;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.saw.CuttingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
 import com.simibubi.create.foundation.pack.DynamicPack;
+import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -31,6 +34,9 @@ import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Recipe;
+
+import net.neoforged.neoforge.common.conditions.WithConditions;
 
 @ApiStatus.Internal
 public class RuntimeDataGenerator {
@@ -41,7 +47,7 @@ public class RuntimeDataGenerator {
 	// startofline(not preceded by stripped_)(1. wood_name)(2. type)(3. (4. variant suffix), optional, that doesn't end in _stripped, can be null)endofline
 	private static final Pattern NON_STRIPPED_WOODS_REGEX = Pattern.compile("^(?!stripped_)([a-z_]+)(_log|_wood|_stem|_hyphae|(?<!bioshroom)_block)(([a-z_]+)(?<!_stripped))?$");
 	private static final Multimap<ResourceLocation, TagEntry> TAGS = HashMultimap.create();
-	private static final Object2ObjectOpenHashMap<ResourceLocation, JsonObject> JSON_FILES = new Object2ObjectOpenHashMap<>();
+	private static final Object2ObjectOpenHashMap<ResourceLocation, JsonElement> JSON_FILES = new Object2ObjectOpenHashMap<>();
 	private static final Map<ResourceLocation, ResourceLocation> MISMATCHED_WOOD_NAMES = ImmutableMap.<ResourceLocation, ResourceLocation>builder()
 		.put(Mods.ARS_N.asResource("blue_archwood"), Mods.ARS_N.asResource("archwood")) // Generate recipes for planks -> everything else
 		//.put(Mods.UUE.asResource("chorus_cane"), Mods.UUE.asResource("chorus_nest")) // Has a weird setup with both normal and stripped planks, that it already provides cutting recipes for
@@ -172,10 +178,20 @@ public class RuntimeDataGenerator {
 
 		@Override
 		public T build() {
-			T t = super.build();
-			DataGenResult<T> result = new DataGenResult<>(t, Collections.emptyList());
-			JSON_FILES.put(result.getId().withPrefix("recipes/"), result.serializeRecipe());
-			return t;
+			T recipe = super.build();
+
+			IRecipeTypeInfo recipeType = recipe.getTypeInfo();
+			ResourceLocation typeId = recipeType.getId();
+
+			if (!(recipeType.getSerializer() instanceof ProcessingRecipeSerializer))
+				throw new IllegalStateException("Cannot datagen ProcessingRecipe of type: " + typeId);
+
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(recipe.id.getNamespace(),
+				typeId.getPath() + "/" + recipe.id.getPath());
+
+			Optional<JsonElement> serialized = CatnipCodecUtils.encode(Recipe.CONDITIONAL_CODEC, JsonOps.INSTANCE, Optional.of(new WithConditions<>(recipe)));
+			serialized.ifPresent(r -> JSON_FILES.put(id.withPrefix("recipe/"), r));
+			return recipe;
 		}
 	}
 }

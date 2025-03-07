@@ -3,6 +3,20 @@ package com.simibubi.create.content.decoration.copycat;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomFrictionBlock;
+
+import io.github.fabricators_of_create.porting_lib.block.CustomLandingEffectsBlock;
+import io.github.fabricators_of_create.porting_lib.block.CustomRunningEffectsBlock;
+import io.github.fabricators_of_create.porting_lib.block.ExplosionResistanceBlock;
+import io.github.fabricators_of_create.porting_lib.block.LightEmissiveBlock;
+
+import io.github.fabricators_of_create.porting_lib.enchant.EnchantmentBonusBlock;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -22,10 +36,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.SpawnPlacements.Type;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -50,6 +63,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -105,50 +121,47 @@ public abstract class CopycatBlock extends Block implements IBE<CopycatBlockEnti
 	}
 
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-								 BlockHitResult pHit) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+								 if (player == null || AdventureUtil.isAdventure(pPlayer)
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-		if (pPlayer == null || AdventureUtil.isAdventure(pPlayer))
-			return InteractionResult.PASS;
-
-		Direction face = pHit.getDirection();
-		ItemStack itemInHand = pPlayer.getItemInHand(pHand);
-		BlockState materialIn = getAcceptedBlockState(pLevel, pPos, itemInHand, face);
+		Direction face = hitResult.getDirection();
+		BlockState materialIn = getAcceptedBlockState(level, pos, stack, face);
 
 		if (materialIn != null)
-			materialIn = prepareMaterial(pLevel, pPos, pState, pPlayer, pHand, pHit, materialIn);
+			materialIn = prepareMaterial(level, pos, state, player, hand, hitResult, materialIn);
 		if (materialIn == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		BlockState material = materialIn;
-		return onBlockEntityUse(pLevel, pPos, ufte -> {
+		return onBlockEntityUseItemOn(level, pos, ufte -> {
 			if (ufte.getMaterial()
 				.is(material.getBlock())) {
 				if (!ufte.cycleMaterial())
-					return InteractionResult.PASS;
+					return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 				ufte.getLevel()
 					.playSound(null, ufte.getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, .75f,
 						.95f);
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
 			}
 			if (ufte.hasCustomMaterial())
-				return InteractionResult.PASS;
-			if (pLevel.isClientSide())
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			if (level.isClientSide())
+				return ItemInteractionResult.SUCCESS;
 
 			ufte.setMaterial(material);
-			ufte.setConsumedItem(itemInHand);
+			ufte.setConsumedItem(stack);
 			ufte.getLevel()
 				.playSound(null, ufte.getBlockPos(), material.getSoundType()
 					.getPlaceSound(), SoundSource.BLOCKS, 1, .75f);
 
-			if (pPlayer.isCreative())
-				return InteractionResult.SUCCESS;
+			if (player.isCreative())
+				return ItemInteractionResult.SUCCESS;
 
-			itemInHand.shrink(1);
-			if (itemInHand.isEmpty())
-				pPlayer.setItemInHand(pHand, ItemStack.EMPTY);
-			return InteractionResult.SUCCESS;
+			stack.shrink(1);
+			if (stack.isEmpty())
+				player.setItemInHand(hand, ItemStack.EMPTY);
+			return ItemInteractionResult.SUCCESS;
 		});
 	}
 
@@ -246,10 +259,11 @@ public abstract class CopycatBlock extends Block implements IBE<CopycatBlockEnti
 	}
 
 	@Override
-	public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
+	public BlockState playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
 		super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
 		if (pPlayer.isCreative())
 			withBlockEntityDo(pLevel, pPos, ufte -> ufte.setConsumedItem(ItemStack.EMPTY));
+		return pState;
 	}
 
 	@Override
@@ -378,12 +392,6 @@ public abstract class CopycatBlock extends Block implements IBE<CopycatBlockEnti
 //	public boolean canEntityDestroy(BlockState state, BlockGetter level, BlockPos pos, Entity entity) {
 //		return getMaterial(level, pos).canEntityDestroy(level, pos, entity);
 //	}
-
-	@Override
-	public boolean isValidSpawn(BlockState state, BlockGetter level, BlockPos pos, Type type,
-								EntityType<?> entityType) {
-		return false;
-	}
 
 	@Override
 	public void fallOn(Level pLevel, BlockState pState, BlockPos pPos, Entity pEntity, float p_152430_) {

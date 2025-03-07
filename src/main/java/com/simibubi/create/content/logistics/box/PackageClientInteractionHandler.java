@@ -1,5 +1,10 @@
 package com.simibubi.create.content.logistics.box;
 
+import com.simibubi.create.foundation.mixin.accessor.MinecraftAccessor;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 
@@ -25,7 +30,7 @@ public class PackageClientInteractionHandler {
 			return;
 		if (!(event.getTarget() instanceof PackageEntity))
 			return;
-		Minecraft.getInstance().missTime = 10;
+		((MinecraftAccessor) mc).create$setMissTime(10);
 	}
 
 }

@@ -8,7 +8,13 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper.ExtractionCountMode;
 
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
+
 import net.createmod.catnip.math.BlockFace;
+
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -58,8 +64,7 @@ public abstract class CapManipulationBehaviourBase<T, S extends CapManipulationB
 	@Override
 	public void onNeighborChanged(BlockPos neighborPos) {
 		BlockFace targetBlockFace = target.getTarget(getWorld(), blockEntity.getBlockPos(), blockEntity.getBlockState());
-		if (targetBlockFace.getConnectedPos()
-			.equals(neighborPos))
+		if (targetBlockFace.getConnectedPos().equals(neighborPos))
 			onHandlerInvalidated();
 	}
 
@@ -101,9 +106,13 @@ public abstract class CapManipulationBehaviourBase<T, S extends CapManipulationB
 		return !this.hasInventory() ? null : InventoryIdentifier.get(getWorld(), blockEntity.getBlockPos(), side);
 	}
 
-	protected void onHandlerInvalidated() {
+	protected boolean onHandlerInvalidated() {
+		if (this.targetStorageProvider == null)
+			return false;
+
 		findNewNextTick = true;
 		this.setProvider(null, null);
+		return true;
 	}
 
 	@Override

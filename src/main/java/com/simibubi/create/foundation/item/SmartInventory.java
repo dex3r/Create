@@ -2,6 +2,11 @@ package com.simibubi.create.foundation.item;
 
 import com.simibubi.create.foundation.blockEntity.SyncedBlockEntity;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;

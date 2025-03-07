@@ -32,7 +32,7 @@ public class CreateNBTProcessors {
 
 			// Writable books can't have click events, so they're safe to keep
 			ResourceLocation writableBookResource = BuiltInRegistries.ITEM.getKey(Items.WRITABLE_BOOK);
-			if (book.getString("id").equals(writableBookResource.toString()))
+			if (writableBookResource != BuiltInRegistries.ITEM.getDefaultKey() && book.getString("id").equals(writableBookResource.toString()))
 				return data;
 
 			if (!book.contains("tag", Tag.TAG_COMPOUND))

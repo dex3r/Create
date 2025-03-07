@@ -3,6 +3,7 @@ package com.simibubi.create.content.logistics.itemHatch;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.AllSoundEvents;
@@ -29,6 +30,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +57,7 @@ import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
 
 public class ItemHatchBlock extends HorizontalDirectionalBlock
 	implements IBE<ItemHatchBlockEntity>, IWrenchable, ProperWaterloggedBlock, SecondaryUseBypassingBlock {
+	public static final MapCodec<ItemHatchBlock> CODEC = simpleCodec(ItemHatchBlock::new);
 
 	public static final BooleanProperty OPEN = BooleanProperty.create("open");
 
@@ -97,29 +100,28 @@ public class ItemHatchBlock extends HorizontalDirectionalBlock
 	}
 
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-		BlockHitResult pHit) {
-		if (pLevel.isClientSide())
-			return InteractionResult.SUCCESS;
-		if (pPlayer instanceof FakePlayer)
-			return InteractionResult.SUCCESS;
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (level.isClientSide())
+			return ItemInteractionResult.SUCCESS;
+		if (player instanceof FakePlayer)
+			return ItemInteractionResult.SUCCESS;
 
 		Direction facing = pState.getValue(FACING);
 		BlockPos targetPos = pPos.relative(facing);
 		Storage<ItemVariant> storage = ItemStorage.SIDED.find(pLevel, targetPos, facing.getOpposite());
 		if (storage == null)
-			return InteractionResult.FAIL;
+			return ItemInteractionResult.FAIL;
 
-		FilteringBehaviour filter = BlockEntityBehaviour.get(pLevel, pPos, FilteringBehaviour.TYPE);
+		FilteringBehaviour filter = BlockEntityBehaviour.get(level, pos, FilteringBehaviour.TYPE);
 		if (filter == null)
-			return InteractionResult.FAIL;
+			return ItemInteractionResult.FAIL;
 
-		Inventory inventory = pPlayer.getInventory();
+		Inventory inventory = player.getInventory();
 		boolean anyInserted = false;
-		boolean depositItemInHand = !pPlayer.isShiftKeyDown();
+		boolean depositItemInHand = !player.isShiftKeyDown();
 
-		if (!depositItemInHand && AllItemTags.WRENCH.matches(pPlayer.getItemInHand(pHand)))
-			return InteractionResult.PASS;
+		if (!depositItemInHand && AllItemTags.WRENCH.matches(stack))
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		for (int i = 0; i < inventory.items.size(); i++) {
 			if (Inventory.isHotbarSlot(i) != depositItemInHand)
@@ -147,16 +149,15 @@ public class ItemHatchBlock extends HorizontalDirectionalBlock
 		}
 
 		if (!anyInserted)
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 
-		AllSoundEvents.ITEM_HATCH.playOnServer(pLevel, pPos);
-		pLevel.setBlockAndUpdate(pPos, pState.setValue(OPEN, true));
-		pLevel.scheduleTick(pPos, this, 10);
+		AllSoundEvents.ITEM_HATCH.playOnServer(level, pos);
+		level.setBlockAndUpdate(pos, state.setValue(OPEN, true));
+		level.scheduleTick(pos, this, 10);
 
 		CreateLang.translate(depositItemInHand ? "item_hatch.deposit_item" : "item_hatch.deposit_inventory")
-			.sendStatus(pPlayer);
-
-		return InteractionResult.SUCCESS;
+			.sendStatus(player);
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	@Override
@@ -187,8 +188,13 @@ public class ItemHatchBlock extends HorizontalDirectionalBlock
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
+	}
+
+	@Override
+	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+		return CODEC;
 	}
 
 	@Override

@@ -1,6 +1,9 @@
 package com.simibubi.create.content.equipment.armor;
 
+import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.LivingEntityAccessor;
+
 import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
@@ -19,7 +22,7 @@ public class DivingBootsItem extends BaseArmorItem {
 	public static final EquipmentSlot SLOT = EquipmentSlot.FEET;
 	public static final ArmorItem.Type TYPE = ArmorItem.Type.BOOTS;
 
-	public DivingBootsItem(ArmorMaterial material, Properties properties, ResourceLocation textureLoc) {
+	public DivingBootsItem(Holder<ArmorMaterial> material, Properties properties, ResourceLocation textureLoc) {
 		super(material, TYPE, properties, textureLoc);
 	}
 
@@ -38,8 +41,7 @@ public class DivingBootsItem extends BaseArmorItem {
 		return stack;
 	}
 
-	public static void accellerateDescentUnderwater(LivingEntity entity) {
-//		LivingEntity entity = event.getEntityLiving();
+	public static void accelerateDescentUnderwater(LivingEntity entity) {
 		if (!affects(entity))
 			return;
 

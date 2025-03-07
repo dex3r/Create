@@ -1,7 +1,6 @@
 package com.simibubi.create.content.kinetics.mechanicalArm;
 
-import com.simibubi.create.AllPackets;
-
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -32,8 +31,7 @@ public class ArmItem extends BlockItem {
 	protected boolean updateCustomBlockEntityTag(BlockPos pos, Level world, Player player, ItemStack p_195943_4_,
 		BlockState p_195943_5_) {
 		if (!world.isClientSide && player instanceof ServerPlayer sp)
-			AllPackets.getChannel()
-				.sendToClient(new ArmPlacementPacket.ClientBoundRequest(pos), sp);
+			CatnipServices.NETWORK.sendToClient(sp, new ArmPlacementPacket.ClientBoundRequest(pos));
 		return super.updateCustomBlockEntityTag(pos, world, player, p_195943_4_, p_195943_5_);
 	}
 

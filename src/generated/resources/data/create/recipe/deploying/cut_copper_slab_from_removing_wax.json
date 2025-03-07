@@ -1,0 +1,19 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "minecraft:waxed_cut_copper_slab"
+    },
+    {
+      "tag": "minecraft:axes"
+    }
+  ],
+  "keep_held_item": true,
+  "results": [
+    {
+      "item": {
+        "id": "minecraft:cut_copper_slab"
+      }
+    }
+  ]
+}

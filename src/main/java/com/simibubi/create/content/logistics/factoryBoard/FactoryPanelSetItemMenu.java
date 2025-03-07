@@ -6,7 +6,7 @@ import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Inventory;
@@ -24,7 +24,7 @@ public class FactoryPanelSetItemMenu extends GhostItemMenu<FactoryPanelBehaviour
 		super(type, id, inv, contentHolder);
 	}
 
-	public FactoryPanelSetItemMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	public FactoryPanelSetItemMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id, inv, extraData);
 	}
 
@@ -43,9 +43,9 @@ public class FactoryPanelSetItemMenu extends GhostItemMenu<FactoryPanelBehaviour
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
-	protected FactoryPanelBehaviour createOnClient(FriendlyByteBuf extraData) {
-		FactoryPanelPosition pos = FactoryPanelPosition.receive(extraData);
+	@OnlyIn(Dist.CLIENT)
+	protected FactoryPanelBehaviour createOnClient(RegistryFriendlyByteBuf extraData) {
+		FactoryPanelPosition pos = FactoryPanelPosition.STREAM_CODEC.decode(extraData);
 		return FactoryPanelBehaviour.at(Minecraft.getInstance().level, pos);
 	}
 

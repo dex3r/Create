@@ -1,14 +1,21 @@
 package com.simibubi.create.content.redstone.link.controller;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.redstone.link.RedstoneLinkNetworkHandler.Frequency;
+import com.simibubi.create.foundation.item.ItemHelper;
+import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
+
 import com.simibubi.create.foundation.utility.AdventureUtil;
-import com.tterrag.registrate.fabric.EnvExecutor;
 
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.platform.CatnipServices;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -20,6 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -59,7 +67,7 @@ public class LinkedControllerItem extends Item implements MenuProvider, UseFirst
 			} else {
 				if (AllBlocks.REDSTONE_LINK.has(hitState)) {
 					if (world.isClientSide)
-						EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> this.toggleBindMode(ctx.getClickedPos()));
+						CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> this.toggleBindMode(ctx.getClickedPos()));
 					player.getCooldowns()
 							.addCooldown(this, 2);
 					return InteractionResult.SUCCESS;
@@ -87,15 +95,15 @@ public class LinkedControllerItem extends Item implements MenuProvider, UseFirst
 
 		if (player.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
 			if (!world.isClientSide && player instanceof ServerPlayer && player.mayBuild())
-				NetworkHooks.openScreen((ServerPlayer) player, this, buf -> {
-					buf.writeItem(heldItem);
+				player.openMenu(this, buf -> {
+					ItemStack.STREAM_CODEC.encode(buf, heldItem);
 				});
 			return InteractionResultHolder.success(heldItem);
 		}
 
 		if (!player.isShiftKeyDown()) {
 			if (world.isClientSide)
-				EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::toggleActive);
+				CatnipServices.PLATFORM.executeOnClientOnly(() -> this::toggleActive);
 			player.getCooldowns()
 				.addCooldown(this, 2);
 		}
@@ -117,9 +125,9 @@ public class LinkedControllerItem extends Item implements MenuProvider, UseFirst
 		ItemStackHandler newInv = new ItemStackHandler(12);
 		if (AllItems.LINKED_CONTROLLER.get() != stack.getItem())
 			throw new IllegalArgumentException("Cannot get frequency items from non-controller: " + stack);
-		CompoundTag invNBT = stack.getOrCreateTagElement("Items");
-		if (!invNBT.isEmpty())
-			newInv.deserializeNBT(invNBT);
+		if (!stack.has(AllDataComponents.LINKED_CONTROLLER_ITEMS))
+			return newInv;
+		ItemHelper.fillItemStackHandler(stack.getOrDefault(AllDataComponents.LINKED_CONTROLLER_ITEMS, ItemContainerContents.EMPTY), newInv);
 		return newInv;
 	}
 
@@ -147,5 +155,4 @@ public class LinkedControllerItem extends Item implements MenuProvider, UseFirst
 //	public void initializeClient(Consumer<IClientItemExtensions> consumer) {
 //		consumer.accept(SimpleCustomRenderer.create(this, new LinkedControllerItemRenderer()));
 //	}
-
 }

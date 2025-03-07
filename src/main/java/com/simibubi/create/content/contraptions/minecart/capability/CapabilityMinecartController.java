@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.AllAttachmentTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.contraptions.minecart.CouplingHandler;
 
@@ -26,6 +27,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import io.github.fabricators_of_create.porting_lib.core.util.INBTSerializable;
 
@@ -37,38 +43,6 @@ public class CapabilityMinecartController implements INBTSerializable<CompoundTa
 	public static WorldAttached<Set<UUID>> loadedMinecartsWithCoupling;
 	static WorldAttached<List<AbstractMinecart>> queuedAdditions;
 	static WorldAttached<List<UUID>> queuedUnloads;
-
-// fabric: we just manually deal with removal to avoid the weirdness of adding 5 listeners but only ever calling accept on one.
-//	/**
-//	 * This callback wrapper ensures that the listeners map in the controller
-//	 * capability only ever contains one instance
-//	 */
-//	public static class MinecartRemovalListener implements NonNullConsumer<LazyOptional<MinecartController>> {
-//
-//		private Level world;
-//		private AbstractMinecart cart;
-//
-//		public MinecartRemovalListener(Level world, AbstractMinecart cart) {
-//			this.world = world;
-//			this.cart = cart;
-//		}
-//
-//		@Override
-//		public boolean equals(Object obj) {
-//			return obj instanceof MinecartRemovalListener;
-//		}
-//
-//		@Override
-//		public int hashCode() {
-//			return 100;
-//		}
-//
-//		@Override
-//		public void accept(LazyOptional<MinecartController> t) {
-//			onCartRemoved(world, cart);
-//		}
-//
-//	}
 
 	static {
 		loadedMinecartsByUUID = new WorldAttached<>($ -> new HashMap<>());
@@ -120,12 +94,8 @@ public class CapabilityMinecartController implements INBTSerializable<CompoundTa
 
 		for (Entry<UUID, MinecartController> entry : carts.entrySet()) {
 			MinecartController controller = entry.getValue();
-			if (controller != null) {
-				if (controller.isPresent()) {
-					controller.tick();
-					continue;
-				}
-			}
+			if (controller != null && controller.isPresent())
+				continue;
 			toRemove.add(entry.getKey());
 		}
 
@@ -133,6 +103,15 @@ public class CapabilityMinecartController implements INBTSerializable<CompoundTa
 			keySet.remove(uuid);
 			cartsWithCoupling.remove(uuid);
 		}
+	}
+
+	public static void entityTick(EntityTickEvent event) {
+		Entity entity = event.getEntity();
+		if (!(entity instanceof AbstractMinecart))
+			return;
+		MinecartController data = entity.getData(AllAttachmentTypes.MINECART_CONTROLLER);
+		if (data != MinecartController.EMPTY)
+			data.tick();
 	}
 
 	public static void onChunkUnloaded(Level world, LevelChunk chunk) {
@@ -153,6 +132,7 @@ public class CapabilityMinecartController implements INBTSerializable<CompoundTa
 	}
 
 	public static void onCartRemoved(Level world, AbstractMinecart entity) {
+		entity.removeData(AllAttachmentTypes.MINECART_CONTROLLER);
 		Map<UUID, MinecartController> carts = loadedMinecartsByUUID.get(world);
 		List<UUID> unloads = queuedUnloads.get(world);
 		UUID uniqueID = entity.getUUID();

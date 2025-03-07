@@ -3,6 +3,8 @@ package com.simibubi.create.content.redstone.displayLink.source;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 
+import io.github.fabricators_of_create.porting_lib.enchant.EnchantmentBonusBlock;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -25,15 +27,15 @@ public class EnchantPowerDisplaySource extends NumericSingleLineDisplaySource {
 
 	@Override
 	protected MutableComponent provideLine(DisplayLinkContext context, DisplayTargetStats stats) {
-		if (!(context.getSourceBlockEntity() instanceof EnchantmentTableBlockEntity))
+		if (!(context.getSourceBlockEntity() instanceof EnchantingTableBlockEntity))
 			return ZERO.copy();
 
 		BlockPos pos = context.getSourcePos();
 		Level level = context.level();
 		float enchantPower = 0;
 
-		for(BlockPos offset : EnchantmentTableBlock.BOOKSHELF_OFFSETS) {
-			if (!EnchantmentTableBlock.isValidBookShelf(level, pos, offset))
+		for(BlockPos offset : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
+			if (!EnchantingTableBlock.isValidBookShelf(level, pos, offset))
 				continue;
 			BlockPos bookPos = pos.offset(offset);
 			BlockState state = level.getBlockState(bookPos);

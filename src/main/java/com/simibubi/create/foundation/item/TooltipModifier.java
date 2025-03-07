@@ -2,6 +2,10 @@ package com.simibubi.create.foundation.item;
 
 import java.util.List;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.api.registry.SimpleRegistry;

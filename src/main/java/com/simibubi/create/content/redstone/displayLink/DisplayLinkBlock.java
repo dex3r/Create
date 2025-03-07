@@ -3,6 +3,11 @@ package com.simibubi.create.content.redstone.displayLink;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import net.createmod.catnip.platform.CatnipServices;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllShapes;
@@ -25,7 +30,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -35,6 +39,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,6 +58,8 @@ import net.fabricmc.api.Environment;
 public class DisplayLinkBlock extends WrenchableDirectionalBlock implements IBE<DisplayLinkBlockEntity> {
 
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+
+	public static final MapCodec<DisplayLinkBlock> CODEC = simpleCodec(DisplayLinkBlock::new);
 
 	public DisplayLinkBlock(Properties p_i48415_1_) {
 		super(p_i48415_1_);
@@ -148,14 +155,12 @@ public class DisplayLinkBlock extends WrenchableDirectionalBlock implements IBE<
 	}
 
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-		BlockHitResult pHit) {
-		if (pPlayer == null || AdventureUtil.isAdventure(pPlayer))
+	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+		if (player == null || AdventureUtil.isAdventure(player))
 			return InteractionResult.PASS;
-		if (pPlayer.isShiftKeyDown())
+		if (player.isShiftKeyDown())
 			return InteractionResult.PASS;
-		EnvExecutor.runWhenOn(EnvType.CLIENT,
-			() -> () -> withBlockEntityDo(pLevel, pPos, be -> this.displayScreen(be, pPlayer)));
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> withBlockEntityDo(level, pos, be -> this.displayScreen(be, player)));
 		return InteractionResult.SUCCESS;
 	}
 
@@ -171,7 +176,7 @@ public class DisplayLinkBlock extends WrenchableDirectionalBlock implements IBE<
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState pState, BlockGetter pLevel, BlockPos pPos, PathComputationType pType) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 
@@ -190,4 +195,8 @@ public class DisplayLinkBlock extends WrenchableDirectionalBlock implements IBE<
 		return AllBlockEntityTypes.DISPLAY_LINK.get();
 	}
 
+	@Override
+	protected @NotNull MapCodec<? extends DirectionalBlock> codec() {
+		return CODEC;
+	}
 }

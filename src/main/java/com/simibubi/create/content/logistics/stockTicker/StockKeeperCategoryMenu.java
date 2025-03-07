@@ -1,5 +1,7 @@
 package com.simibubi.create.content.logistics.stockTicker;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.AllBlocks;
@@ -9,8 +11,9 @@ import com.simibubi.create.foundation.gui.menu.MenuBase;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -28,7 +31,7 @@ public class StockKeeperCategoryMenu extends MenuBase<StockTickerBlockEntity> {
 	public boolean slotsActive = true;
 	public ItemStackHandler proxyInventory;
 
-	public StockKeeperCategoryMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	public StockKeeperCategoryMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id, inv, extraData);
 	}
 
@@ -48,7 +51,7 @@ public class StockKeeperCategoryMenu extends MenuBase<StockTickerBlockEntity> {
 	}
 
 	@Override
-	protected StockTickerBlockEntity createOnClient(FriendlyByteBuf extraData) {
+	protected StockTickerBlockEntity createOnClient(RegistryFriendlyByteBuf extraData) {
 		BlockPos blockPos = extraData.readBlockPos();
 		return AllBlocks.STOCK_TICKER.get()
 			.getBlockEntity(Minecraft.getInstance().level, blockPos);
@@ -75,7 +78,7 @@ public class StockKeeperCategoryMenu extends MenuBase<StockTickerBlockEntity> {
 	@Override
 	public boolean stillValid(Player player) {
 		return !contentHolder.isRemoved() && player.position()
-			.closerThan(Vec3.atCenterOf(contentHolder.getBlockPos()), player.getBlockReach() + 4);
+			.closerThan(Vec3.atCenterOf(contentHolder.getBlockPos()), player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE) + 4);
 	}
 
 	class InactiveSlot extends Slot {

@@ -10,6 +10,9 @@ import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.animation.LerpedFloat;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
+
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -75,7 +78,7 @@ public class FluidTankRenderer extends SafeBlockEntityRenderer<FluidTankBlockEnt
 		ms.pushPose();
 		ms.translate(0, clampedLevel - totalHeight, 0);
 		FluidRenderer.renderFluidBox(fluidStack.getFluid(), fluidStack.getAmount(), xMin, yMin, zMin, xMax, yMax, zMax,
-			buffer, ms, light, false, true, fluidStack.getTag());
+			buffer, ms, light, false, true, fluidStack.getComponentsPatch());
 		ms.popPose();
 	}
 

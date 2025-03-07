@@ -8,20 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import net.createmod.catnip.data.LongAttached;
-
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
-
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
-
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
@@ -54,6 +40,7 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.data.LongAttached;
 import net.createmod.catnip.lang.LangBuilder;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.nbt.NBTHelper;
@@ -61,6 +48,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -77,11 +65,21 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
 import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation, SidedStorageBlockEntity {
@@ -200,10 +198,10 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
-		inputInventory.deserializeNBT(compound.getCompound("InputItems"));
-		outputInventory.deserializeNBT(compound.getCompound("OutputItems"));
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
+		inputInventory.deserializeNBT(registries, compound.getCompound("InputItems"));
+		outputInventory.deserializeNBT(registries, compound.getCompound("OutputItems"));
 
 		preferredSpoutput = null;
 		if (compound.contains("PreferredSpoutput"))
@@ -211,41 +209,39 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		disabledSpoutputs.clear();
 		ListTag disabledList = compound.getList("DisabledSpoutput", Tag.TAG_STRING);
 		disabledList.forEach(d -> disabledSpoutputs.add(Direction.valueOf(((StringTag) d).getAsString())));
-		spoutputBuffer = NBTHelper.readItemList(compound.getList("Overflow", Tag.TAG_COMPOUND));
-		spoutputFluidBuffer = NBTHelper.readCompoundList(compound.getList("FluidOverflow", Tag.TAG_COMPOUND),
-			FluidStack::loadFluidStackFromNBT);
+		spoutputBuffer = NBTHelper.readItemList(compound.getList("Overflow", Tag.TAG_COMPOUND), registries);
+		spoutputFluidBuffer = NBTHelper.readCompoundList(compound.getList("FluidOverflow", Tag.TAG_COMPOUND), tag -> FluidStack.parseOptional(registries, tag));
 
 		if (!clientPacket)
 			return;
 
 		NBTHelper.iterateCompoundList(compound.getList("VisualizedItems", Tag.TAG_COMPOUND),
-			c -> visualizedOutputItems.add(LongAttached.with(OUTPUT_ANIMATION_TIME, ItemStack.of(c))));
+			c -> visualizedOutputItems.add(LongAttached.with(OUTPUT_ANIMATION_TIME, ItemStack.parseOptional(registries, c))));
 		NBTHelper.iterateCompoundList(compound.getList("VisualizedFluids", Tag.TAG_COMPOUND),
 			c -> visualizedOutputFluids
-				.add(LongAttached.with(OUTPUT_ANIMATION_TIME, io.github.fabricators_of_create.porting_lib.fluids.FluidStack.loadFluidStackFromNBT(c))));
+				.add(LongAttached.with(OUTPUT_ANIMATION_TIME, FluidStack.parseOptional(registries, c))));
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
-		super.write(compound, clientPacket);
-		compound.put("InputItems", inputInventory.serializeNBT());
-		compound.put("OutputItems", outputInventory.serializeNBT());
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(compound, registries, clientPacket);
+		compound.put("InputItems", inputInventory.serializeNBT(registries));
+		compound.put("OutputItems", outputInventory.serializeNBT(registries));
 
 		if (preferredSpoutput != null)
 			NBTHelper.writeEnum(compound, "PreferredSpoutput", preferredSpoutput);
 		ListTag disabledList = new ListTag();
 		disabledSpoutputs.forEach(d -> disabledList.add(StringTag.valueOf(d.name())));
 		compound.put("DisabledSpoutput", disabledList);
-		compound.put("Overflow", NBTHelper.writeItemList(spoutputBuffer));
+		compound.put("Overflow", NBTHelper.writeItemList(spoutputBuffer, registries));
 		compound.put("FluidOverflow",
-			NBTHelper.writeCompoundList(spoutputFluidBuffer, fs -> fs.writeToNBT(new CompoundTag())));
+			NBTHelper.writeCompoundList(spoutputFluidBuffer, fs -> (CompoundTag) fs.saveOptional(registries)));
 
 		if (!clientPacket)
 			return;
 
-		compound.put("VisualizedItems", NBTHelper.writeCompoundList(visualizedOutputItems, ia -> NBTSerializer.serializeNBTCompound(ia.getValue())));
-		compound.put("VisualizedFluids", NBTHelper.writeCompoundList(visualizedOutputFluids, ia -> ia.getValue()
-			.writeToNBT(new CompoundTag())));
+		compound.put("VisualizedItems", NBTHelper.writeCompoundList(visualizedOutputItems, ia -> (CompoundTag) ia.getValue().saveOptional(registries)));
+		compound.put("VisualizedFluids", NBTHelper.writeCompoundList(visualizedOutputFluids, ia -> (CompoundTag) ia.getValue().saveOptional(registries)));
 		visualizedOutputItems.clear();
 		visualizedOutputFluids.clear();
 	}
@@ -651,9 +647,9 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return true;
 	}
 
-	public void readOnlyItems(CompoundTag compound) {
-		inputInventory.deserializeNBT(compound.getCompound("InputItems"));
-		outputInventory.deserializeNBT(compound.getCompound("OutputItems"));
+	public void readOnlyItems(CompoundTag compound, HolderLookup.Provider registries) {
+		inputInventory.deserializeNBT(registries, compound.getCompound("InputItems"));
+		outputInventory.deserializeNBT(registries, compound.getCompound("OutputItems"));
 	}
 
 	public static HeatLevel getHeatLevelOf(BlockState state) {
@@ -847,7 +843,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return itemCapability;
 	}
 
-	class BasinValueBox extends ValueBoxTransform.Sided {
+	static class BasinValueBox extends ValueBoxTransform.Sided {
 
 		@Override
 		protected Vec3 getSouthLocation() {

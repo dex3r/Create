@@ -12,19 +12,25 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.content.trains.entity.RemoveTrainPacket;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.kinetics.KineticDebugger;
 import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
 import com.simibubi.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.entity.TrainPacket;
+import com.simibubi.create.content.trains.entity.AddTrainPacket;
 import com.simibubi.create.content.trains.graph.TrackGraph;
 import com.simibubi.create.content.trains.graph.TrackGraphSync;
 import com.simibubi.create.content.trains.graph.TrackGraphVisualizer;
 import com.simibubi.create.content.trains.graph.TrackNodeLocation;
 import com.simibubi.create.content.trains.signal.SignalEdgeGroup;
+import net.createmod.catnip.platform.CatnipServices;
+import com.simibubi.create.foundation.utility.DistExecutor;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.server.MinecraftServer;
@@ -70,8 +76,7 @@ public class GlobalRailwayManager {
 					.toList(),
 				serverPlayer);
 			for (Train train : trains.values())
-				AllPackets.getChannel().sendToClient(new TrainPacket(train, true),
-						serverPlayer);
+				CatnipServices.NETWORK.sendToClient(serverPlayer, new AddTrainPacket(train));
 		}
 	}
 
@@ -234,7 +239,7 @@ public class GlobalRailwayManager {
 			if (train.invalid) {
 				iterator.remove();
 				trains.remove(train.id);
-				AllPackets.getChannel().sendToClientsInCurrentServer(new TrainPacket(train, false));
+				CatnipServices.NETWORK.sendToAllClients(new RemoveTrainPacket(train));
 				continue;
 			}
 
@@ -250,7 +255,7 @@ public class GlobalRailwayManager {
 			if (train.invalid) {
 				iterator.remove();
 				trains.remove(train.id);
-				AllPackets.getChannel().sendToClientsInCurrentServer(new TrainPacket(train, false));
+				CatnipServices.NETWORK.sendToAllClients(new RemoveTrainPacket(train));
 				continue;
 			}
 
@@ -286,7 +291,7 @@ public class GlobalRailwayManager {
 		if (level != null && !level.isClientSide())
 			return this;
 		MutableObject<GlobalRailwayManager> m = new MutableObject<>();
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> clientManager(m));
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> clientManager(m));
 		return m.getValue();
 	}
 

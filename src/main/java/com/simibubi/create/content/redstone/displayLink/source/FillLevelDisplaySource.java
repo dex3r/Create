@@ -5,6 +5,9 @@ import com.simibubi.create.content.redstone.thresholdSwitch.ThresholdSwitchBlock
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import net.fabricmc.api.EnvType;

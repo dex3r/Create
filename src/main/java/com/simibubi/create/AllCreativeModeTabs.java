@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
 import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
 import com.simibubi.create.content.decoration.palettes.AllPaletteBlocks;
@@ -30,6 +31,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
@@ -55,8 +57,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-
 public class AllCreativeModeTabs {
 
 	public static final TabInfo BASE_CREATIVE_TAB = register("base",
@@ -81,6 +81,7 @@ public class AllCreativeModeTabs {
 		return new TabInfo(key, tab);
 	}
 
+	@Internal
 	public static void register() {
 		// fabric: just load the class
 	}
@@ -90,14 +91,8 @@ public class AllCreativeModeTabs {
 
 		static {
 			MutableObject<Predicate<Item>> isItem3d = new MutableObject<>(item -> false);
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
-				isItem3d.setValue(item -> {
-					ItemRenderer itemRenderer = Minecraft.getInstance()
-						.getItemRenderer();
-					BakedModel model = itemRenderer.getModel(new ItemStack(item), null, null, 0);
-					return model.isGui3d();
-				});
-			});
+			if (CatnipServices.PLATFORM.getEnv().isClient())
+				isItem3d.setValue(makeClient3dItemPredicate());
 			IS_ITEM_3D_PREDICATE = isItem3d.getValue();
 		}
 
@@ -122,7 +117,7 @@ public class AllCreativeModeTabs {
 		private static Predicate<Item> makeExclusionPredicate() {
 			Set<Item> exclusions = new ReferenceOpenHashSet<>();
 
-			List<ItemProviderEntry<?>> simpleExclusions = List.of(
+			List<ItemProviderEntry<?, ?>> simpleExclusions = List.of(
 				AllItems.INCOMPLETE_PRECISION_MECHANISM,
 				AllItems.INCOMPLETE_REINFORCED_SHEET,
 				AllItems.INCOMPLETE_TRACK,
@@ -162,7 +157,7 @@ public class AllCreativeModeTabs {
 
 			exclusions.addAll(PackageStyles.RARE_BOXES);
 
-			for (ItemProviderEntry<?> entry : simpleExclusions) {
+			for (ItemProviderEntry<?, ?> entry : simpleExclusions) {
 				exclusions.add(entry.asItem());
 			}
 
@@ -181,12 +176,12 @@ public class AllCreativeModeTabs {
 		private static List<ItemOrdering> makeOrderings() {
 			List<ItemOrdering> orderings = new ReferenceArrayList<>();
 
-			Map<ItemProviderEntry<?>, ItemProviderEntry<?>> simpleBeforeOrderings = Map.of(
+			Map<ItemProviderEntry<?, ?>, ItemProviderEntry<?, ?>> simpleBeforeOrderings = Map.of(
 				AllItems.EMPTY_BLAZE_BURNER, AllBlocks.BLAZE_BURNER,
 				AllItems.SCHEDULE, AllBlocks.TRACK_STATION
 			);
 
-			Map<ItemProviderEntry<?>, ItemProviderEntry<?>> simpleAfterOrderings = Map.of(
+			Map<ItemProviderEntry<?, ?>, ItemProviderEntry<?, ?>> simpleAfterOrderings = Map.of(
 				AllItems.VERTICAL_GEARBOX, AllBlocks.GEARBOX
 			);
 
@@ -208,15 +203,15 @@ public class AllCreativeModeTabs {
 		private static Function<Item, ItemStack> makeStackFunc() {
 			Map<Item, Function<Item, ItemStack>> factories = new Reference2ReferenceOpenHashMap<>();
 
-			Map<ItemProviderEntry<?>, Function<Item, ItemStack>> simpleFactories = Map.of(
+			Map<ItemProviderEntry<?, ?>, Function<Item, ItemStack>> simpleFactories = Map.of(
 				AllItems.COPPER_BACKTANK, item -> {
 					ItemStack stack = new ItemStack(item);
-					stack.getOrCreateTag().putInt("Air", BacktankUtil.maxAirWithoutEnchants());
+					stack.set(AllDataComponents.BACKTANK_AIR, BacktankUtil.maxAirWithoutEnchants());
 					return stack;
 				},
 				AllItems.NETHERITE_BACKTANK, item -> {
 					ItemStack stack = new ItemStack(item);
-					stack.getOrCreateTag().putInt("Air", BacktankUtil.maxAirWithoutEnchants());
+					stack.set(AllDataComponents.BACKTANK_AIR, BacktankUtil.maxAirWithoutEnchants());
 					return stack;
 				}
 			);
@@ -237,7 +232,7 @@ public class AllCreativeModeTabs {
 		private static Function<Item, TabVisibility> makeVisibilityFunc() {
 			Map<Item, TabVisibility> visibilities = new Reference2ObjectOpenHashMap<>();
 
-			Map<ItemProviderEntry<?>, TabVisibility> simpleVisibilities = Map.of(
+			Map<ItemProviderEntry<?, ?>, TabVisibility> simpleVisibilities = Map.of(
 				AllItems.BLAZE_CAKE_BASE, TabVisibility.SEARCH_TAB_ONLY
 			);
 
@@ -308,7 +303,7 @@ public class AllCreativeModeTabs {
 
 		private List<Item> collectBlocks(Predicate<Item> exclusionPredicate) {
 			List<Item> items = new ReferenceArrayList<>();
-			for (RegistryEntry<Block> entry : Create.registrate().getAll(Registries.BLOCK)) {
+			for (RegistryEntry<Block, Block> entry : Create.registrate().getAll(Registries.BLOCK)) {
 				if (!CreateRegistrate.isInCreativeTab(entry, tabFilter.get().key()))
 					continue;
 				Item item = entry.get()
@@ -324,7 +319,7 @@ public class AllCreativeModeTabs {
 
 		private List<Item> collectItems(Predicate<Item> exclusionPredicate) {
 			List<Item> items = new ReferenceArrayList<>();
-			for (RegistryEntry<Item> entry : Create.registrate().getAll(Registries.ITEM)) {
+			for (RegistryEntry<Item, Item> entry : Create.registrate().getAll(Registries.ITEM)) {
 				if (!CreateRegistrate.isInCreativeTab(entry, tabFilter.get().key()))
 					continue;
 				Item item = entry.get();

@@ -3,6 +3,7 @@ package com.simibubi.create.content.redstone.rail;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 
@@ -47,6 +48,8 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
 	public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
 	public static final BooleanProperty BACKWARDS = BooleanProperty.create("backwards");
 	public static final IntegerProperty POWER = BlockStateProperties.POWER;
+
+	public static final MapCodec<ControllerRailBlock> CODEC = simpleCodec(ControllerRailBlock::new);
 
 	public ControllerRailBlock(Properties properties) {
 		super(true, properties);
@@ -310,5 +313,10 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
 
 	public static boolean isReversedSlope(BlockState state) {
 		return state.getValue(SHAPE) == RailShape.ASCENDING_SOUTH || state.getValue(SHAPE) == RailShape.ASCENDING_EAST;
+	}
+
+	@Override
+	protected MapCodec<? extends BaseRailBlock> codec() {
+		return CODEC;
 	}
 }

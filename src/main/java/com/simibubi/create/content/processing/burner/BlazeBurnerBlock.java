@@ -3,6 +3,8 @@ package com.simibubi.create.content.processing.burner;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
@@ -14,16 +16,7 @@ import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-
 import net.createmod.catnip.lang.Lang;
-
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
@@ -34,6 +27,8 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.Item;
@@ -76,6 +71,8 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 
 	public static final EnumProperty<HeatLevel> HEAT_LEVEL = EnumProperty.create("blaze", HeatLevel.class);
 
+	public static final MapCodec<BlazeBurnerBlock> CODEC = simpleCodec(BlazeBurnerBlock::new);
+
 	public BlazeBurnerBlock(Properties properties) {
 		super(properties);
 		registerDefaultState(defaultBlockState().setValue(HEAT_LEVEL, HeatLevel.NONE));
@@ -116,70 +113,68 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-								 BlockHitResult blockRayTraceResult) {
-		ItemStack heldItem = player.getItemInHand(hand);
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		HeatLevel heat = state.getValue(HEAT_LEVEL);
 
-		if (AllItems.GOGGLES.isIn(heldItem) && heat != HeatLevel.NONE)
-			return onBlockEntityUse(world, pos, bbte -> {
+		if (AllItems.GOGGLES.isIn(stack) && heat != HeatLevel.NONE)
+			return onBlockEntityUseItemOn(level, pos, bbte -> {
 				if (bbte.goggles)
-					return InteractionResult.PASS;
+					return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 				bbte.goggles = true;
 				bbte.notifyUpdate();
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
 			});
 
-		BlazeBurnerBlockEntity be = getBlockEntity(world, pos);
+		BlazeBurnerBlockEntity be = getBlockEntity(level, pos);
 		if (be != null && be.stockKeeper) {
-			StockTickerBlockEntity stockTicker = BlazeBurnerBlockEntity.getStockTicker(world, pos);
+			StockTickerBlockEntity stockTicker = BlazeBurnerBlockEntity.getStockTicker(level, pos);
 			if (stockTicker != null)
-				StockTickerInteractionHandler.interactWithLogisticsManagerAt(player, world, stockTicker.getBlockPos());
-			return InteractionResult.SUCCESS;
+				StockTickerInteractionHandler.interactWithLogisticsManagerAt(player, level, stockTicker.getBlockPos());
+			return ItemInteractionResult.SUCCESS;
 		}
 
 		if (AdventureUtil.isAdventure(player))
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS;
 
-		if (heldItem.isEmpty() && heat != HeatLevel.NONE)
-			return onBlockEntityUse(world, pos, bbte -> {
+		if (stack.isEmpty() && heat != HeatLevel.NONE)
+			return onBlockEntityUseItemOn(level, pos, bbte -> {
 				if (!bbte.goggles)
-					return InteractionResult.PASS;
+					return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 				bbte.goggles = false;
 				bbte.notifyUpdate();
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
 			});
 
 		if (heat == HeatLevel.NONE) {
-			if (heldItem.getItem() instanceof FlintAndSteelItem) {
-				world.playSound(player, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F,
-					world.random.nextFloat() * 0.4F + 0.8F);
-				if (world.isClientSide)
-					return InteractionResult.SUCCESS;
-				heldItem.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
-				world.setBlockAndUpdate(pos, AllBlocks.LIT_BLAZE_BURNER.getDefaultState());
-				return InteractionResult.SUCCESS;
+			if (stack.getItem() instanceof FlintAndSteelItem) {
+				level.playSound(player, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F,
+					level.random.nextFloat() * 0.4F + 0.8F);
+				if (level.isClientSide)
+					return ItemInteractionResult.SUCCESS;
+				stack.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+				level.setBlockAndUpdate(pos, AllBlocks.LIT_BLAZE_BURNER.getDefaultState());
+				return ItemInteractionResult.SUCCESS;
 			}
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 
 		boolean doNotConsume = player.isCreative();
 		boolean forceOverflow = !(player instanceof FakePlayer);
 		try (Transaction t = TransferUtil.getTransaction()) {
 			InteractionResultHolder<ItemStack> res =
-					tryInsert(state, world, pos, heldItem, doNotConsume, forceOverflow, t);
+				tryInsert(state, level, pos, stack, doNotConsume, forceOverflow, false);
 			t.commit();
 			ItemStack leftover = res.getObject();
-			if (!world.isClientSide && !doNotConsume && !leftover.isEmpty()) {
-				if (heldItem.isEmpty()) {
+			if (!level.isClientSide && !doNotConsume && !leftover.isEmpty()) {
+				if (stack.isEmpty()) {
 					player.setItemInHand(hand, leftover);
 				} else if (!player.getInventory()
-						.add(leftover)) {
+					.add(leftover)) {
 					player.drop(leftover, false);
 				}
 			}
 
-			return res.getResult() == InteractionResult.SUCCESS ? InteractionResult.SUCCESS : InteractionResult.PASS;
+			return res.getResult() == InteractionResult.SUCCESS ? ItemInteractionResult.SUCCESS : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 	}
 
@@ -248,7 +243,7 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 
@@ -262,6 +257,11 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 		world.playLocalSound((double) ((float) pos.getX() + 0.5F), (double) ((float) pos.getY() + 0.5F),
 			(double) ((float) pos.getZ() + 0.5F), SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS,
 			0.5F + random.nextFloat(), random.nextFloat() * 0.7F + 0.6F, false);
+	}
+
+	@Override
+	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+		return CODEC;
 	}
 
 	public static HeatLevel getHeatLevelOf(BlockState blockState) {
@@ -296,7 +296,9 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 	}
 
 	public enum HeatLevel implements StringRepresentable {
-		NONE, SMOULDERING, FADING, KINDLED, SEETHING,
+		NONE, SMOULDERING, FADING, KINDLED, SEETHING;
+
+		public static final Codec<HeatLevel> CODEC = StringRepresentable.fromEnum(HeatLevel::values)
 		;
 
 		public static HeatLevel byIndex(int index) {

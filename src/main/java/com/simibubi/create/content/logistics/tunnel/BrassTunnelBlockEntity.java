@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.belt.BeltBlockEntity;
@@ -47,6 +48,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -121,6 +123,14 @@ public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHa
 		tunnelCapability = new BrassTunnelItemHandler(this);
 		previousOutputIndex = 0;
 		syncedOutputActive = false;
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.BRASS_TUNNEL.get(),
+				(be, context) -> be.tunnelCapability
+		);
 	}
 
 	@Override
@@ -295,7 +305,7 @@ public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHa
 					}
 
 					int count = split ? splitStackSize + (splitRemainder > 0 ? 1 : 0) : stackSize;
-					ItemStack toOutput = ItemHandlerHelper.copyStackWithSize(toDistributeThisCycle, count);
+					ItemStack toOutput = toDistributeThisCycle.copyWithCount(count);
 
 					// Grow by 1 to determine if target is full even after a successful transfer
 					boolean testWithIncreasedCount = distributed.containsKey(pair);
@@ -349,7 +359,7 @@ public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHa
 		}
 
 		toDistribute.grow(failedTransferrals);
-		stackToDistribute = ItemHandlerHelper.copyStackWithSize(stackToDistribute, toDistribute.getCount());
+		stackToDistribute = stackToDistribute.copyWithCount(toDistribute.getCount());
 		if (stackToDistribute.isEmpty())
 			stackEnteredFrom = null;
 		previousOutputIndex++;
@@ -615,12 +625,12 @@ public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHa
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		compound.putBoolean("SyncedOutput", syncedOutputActive);
 		compound.putBoolean("ConnectedLeft", connectedLeft);
 		compound.putBoolean("ConnectedRight", connectedRight);
 
-		compound.put("StackToDistribute", NBTSerializer.serializeNBT(stackToDistribute));
+		compound.put("StackToDistribute", stackToDistribute.saveOptional(registries));
 		if (stackEnteredFrom != null)
 			NBTHelper.writeEnum(compound, "StackEnteredFrom", stackEnteredFrom);
 
@@ -640,11 +650,11 @@ public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHa
 				}));
 		}
 
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		boolean wasConnectedLeft = connectedLeft;
 		boolean wasConnectedRight = connectedRight;
 
@@ -652,7 +662,7 @@ public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHa
 		connectedLeft = compound.getBoolean("ConnectedLeft");
 		connectedRight = compound.getBoolean("ConnectedRight");
 
-		stackToDistribute = ItemStack.of(compound.getCompound("StackToDistribute"));
+		stackToDistribute = ItemStack.parseOptional(registries, compound.getCompound("StackToDistribute"));
 		stackEnteredFrom =
 			compound.contains("StackEnteredFrom") ? NBTHelper.readEnum(compound, "StackEnteredFrom", Direction.class)
 				: null;
@@ -665,13 +675,13 @@ public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHa
 		for (boolean filtered : Iterate.trueAndFalse) {
 			distributionTargets.set(filtered, NBTHelper
 				.readCompoundList(compound.getList(filtered ? "FilteredTargets" : "Targets", Tag.TAG_COMPOUND), nbt -> {
-					BlockPos pos = NbtUtils.readBlockPos(nbt.getCompound("Pos"));
+					BlockPos pos = NBTHelper.readBlockPos(nbt, "Pos");
 					Direction face = Direction.from3DDataValue(nbt.getInt("Face"));
 					return Pair.of(pos, face);
 				}));
 		}
 
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 
 		if (!clientPacket)
 			return;

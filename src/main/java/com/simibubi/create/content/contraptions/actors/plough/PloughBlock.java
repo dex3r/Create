@@ -3,13 +3,19 @@ package com.simibubi.create.content.contraptions.actors.plough;
 import java.util.UUID;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.contraptions.actors.AttachedActorBlock;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+
+import org.jetbrains.annotations.NotNull;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
 
 public class PloughBlock extends AttachedActorBlock {
+
+	public static final MapCodec<PloughBlock> CODEC = simpleCodec(PloughBlock::new);
 
 	public PloughBlock(Properties p_i48377_1_) {
 		super(p_i48377_1_);
@@ -29,4 +35,8 @@ public class PloughBlock extends AttachedActorBlock {
 
 	}
 
+	@Override
+	protected @NotNull MapCodec<? extends HorizontalDirectionalBlock> codec() {
+		return CODEC;
+	}
 }

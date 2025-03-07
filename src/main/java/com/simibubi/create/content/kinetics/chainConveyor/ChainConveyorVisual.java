@@ -29,6 +29,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class ChainConveyorVisual extends SingleAxisRotatingVisual<ChainConveyorBlockEntity> implements SimpleDynamicVisual, SimpleTickableVisual {
 
@@ -100,7 +101,7 @@ public class ChainConveyorVisual extends SingleAxisRotatingVisual<ChainConveyorB
 
 		if (physicsData.modelKey == null) {
 			ResourceLocation key = BuiltInRegistries.ITEM.getKey(box.item.getItem());
-			if (key == null)
+			if (key == BuiltInRegistries.ITEM.getDefaultKey())
 				return;
 			physicsData.modelKey = key;
 		}
@@ -151,13 +152,13 @@ public class ChainConveyorVisual extends SingleAxisRotatingVisual<ChainConveyorB
 		var guardInstancer = instancerProvider().instancer(InstanceTypes.TRANSFORMED, SpecialModels.chunkDiffuse(AllPartialModels.CHAIN_CONVEYOR_GUARD));
 
 		TransformedInstance wheel = wheelInstancer.createInstance();
-		
+
 		wheel.translate(getVisualPosition())
 			.light(rotatingModel.light)
 			.setChanged();
-		
+
 		guards.add(wheel);
-		
+
 		for (BlockPos blockPos : blockEntity.connections) {
 			ChainConveyorBlockEntity.ConnectionStats stats = blockEntity.connectionStats.get(blockPos);
 			if (stats == null) {

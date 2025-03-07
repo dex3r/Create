@@ -40,7 +40,7 @@ public class TrimmableArmorModelGenerator {
 			String trimId = data.name(item.getMaterial());
 			ResourceLocation trimModelLoc = modelLoc.withSuffix("_" + trimId + "_trim");
 			ResourceLocation trimLoc =
-				new ResourceLocation("trims/items/" + item.getType().getName() + "_trim_" + trimId);
+				ResourceLocation.withDefaultNamespace("trims/items/" + item.getType().getName() + "_trim_" + trimId);
 			String parent = "item/generated";
 			if (item.getMaterial() == AllArmorMaterials.CARDBOARD) {
 				trimLoc = Create.asResource("trims/items/card_" + item.getType().getName() + "_trim_" + trimId);

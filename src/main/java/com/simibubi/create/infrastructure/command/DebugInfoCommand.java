@@ -4,7 +4,7 @@ import static net.minecraft.commands.Commands.literal;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.simibubi.create.AllPackets;
+import net.createmod.catnip.platform.CatnipServices;
 import com.simibubi.create.Create;
 import com.simibubi.create.infrastructure.debugInfo.ServerDebugInfoPacket;
 
@@ -19,8 +19,7 @@ public class DebugInfoCommand {
 
 			Create.lang().translate("command.debuginfo.sending")
 				.sendChat(player);
-			AllPackets.getChannel()
-					.sendToClient(new ServerDebugInfoPacket(player), player);
+			CatnipServices.NETWORK.sendToClient(player, new ServerDebugInfoPacket(player));
 			return Command.SINGLE_SUCCESS;
 		});
 	}

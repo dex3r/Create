@@ -14,16 +14,19 @@ import com.simibubi.create.foundation.utility.AdventureUtil;
 import com.simibubi.create.foundation.utility.BlockHelper;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -47,11 +50,11 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 			return InteractionResult.PASS;
 
 		RecipeType<Recipe<Container>> type = AllRecipeTypes.ITEM_APPLICATION.getType();
-		Optional<Recipe<Container>> foundRecipe = level.getRecipeManager()
+		Optional<RecipeHolder<Recipe<Container>>> foundRecipe = level.getRecipeManager()
 			.getAllRecipesFor(type)
 			.stream()
 			.filter(r -> {
-				ManualApplicationRecipe mar = (ManualApplicationRecipe) r;
+				ManualApplicationRecipe mar = (ManualApplicationRecipe) r.value();
 				return mar.testBlock(blockState) && mar.ingredients.get(1)
 					.test(heldItem);
 			})
@@ -67,7 +70,7 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 			return InteractionResult.SUCCESS;
 
 		level.playSound(null, pos, SoundEvents.COPPER_BREAK, SoundSource.PLAYERS, 1, 1.45f);
-		ManualApplicationRecipe recipe = (ManualApplicationRecipe) foundRecipe.get();
+		ManualApplicationRecipe recipe = (ManualApplicationRecipe) foundRecipe.get().value();
 		level.destroyBlock(pos, false);
 
 		BlockState transformedBlock = recipe.transformBlock(blockState);
@@ -75,14 +78,14 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 		recipe.rollResults()
 			.forEach(stack -> Block.popResource(level, pos, stack));
 
-		boolean creative = player != null && player.isCreative();
-		boolean unbreakable = heldItem.hasTag() && heldItem.getTag()
-			.getBoolean("Unbreakable");
+		boolean creative = player != null && player
+			.isCreative();
+		boolean unbreakable = heldItem.has(DataComponents.UNBREAKABLE);
 		boolean keepHeld = recipe.shouldKeepHeldItem() || creative;
 
 		if (!unbreakable && !keepHeld) {
 			if (heldItem.isDamageableItem())
-				heldItem.hurtAndBreak(1, player, s -> s.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+				heldItem.hurtAndBreak(1, player, LivingEntity.getSlotForHand(InteractionHand.MAIN_HAND));
 			else
 				heldItem.shrink(1);
 		}
@@ -112,18 +115,18 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 		super(AllRecipeTypes.ITEM_APPLICATION, params);
 	}
 
-	public static DeployerApplicationRecipe asDeploying(Recipe<?> recipe) {
-		ManualApplicationRecipe mar = (ManualApplicationRecipe) recipe;
+	public static RecipeHolder<DeployerApplicationRecipe> asDeploying(RecipeHolder<?> recipe) {
+		ManualApplicationRecipe mar = (ManualApplicationRecipe) recipe.value();
+		ResourceLocation id = ResourceLocation.fromNamespaceAndPath(mar.id.getNamespace(), mar.id.getPath() + "_using_deployer");
 		ProcessingRecipeBuilder<DeployerApplicationRecipe> builder =
-			new ProcessingRecipeBuilder<>(DeployerApplicationRecipe::new,
-				new ResourceLocation(mar.id.getNamespace(), mar.id.getPath() + "_using_deployer"))
+			new ProcessingRecipeBuilder<>(DeployerApplicationRecipe::new, id)
 					.require(mar.ingredients.get(0))
 					.require(mar.ingredients.get(1));
 		for (ProcessingOutput output : mar.results)
 			builder.output(output);
 		if (mar.shouldKeepHeldItem())
 			builder.toolNotConsumed();
-		return builder.build();
+		return new RecipeHolder<>(id, builder.build());
 	}
 
 	public boolean testBlock(BlockState in) {

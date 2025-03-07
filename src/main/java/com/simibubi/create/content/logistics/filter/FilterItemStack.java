@@ -3,15 +3,16 @@ package com.simibubi.create.content.logistics.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
 
 import net.createmod.catnip.data.Pair;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -19,23 +20,22 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 
 public class FilterItemStack {
-
 	private final ItemStack filterItemStack;
 	private boolean fluidExtracted;
 	private FluidStack filterFluidStack;
 
 	public static FilterItemStack of(ItemStack filter) {
-		if (filter.hasTag()) {
+		if (!filter.isComponentsPatchEmpty()) {
 			if (AllItems.FILTER.isIn(filter)) {
-				trimFilterTag(filter);
+				trimFilterComponents(filter);
 				return new ListFilterItemStack(filter);
 			}
 			if (AllItems.ATTRIBUTE_FILTER.isIn(filter)) {
-				trimFilterTag(filter);
+				trimFilterComponents(filter);
 				return new AttributeFilterItemStack(filter);
 			}
 			if (AllItems.PACKAGE_FILTER.isIn(filter)) {
-				trimFilterTag(filter);
+				trimFilterComponents(filter);
 				return new PackageFilterItemStack(filter);
 			}
 		}
@@ -43,28 +43,25 @@ public class FilterItemStack {
 		return new FilterItemStack(filter);
 	}
 
-	public static FilterItemStack of(CompoundTag tag) {
-		return of(ItemStack.of(tag));
+	public static FilterItemStack of(HolderLookup.Provider registries, CompoundTag tag) {
+		return of(ItemStack.parseOptional(registries, tag));
 	}
 
 	public static FilterItemStack empty() {
 		return of(ItemStack.EMPTY);
 	}
 
-	private static void trimFilterTag(ItemStack filter) {
-		CompoundTag stackTag = filter.getTag();
-		stackTag.remove("Enchantments");
-		stackTag.remove("AttributeModifiers");
+	private static void trimFilterComponents(ItemStack filter) {
+		filter.remove(DataComponents.ENCHANTMENTS);
+		filter.remove(DataComponents.ATTRIBUTE_MODIFIERS);
 	}
 
 	public boolean isEmpty() {
 		return filterItemStack.isEmpty();
 	}
 
-	public CompoundTag serializeNBT() {
-		CompoundTag ret = new CompoundTag();
-		filterItemStack.save(ret);
-		return ret;
+	public CompoundTag serializeNBT(HolderLookup.Provider registries) {
+		return (CompoundTag) filterItemStack.saveOptional(registries);
 	}
 
 	public ItemStack item() {
@@ -109,7 +106,7 @@ public class FilterItemStack {
 		if (!matchNBT)
 			return filterFluidStack.getFluid()
 				.isSame(stack.getFluid());
-		return filterFluidStack.isFluidEqual(stack);
+		return net.neoforged.neoforge.fluids.FluidStack.isSameFluidSameComponents(filterFluidStack, stack);
 	}
 
 	//
@@ -137,7 +134,7 @@ public class FilterItemStack {
 
 		protected ListFilterItemStack(ItemStack filter) {
 			super(filter);
-			boolean defaults = !filter.hasTag();
+			boolean hasFilterItems = filter.has(AllDataComponents.FILTER_ITEMS);
 
 			containedItems = new ArrayList<>();
 			ItemStackHandler items = FilterItem.getFilterItems(filter);
@@ -147,12 +144,8 @@ public class FilterItemStack {
 					containedItems.add(FilterItemStack.of(stackInSlot));
 			}
 
-			shouldRespectNBT = defaults ? false
-				: filter.getTag()
-				.getBoolean("RespectNBT");
-			isBlacklist = defaults ? false
-				: filter.getTag()
-				.getBoolean("Blacklist");
+			shouldRespectNBT = hasFilterItems && filter.getOrDefault(AllDataComponents.FILTER_ITEMS_RESPECT_NBT, false);
+			isBlacklist = hasFilterItems && filter.getOrDefault(AllDataComponents.FILTER_ITEMS_BLACKLIST, false);
 		}
 
 		@Override
@@ -176,31 +169,23 @@ public class FilterItemStack {
 	}
 
 	public static class AttributeFilterItemStack extends FilterItemStack {
-
-		public enum WhitelistMode {
-			WHITELIST_DISJ, WHITELIST_CONJ, BLACKLIST;
-		}
-
-		public WhitelistMode whitelistMode;
+		public AttributeFilterWhitelistMode whitelistMode;
 		public List<Pair<ItemAttribute, Boolean>> attributeTests;
 
 		protected AttributeFilterItemStack(ItemStack filter) {
 			super(filter);
-			boolean defaults = !filter.hasTag();
+			boolean defaults = !filter.has(AllDataComponents.ATTRIBUTE_FILTER_MATCHED_ATTRIBUTES);
 
 			attributeTests = new ArrayList<>();
-			whitelistMode = WhitelistMode.values()[defaults ? 0
-				: filter.getTag()
-				.getInt("WhitelistMode")];
+			whitelistMode = filter.getOrDefault(AllDataComponents.ATTRIBUTE_FILTER_WHITELIST_MODE, AttributeFilterWhitelistMode.WHITELIST_DISJ);
 
-			ListTag attributes = defaults ? new ListTag()
-				: filter.getTag()
-				.getList("MatchedAttributes", Tag.TAG_COMPOUND);
-			for (Tag inbt : attributes) {
-				CompoundTag compound = (CompoundTag) inbt;
-				ItemAttribute attribute = ItemAttribute.loadStatic(compound);
+			List<ItemAttribute.ItemAttributeEntry> attributes = defaults ? new ArrayList<>()
+				: filter.get(AllDataComponents.ATTRIBUTE_FILTER_MATCHED_ATTRIBUTES);
+			//noinspection DataFlowIssue
+			for (ItemAttribute.ItemAttributeEntry attributeEntry : attributes) {
+				ItemAttribute attribute = attributeEntry.attribute();
 				if (attribute != null)
-					attributeTests.add(Pair.of(attribute, compound.getBoolean("Inverted")));
+					attributeTests.add(Pair.of(attribute, attributeEntry.inverted()));
 			}
 		}
 
@@ -257,8 +242,7 @@ public class FilterItemStack {
 
 		protected PackageFilterItemStack(ItemStack filter) {
 			super(filter);
-			filterString = filter.getOrCreateTag()
-				.getString("Address");
+			filterString = PackageItem.getAddress(filter);
 		}
 
 		@Override
@@ -273,5 +257,4 @@ public class FilterItemStack {
 		}
 
 	}
-
 }

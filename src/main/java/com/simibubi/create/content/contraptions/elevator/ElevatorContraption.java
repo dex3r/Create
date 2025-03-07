@@ -8,7 +8,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllContraptionTypes;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
@@ -21,9 +20,11 @@ import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.IntAttached;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -71,7 +72,8 @@ public class ElevatorContraption extends PulleyContraption {
 
 		namesList = column.compileNamesList();
 		namesListVersion = column.namesListVersion;
-		AllPackets.getChannel().sendToClientsTracking(new ElevatorFloorListPacket(entity, namesList), entity);
+		CatnipServices.NETWORK.sendToClientsTrackingEntity(entity,
+			new ElevatorFloorListPacket(entity, namesList));
 	}
 
 	@Override
@@ -147,8 +149,8 @@ public class ElevatorContraption extends PulleyContraption {
 	}
 
 	@Override
-	public CompoundTag writeNBT(boolean spawnPacket) {
-		CompoundTag tag = super.writeNBT(spawnPacket);
+	public CompoundTag writeNBT(HolderLookup.Provider registries,  boolean spawnPacket) {
+		CompoundTag tag = super.writeNBT(registries, spawnPacket);
 		tag.putBoolean("Arrived", arrived);
 		tag.put("Column", column.write());
 		tag.putInt("ContactY", contactYOffset);

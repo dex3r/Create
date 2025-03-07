@@ -5,8 +5,9 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllTags.AllItemTags;
 import com.simibubi.create.content.processing.recipe.HeatCondition;
-import com.simibubi.create.foundation.recipe.BlockTagIngredient;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
@@ -18,11 +19,13 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
 import io.github.fabricators_of_create.porting_lib.tags.Tags;
 
+import java.util.concurrent.CompletableFuture;
+
 public class MixingRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe
 
-	TEMP_LAVA = create("lava_from_cobble", b -> b.require(Tags.Items.COBBLESTONE)
+	TEMP_LAVA = create("lava_from_cobble", b -> b.require(Tags.Items.COBBLESTONES)
 		.output(Fluids.LAVA, FluidConstants.BUCKET / 20)
 		.requiresHeat(HeatCondition.SUPERHEATED)),
 
@@ -63,7 +66,7 @@ public class MixingRecipeGen extends ProcessingRecipeGen {
 			.require(I.zincNugget())
 			.output(I.andesiteAlloy(), 1)),
 
-		MUD = create("mud_by_mixing", b -> b.require(BlockTagIngredient.create(BlockTags.CONVERTABLE_TO_MUD))
+		MUD = create("mud_by_mixing", b -> b.require(new BlockTagIngredient(BlockTags.CONVERTABLE_TO_MUD).toVanilla())
 			.require(Fluids.WATER, FluidConstants.BOTTLE)
 			.output(Blocks.MUD, 1)),
 
@@ -99,8 +102,8 @@ public class MixingRecipeGen extends ProcessingRecipeGen {
 				.whenModLoaded(mod.getId()));
 	}
 
-	public MixingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public MixingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

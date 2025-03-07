@@ -229,26 +229,22 @@ public class TrainMapRenderer implements AutoCloseable {
 			Matrix4f matrix4f = pPoseStack.last()
 				.pose();
 			VertexConsumer vertexconsumer = pBufferSource.getBuffer(renderType);
-			vertexconsumer.vertex(matrix4f, 0.0F, HEIGHT, 0)
-				.color(255, 255, 255, 255)
-				.uv(0.0F, 1.0F)
-				.uv2(pPackedLight)
-				.endVertex();
-			vertexconsumer.vertex(matrix4f, WIDTH, HEIGHT, 0)
-				.color(255, 255, 255, 255)
-				.uv(1.0F, 1.0F)
-				.uv2(pPackedLight)
-				.endVertex();
-			vertexconsumer.vertex(matrix4f, WIDTH, 0.0F, 0)
-				.color(255, 255, 255, 255)
-				.uv(1.0F, 0.0F)
-				.uv2(pPackedLight)
-				.endVertex();
-			vertexconsumer.vertex(matrix4f, 0.0F, 0.0F, 0)
-				.color(255, 255, 255, 255)
-				.uv(0.0F, 0.0F)
-				.uv2(pPackedLight)
-				.endVertex();
+			vertexconsumer.addVertex(matrix4f, 0.0F, HEIGHT, 0)
+				.setColor(255, 255, 255, 255)
+				.setUv(0.0F, 1.0F)
+				.setLight(pPackedLight);
+			vertexconsumer.addVertex(matrix4f, WIDTH, HEIGHT, 0)
+				.setColor(255, 255, 255, 255)
+				.setUv(1.0F, 1.0F)
+				.setLight(pPackedLight);
+			vertexconsumer.addVertex(matrix4f, WIDTH, 0.0F, 0)
+				.setColor(255, 255, 255, 255)
+				.setUv(1.0F, 0.0F)
+				.setLight(pPackedLight);
+			vertexconsumer.addVertex(matrix4f, 0.0F, 0.0F, 0)
+				.setColor(255, 255, 255, 255)
+				.setUv(0.0F, 0.0F)
+				.setLight(pPackedLight);
 		}
 
 		public void close() {

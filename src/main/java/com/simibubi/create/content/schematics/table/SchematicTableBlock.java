@@ -1,5 +1,6 @@
 package com.simibubi.create.content.schematics.table;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.foundation.block.IBE;
@@ -23,9 +24,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import org.jetbrains.annotations.NotNull;
+
 import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
 
 public class SchematicTableBlock extends HorizontalDirectionalBlock implements IBE<SchematicTableBlockEntity> {
+
+	public static final MapCodec<SchematicTableBlock> CODEC = simpleCodec(SchematicTableBlock::new);
 
 	public SchematicTableBlock(Properties properties) {
 		super(properties);
@@ -54,12 +59,11 @@ public class SchematicTableBlock extends HorizontalDirectionalBlock implements I
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-			BlockHitResult hit) {
-		if (worldIn.isClientSide)
+	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+		if (level.isClientSide)
 			return InteractionResult.SUCCESS;
-		withBlockEntityDo(worldIn, pos,
-				be -> NetworkHooks.openScreen((ServerPlayer) player, be, be::sendToMenu));
+		withBlockEntityDo(level, pos,
+				be -> player.openMenu(be, be::sendToMenu));
 		return InteractionResult.SUCCESS;
 	}
 
@@ -83,8 +87,13 @@ public class SchematicTableBlock extends HorizontalDirectionalBlock implements I
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
+	}
+
+	@Override
+	protected @NotNull MapCodec<? extends HorizontalDirectionalBlock> codec() {
+		return CODEC;
 	}
 
 }

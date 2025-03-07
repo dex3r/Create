@@ -63,7 +63,7 @@ public class ExtendoGripRenderHandler {
 		PoseStack ms = event.getPoseStack();
 		var msr = TransformStack.of(ms);
 		AbstractClientPlayer abstractclientplayerentity = mc.player;
-		RenderSystem.setShaderTexture(0, abstractclientplayerentity.getSkinTextureLocation());
+		RenderSystem.setShaderTexture(0, abstractclientplayerentity.getSkin().texture());
 
 		float flip = rightHand ? 1.0F : -1.0F;
 		float swingProgress = event.getSwingProgress();
@@ -112,7 +112,8 @@ public class ExtendoGripRenderHandler {
 				event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
 
 			if (!notInOffhand) {
-				mc.getItemRenderer().getModel(offhandItem, null, null, 0).getTransforms().getTransform(transform).apply(!rightHand, ms);
+				ClientHooks.handleCameraTransforms(ms, mc.getItemRenderer()
+					.getModel(offhandItem, null, null, 0), transform, !rightHand);
 				ms.translate(flip * -.05f, .15f, -1.2f);
 				ms.translate(0, 0, -animation * 2.25f);
 				if (blockItem && mc.getItemRenderer()

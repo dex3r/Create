@@ -1,10 +1,11 @@
 package com.simibubi.create.content.logistics.depot;
 
+import net.createmod.catnip.platform.CatnipServices;
+
 import org.joml.Vector3f;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
@@ -78,8 +79,6 @@ public class EjectorTargetHandler {
 		if (pos.equals(currentSelection)) {
 			currentSelection = null;
 			launcher = null;
-//			event.setCanceled(true);
-//			event.setCancellationResult(InteractionResult.SUCCESS);
 			return InteractionResult.SUCCESS;
 		}
 		return InteractionResult.PASS;
@@ -117,7 +116,7 @@ public class EjectorTargetHandler {
 		h = Math.abs(diff.getX() + diff.getZ());
 		v = -diff.getY();
 
-		AllPackets.getChannel().sendToServer(new EjectorPlacementPacket(h, v, pos, validTargetDirection));
+		CatnipServices.NETWORK.sendToServer(new EjectorPlacementPacket(h, v, pos, validTargetDirection));
 		currentSelection = null;
 		currentItem = null;
 

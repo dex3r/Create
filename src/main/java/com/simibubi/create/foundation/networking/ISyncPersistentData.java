@@ -4,9 +4,13 @@ import java.util.HashSet;
 
 import com.simibubi.create.AllPackets;
 
-import net.minecraft.client.Minecraft;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
+import net.createmod.catnip.platform.CatnipServices;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
 
 public interface ISyncPersistentData {
@@ -14,45 +18,36 @@ public interface ISyncPersistentData {
 	void onPersistentDataUpdated();
 
 	default void syncPersistentDataWithTracking(Entity self) {
-		AllPackets.getChannel().sendToClientsTracking(new PersistentDataPacket(self), self);
+		CatnipServices.NETWORK.sendToClientsTrackingEntity(self, new PersistentDataPacket(self));
 	}
 
-	public static class PersistentDataPacket extends SimplePacketBase {
-
-		private int entityId;
-		private Entity entity;
-		private CompoundTag readData;
+	record PersistentDataPacket(int entityId, CompoundTag readData) implements ClientboundPacketPayload {
+		public static final StreamCodec<FriendlyByteBuf, PersistentDataPacket> STREAM_CODEC = StreamCodec.composite(
+				ByteBufCodecs.VAR_INT, PersistentDataPacket::entityId,
+				ByteBufCodecs.COMPOUND_TAG, PersistentDataPacket::readData,
+				PersistentDataPacket::new
+		);
 
 		public PersistentDataPacket(Entity entity) {
-			this.entity = entity;
-			this.entityId = entity.getId();
-		}
-
-		public PersistentDataPacket(FriendlyByteBuf buffer) {
-			entityId = buffer.readInt();
-			readData = buffer.readNbt();
+			this(entity.getId(), entity.getPersistentData());
 		}
 
 		@Override
-		public void write(FriendlyByteBuf buffer) {
-			buffer.writeInt(entityId);
-			buffer.writeNbt(entity.getCustomData());
+		@OnlyIn(Dist.CLIENT)
+		public void handle(LocalPlayer player) {
+			Entity entityByID = player.clientLevel.getEntity(entityId);
+			CompoundTag data = entityByID.getPersistentData();
+			new HashSet<>(data.getAllKeys()).forEach(data::remove);
+			data.merge(readData);
+			if (!(entityByID instanceof ISyncPersistentData))
+				return;
+			((ISyncPersistentData) entityByID).onPersistentDataUpdated();
 		}
 
 		@Override
-		public boolean handle(Context context) {
-			context.enqueueWork(() -> {
-				Entity entityByID = Minecraft.getInstance().level.getEntity(entityId);
-				CompoundTag data = entityByID.getCustomData();
-				new HashSet<>(data.getAllKeys()).forEach(data::remove);
-				data.merge(readData);
-				if (!(entityByID instanceof ISyncPersistentData))
-					return;
-				((ISyncPersistentData) entityByID).onPersistentDataUpdated();
-			});
-			return true;
+		public PacketTypeProvider getTypeProvider() {
+			return AllPackets.PERSISTENT_DATA;
 		}
-
 	}
 
 }

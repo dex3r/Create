@@ -21,8 +21,8 @@ public class DynamicTree extends AbstractBlockBreakQueue {
 	}
 
 	public static boolean isDynamicBranch(Block block) {
-		return false;
 		//return TreeHelper.isBranch(block) || block instanceof TrunkShellBlock;
+		return false;
 	}
 
 

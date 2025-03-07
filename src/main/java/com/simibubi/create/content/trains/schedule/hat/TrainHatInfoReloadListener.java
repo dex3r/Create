@@ -8,6 +8,9 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import com.simibubi.create.Create;
 
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -44,7 +47,7 @@ public class TrainHatInfoReloadListener {
 		FileToIdConverter converter = FileToIdConverter.json(HAT_INFO_DIRECTORY);
 		converter.listMatchingResources(manager).forEach((location, resource) -> {
 			String[] splitPath = location.getPath().split("/");
-			ResourceLocation entityName = new ResourceLocation(location.getNamespace(), splitPath[splitPath.length - 1].replace(".json", ""));
+			ResourceLocation entityName = ResourceLocation.fromNamespaceAndPath(location.getNamespace(), splitPath[splitPath.length - 1].replace(".json", ""));
 			if (!BuiltInRegistries.ENTITY_TYPE.containsKey(entityName)) {
 				Create.LOGGER.error("Failed to load train hat info for entity {} as it does not exist.", entityName);
 				return;

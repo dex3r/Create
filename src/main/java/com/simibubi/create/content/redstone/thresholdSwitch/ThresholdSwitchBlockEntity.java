@@ -18,8 +18,19 @@ import com.simibubi.create.foundation.blockEntity.behaviour.inventory.TankManipu
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+
 import net.createmod.catnip.math.BlockFace;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -77,7 +88,7 @@ public class ThresholdSwitchBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		onWhenAbove = compound.getInt("OnAboveAmount");
 		offWhenBelow = compound.getInt("OffBelowAmount");
 		currentLevel = compound.getInt("CurrentAmount");
@@ -87,7 +98,7 @@ public class ThresholdSwitchBlockEntity extends SmartBlockEntity {
 		redstoneState = compound.getBoolean("Powered");
 		inverted = compound.getBoolean("Inverted");
 		poweredAfterDelay = compound.getBoolean("PoweredAfterDelay");
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 	}
 
 	protected void writeCommon(CompoundTag compound) {
@@ -97,7 +108,7 @@ public class ThresholdSwitchBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		writeCommon(compound);
 		compound.putInt("CurrentAmount", currentLevel);
 		compound.putInt("CurrentMinAmount", currentMinLevel);
@@ -105,13 +116,13 @@ public class ThresholdSwitchBlockEntity extends SmartBlockEntity {
 		compound.putBoolean("InStacks", inStacks);
 		compound.putBoolean("Powered", redstoneState);
 		compound.putBoolean("PoweredAfterDelay", poweredAfterDelay);
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	public void writeSafe(CompoundTag compound) {
+	public void writeSafe(CompoundTag compound, HolderLookup.Provider registries) {
 		writeCommon(compound);
-		super.writeSafe(compound);
+		super.writeSafe(compound, registries);
 	}
 
 	public int getMinLevel() {

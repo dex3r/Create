@@ -1,81 +1,88 @@
 package com.simibubi.create.foundation.fluid;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecs;
+import net.createmod.catnip.lang.Lang;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 
-public abstract class FluidIngredient implements Predicate<FluidStack> {
+import net.neoforged.neoforge.fluids.FluidStack;
 
+// If anymore fluid ingredient "types" are added then you must update FluidIngredient.Type
+// TODO - See if we can use neoforge's classes for this
+public abstract sealed class FluidIngredient implements Predicate<FluidStack> {
 	public static final FluidIngredient EMPTY = new FluidStackIngredient();
+
+	public static final Codec<FluidIngredient> CODEC = FluidIngredient.Type.CODEC.dispatch(FluidIngredient::getType, type -> type.codec);
+	public static final StreamCodec<RegistryFriendlyByteBuf, FluidIngredient> STREAM_CODEC = Type.STREAM_CODEC.dispatch(FluidIngredient::getType, type -> type.streamCodec);
 
 	public List<FluidStack> matchingFluidStacks;
 
 	public static FluidIngredient fromTag(TagKey<Fluid> tag, long amount) {
-		FluidTagIngredient ingredient = new FluidTagIngredient();
-		ingredient.tag = tag;
-		ingredient.amountRequired = amount;
-		return ingredient;
+		return new FluidTagIngredient(tag, amount);
 	}
 
 	public static FluidIngredient fromFluid(Fluid fluid, long amount) {
-		FluidStackIngredient ingredient = new FluidStackIngredient();
-		ingredient.fluid = fluid;
-		ingredient.amountRequired = amount;
+		FluidStackIngredient ingredient = new FluidStackIngredient(fluid, amount);
 		ingredient.fixFlowing();
 		return ingredient;
 	}
 
 	public static FluidIngredient fromFluidStack(FluidStack fluidStack) {
-		FluidStackIngredient ingredient = new FluidStackIngredient();
-		ingredient.fluid = fluidStack.getFluid();
-		ingredient.amountRequired = fluidStack.getAmount();
+		FluidStackIngredient ingredient = new FluidStackIngredient(fluidStack.getFluid(), fluidStack.getAmount());
 		ingredient.fixFlowing();
-		if (fluidStack.hasTag())
-			ingredient.tagToMatch = fluidStack.getTag();
+		if (!fluidStack.isComponentsPatchEmpty())
+			ingredient.components = fluidStack.getComponentsPatch();
 		return ingredient;
 	}
 
 	protected long amountRequired;
 
-	protected abstract boolean testInternal(FluidStack t);
-
-	protected abstract void readInternal(FriendlyByteBuf buffer);
-
-	protected abstract void writeInternal(FriendlyByteBuf buffer);
-
-	protected abstract void readInternal(JsonObject json);
-
-	protected abstract void writeInternal(JsonObject json);
-
-	protected abstract List<FluidStack> determineMatchingFluidStacks();
-
 	public long getRequiredAmount() {
 		return amountRequired;
 	}
+
+	protected abstract boolean testInternal(FluidStack t);
+
+	protected abstract void readInternal(RegistryFriendlyByteBuf buffer);
+
+	protected abstract void writeInternal(RegistryFriendlyByteBuf buffer);
+
+	protected abstract List<FluidStack> determineMatchingFluidStacks();
+
+	protected abstract Type getType();
 
 	public List<FluidStack> getMatchingFluidStacks() {
 		if (matchingFluidStacks != null)
@@ -90,13 +97,13 @@ public abstract class FluidIngredient implements Predicate<FluidStack> {
 		return testInternal(t);
 	}
 
-	public void write(FriendlyByteBuf buffer) {
-		buffer.writeBoolean(this instanceof FluidTagIngredient);
-		buffer.writeVarLong(amountRequired);
-		writeInternal(buffer);
+	public static void write(RegistryFriendlyByteBuf buffer, FluidIngredient ingredient) {
+		buffer.writeBoolean(ingredient instanceof FluidTagIngredient);
+		buffer.writeVarLong(ingredient.amountRequired);
+		ingredient.writeInternal(buffer);
 	}
 
-	public static FluidIngredient read(FriendlyByteBuf buffer) {
+	public static FluidIngredient read(RegistryFriendlyByteBuf buffer) {
 		boolean isTagIngredient = buffer.readBoolean();
 		FluidIngredient ingredient = isTagIngredient ? new FluidTagIngredient() : new FluidStackIngredient();
 		ingredient.amountRequired = buffer.readVarInt();
@@ -104,103 +111,107 @@ public abstract class FluidIngredient implements Predicate<FluidStack> {
 		return ingredient;
 	}
 
-	public JsonObject serialize() {
-		JsonObject json = new JsonObject();
-		writeInternal(json);
-		json.addProperty("amount", amountRequired);
-		return json;
-	}
+	public static final class FluidStackIngredient extends FluidIngredient {
+		private static final Codec<Fluid> FLUID_NON_AIR_CODEC = BuiltInRegistries.FLUID
+			.byNameCodec()
+			.validate(fluid -> fluid == Fluids.EMPTY ? DataResult.error(() -> "Fluid must not be minecraft:empty") : DataResult.success(fluid));
 
-	public static boolean isFluidIngredient(@Nullable JsonElement je) {
-		if (je == null || je.isJsonNull())
-			return false;
-		if (!je.isJsonObject())
-			return false;
-		JsonObject json = je.getAsJsonObject();
-		if (json.has("fluidTag"))
-			return true;
-		else if (json.has("fluid"))
-			return true;
-		return false;
-	}
+		public static final MapCodec<FluidStackIngredient> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+				FLUID_NON_AIR_CODEC.fieldOf("fluid").forGetter(fsi -> fsi.fluid),
+				DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(fsi -> fsi.components),
+				Codec.INT.fieldOf("amount").forGetter(fti -> fti.amountRequired)
+			).apply(i, FluidStackIngredient::new)
+		);
 
-	public static FluidIngredient deserialize(@Nullable JsonElement je) {
-		if (!isFluidIngredient(je))
-			throw new JsonSyntaxException("Invalid fluid ingredient: " + je);
+		public static final StreamCodec<RegistryFriendlyByteBuf, FluidStackIngredient> STREAM_CODEC = StreamCodec.composite(
+			CatnipStreamCodecs.FLUID, i -> i.fluid,
+			DataComponentPatch.STREAM_CODEC, i -> i.components,
+			ByteBufCodecs.VAR_INT, i -> i.amountRequired,
+			FluidStackIngredient::new
+		);
 
-		JsonObject json = je.getAsJsonObject();
-		FluidIngredient ingredient = json.has("fluidTag") ? new FluidTagIngredient() : new FluidStackIngredient();
-		ingredient.readInternal(json);
-
-		if (!json.has("amount"))
-			throw new JsonSyntaxException("Fluid ingredient has to define an amount");
-		ingredient.amountRequired = GsonHelper.getAsInt(json, "amount");
-		return ingredient;
-	}
-
-	public static class FluidStackIngredient extends FluidIngredient {
-
-		protected Fluid fluid;
-		protected CompoundTag tagToMatch;
+		private Fluid fluid;
+		private DataComponentPatch components;
 
 		public FluidStackIngredient() {
-			tagToMatch = new CompoundTag();
+			components = DataComponentPatch.EMPTY;
+		}
+
+		public FluidStackIngredient(Fluid fluid, DataComponentPatch tagToMatch, int amountRequired) {
+			this.fluid = fluid;
+			this.components = tagToMatch;
+			this.amountRequired = amountRequired;
+		}
+
+		public FluidStackIngredient(Fluid fluid, int amountRequired) {
+			this.fluid = fluid;
+			this.components = DataComponentPatch.EMPTY;
+			this.amountRequired = amountRequired;
 		}
 
 		void fixFlowing() {
-			if (fluid instanceof FlowingFluid)
-				fluid = ((FlowingFluid) fluid).getSource();
+			if (fluid instanceof FlowingFluid flowingFluid)
+				fluid = flowingFluid.getSource();
 		}
 
 		@Override
 		protected boolean testInternal(FluidStack t) {
 			if (!FluidHelper.isSame(t, fluid))
 				return false;
-			if (tagToMatch.isEmpty())
+			if (components.isEmpty())
 				return true;
-			CompoundTag tag = t.getOrCreateTag();
-			return tag.copy()
-				.merge(tagToMatch)
-				.equals(tag);
+			DataComponentPatch tag = t.getComponentsPatch();
+
+			HashSet<Map.Entry<DataComponentType<?>, Optional<?>>> referenceSet = new HashSet<>(tag.entrySet());
+			referenceSet.addAll(components.entrySet());
+			return referenceSet.equals(tag.entrySet());
 		}
 
 		@Override
-		protected void readInternal(FriendlyByteBuf buffer) {
-			fluid = buffer.readById(BuiltInRegistries.FLUID);
-			tagToMatch = buffer.readNbt();
+		protected void readInternal(RegistryFriendlyByteBuf buffer) {
+			fluid = ByteBufCodecs.registry(Registries.FLUID).decode(buffer);
+			components = DataComponentPatch.STREAM_CODEC.decode(buffer);
 		}
 
 		@Override
-		protected void writeInternal(FriendlyByteBuf buffer) {
-			buffer.writeId(BuiltInRegistries.FLUID, fluid);
-			buffer.writeNbt(tagToMatch);
-		}
-
-		@Override
-		protected void readInternal(JsonObject json) {
-			FluidStack stack = FluidHelper.deserializeFluidStack(json);
-			fluid = stack.getFluid();
-			tagToMatch = stack.getOrCreateTag();
-		}
-
-		@Override
-		protected void writeInternal(JsonObject json) {
-			json.addProperty("fluid", CatnipServices.REGISTRIES.getKeyOrThrow(fluid)
-				.toString());
-			json.add("nbt", JsonParser.parseString(tagToMatch.toString()));
+		protected void writeInternal(RegistryFriendlyByteBuf buffer) {
+			ByteBufCodecs.registry(Registries.FLUID).encode(buffer, fluid);
+			DataComponentPatch.STREAM_CODEC.encode(buffer, components);
 		}
 
 		@Override
 		protected List<FluidStack> determineMatchingFluidStacks() {
-			return ImmutableList.of(tagToMatch.isEmpty() ? new FluidStack(fluid, amountRequired)
-				: new FluidStack(fluid, amountRequired, tagToMatch));
+			return ImmutableList.of(components.isEmpty() ? new FluidStack(fluid, amountRequired)
+				: new FluidStack(BuiltInRegistries.FLUID.wrapAsHolder(fluid), amountRequired, components));
 		}
 
+		@Override
+		protected Type getType() {
+			return Type.FLUID_STACK;
+		}
 	}
 
-	public static class FluidTagIngredient extends FluidIngredient {
+	public static final class FluidTagIngredient extends FluidIngredient {
+		public static final MapCodec<FluidTagIngredient> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			TagKey.codec(Registries.FLUID).fieldOf("fluid_tag").forGetter(fti -> fti.tag),
+				Codec.INT.fieldOf("amount").forGetter(fti -> fti.amountRequired)
+			).apply(i, FluidTagIngredient::new)
+		);
 
-		protected TagKey<Fluid> tag;
+		public static final StreamCodec<RegistryFriendlyByteBuf, FluidTagIngredient> STREAM_CODEC = StreamCodec.composite(
+			ResourceLocation.STREAM_CODEC, i -> i.tag.location(),
+			ByteBufCodecs.VAR_INT, i -> i.amountRequired,
+			(tag, amount) -> new FluidTagIngredient(TagKey.create(Registries.FLUID, tag), amount)
+		);
+
+		private TagKey<Fluid> tag;
+
+		public FluidTagIngredient() {}
+
+		public FluidTagIngredient(TagKey<Fluid> tag, int amountRequired) {
+			this.tag = tag;
+			this.amountRequired = amountRequired;
+		}
 
 		@Override
 		protected boolean testInternal(FluidStack t) {
@@ -213,51 +224,51 @@ public abstract class FluidIngredient implements Predicate<FluidStack> {
 		}
 
 		@Override
-		protected void readInternal(FriendlyByteBuf buffer) {
-			int size = buffer.readVarInt();
-			matchingFluidStacks = new ArrayList<>(size);
-			for (int i = 0; i < size; i++)
-				matchingFluidStacks.add(FluidStack.readFromPacket(buffer));
+		protected void readInternal(RegistryFriendlyByteBuf buffer) {
+			matchingFluidStacks = FluidStack.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buffer);
 		}
 
 		@Override
-		protected void writeInternal(FriendlyByteBuf buffer) {
+		protected void writeInternal(RegistryFriendlyByteBuf buffer) {
 			// Tag has to be resolved on the server before sending
-			List<FluidStack> matchingFluidStacks = getMatchingFluidStacks();
-			buffer.writeVarInt(matchingFluidStacks.size());
-			matchingFluidStacks.stream()
-				.forEach(stack -> stack.writeToPacket(buffer));
-		}
-
-		@Override
-		protected void readInternal(JsonObject json) {
-			ResourceLocation name = new ResourceLocation(GsonHelper.getAsString(json, "fluidTag"));
-			tag = TagKey.create(Registries.FLUID, name);
-		}
-
-		@Override
-		protected void writeInternal(JsonObject json) {
-			json.addProperty("fluidTag", tag.location()
-				.toString());
+			FluidStack.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buffer, getMatchingFluidStacks());
 		}
 
 		@Override
 		protected List<FluidStack> determineMatchingFluidStacks() {
-			return BuiltInRegistries.FLUID
-				.getTag(tag)
-				.stream()
-				.flatMap(HolderSet::stream)
-				.map(Holder::value)
-				.map(f -> {
-					if (f instanceof FlowingFluid)
-						return ((FlowingFluid) f).getSource();
-					return f;
-				})
-				.distinct()
-				.map(f -> new FluidStack(f, amountRequired))
-				.collect(Collectors.toList());
+			List<FluidStack> stacks = new ArrayList<>();
+			for (Holder<Fluid> holder : BuiltInRegistries.FLUID.getTagOrEmpty(tag)) {
+				Fluid f = holder.value();
+				if (f instanceof FlowingFluid flowing) f = flowing.getSource();
+				stacks.add(new FluidStack(f, amountRequired));
+			}
+			return stacks;
 		}
 
+		@Override
+		protected Type getType() {
+			return Type.FLUID_TAG;
+		}
 	}
 
+	protected enum Type implements StringRepresentable {
+		FLUID_STACK(FluidStackIngredient.CODEC, FluidStackIngredient.STREAM_CODEC),
+		FLUID_TAG(FluidTagIngredient.CODEC, FluidTagIngredient.STREAM_CODEC);
+
+		public static final Codec<Type> CODEC = StringRepresentable.fromValues(Type::values);
+		public static final StreamCodec<RegistryFriendlyByteBuf, Type> STREAM_CODEC = CatnipStreamCodecBuilders.ofEnum(Type.class);
+
+		private final MapCodec<? extends FluidIngredient> codec;
+		private final StreamCodec<RegistryFriendlyByteBuf, ? extends FluidIngredient> streamCodec;
+
+		Type(MapCodec<? extends FluidIngredient> codec, StreamCodec<RegistryFriendlyByteBuf, ? extends FluidIngredient> streamCodec) {
+			this.codec = codec;
+			this.streamCodec = streamCodec;
+		}
+
+		@Override
+		public @NotNull String getSerializedName() {
+			return Lang.asId(name());
+		}
+	}
 }

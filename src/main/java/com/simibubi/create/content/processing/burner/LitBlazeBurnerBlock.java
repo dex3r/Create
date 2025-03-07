@@ -15,12 +15,14 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -53,30 +55,27 @@ public class LitBlazeBurnerBlock extends Block implements IWrenchable, BlockPick
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult blockRayTraceResult) {
-		ItemStack heldItem = player.getItemInHand(hand);
-
-		if (heldItem.getItem() instanceof ShovelItem) {// || heldItem.getItem().canPerformAction(heldItem, EXTINGUISH_FLAME_ACTION)) {
-			world.playSound(player, pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 0.5f, 2);
-			if (world.isClientSide)
-				return InteractionResult.SUCCESS;
-			heldItem.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
-			world.setBlockAndUpdate(pos, AllBlocks.BLAZE_BURNER.getDefaultState());
-			return InteractionResult.SUCCESS;
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (stack.getItem() instanceof ShovelItem) {
+			level.playSound(player, pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 0.5f, 2);
+			if (level.isClientSide)
+				return ItemInteractionResult.SUCCESS;
+			stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+			level.setBlockAndUpdate(pos, AllBlocks.BLAZE_BURNER.getDefaultState());
+			return ItemInteractionResult.SUCCESS;
 		}
 
 		if (state.getValue(FLAME_TYPE) == FlameType.REGULAR) {
-			if (heldItem.is(ItemTags.SOUL_FIRE_BASE_BLOCKS)) {
-				world.playSound(player, pos, SoundEvents.SOUL_SAND_PLACE, SoundSource.BLOCKS, 1.0f, world.random.nextFloat() * 0.4F + 0.8F);
-				if (world.isClientSide)
-					return InteractionResult.SUCCESS;
-				world.setBlockAndUpdate(pos, defaultBlockState().setValue(FLAME_TYPE, FlameType.SOUL));
-				return InteractionResult.SUCCESS;
+			if (stack.is(ItemTags.SOUL_FIRE_BASE_BLOCKS)) {
+				level.playSound(player, pos, SoundEvents.SOUL_SAND_PLACE, SoundSource.BLOCKS, 1.0f, level.random.nextFloat() * 0.4F + 0.8F);
+				if (level.isClientSide)
+					return ItemInteractionResult.SUCCESS;
+				level.setBlockAndUpdate(pos, defaultBlockState().setValue(FLAME_TYPE, FlameType.SOUL));
+				return ItemInteractionResult.SUCCESS;
 			}
 		}
 
-		return InteractionResult.PASS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	@Override
@@ -142,7 +141,7 @@ public class LitBlazeBurnerBlock extends Block implements IWrenchable, BlockPick
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

@@ -11,6 +11,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.core.HolderLookup;
+
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.simibubi.create.content.fluids.FluidPropagator;
@@ -108,8 +110,8 @@ public class PumpBlockEntity extends KineticBlockEntity implements PipeAttachmen
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 		if (compound.getBoolean("Reversed"))
 			scheduleFlip = true;
 	}

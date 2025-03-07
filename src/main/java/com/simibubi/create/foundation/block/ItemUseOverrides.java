@@ -4,10 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.simibubi.create.AllItems;
+import com.simibubi.create.foundation.utility.BlockHelper;
 
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.createmod.catnip.math.VecHelper;
-import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,7 +24,7 @@ public class ItemUseOverrides {
 	private static final Set<ResourceLocation> OVERRIDES = new HashSet<>();
 
 	public static void addBlock(Block block) {
-		OVERRIDES.add(CatnipServices.REGISTRIES.getKeyOrThrow(block));
+		OVERRIDES.add(RegisteredObjectsHelper.getKeyOrThrow(block));
 	}
 
 	public static InteractionResult onBlockActivated(Player player, Level world, InteractionHand hand, BlockHitResult traceResult) {
@@ -34,21 +36,19 @@ public class ItemUseOverrides {
 
 		BlockPos pos = traceResult.getBlockPos();
 
-		BlockState state = world
-				.getBlockState(pos);
-		ResourceLocation id = CatnipServices.REGISTRIES.getKeyOrThrow(state.getBlock());
+		BlockState state = level.getBlockState(pos);
+		ResourceLocation id = RegisteredObjectsHelper.getKeyOrThrow(state.getBlock());
 
 		if (!OVERRIDES.contains(id))
 			return InteractionResult.PASS;
 
 		BlockHitResult blockTrace =
-				new BlockHitResult(VecHelper.getCenterOf(pos), traceResult.getDirection(), pos, true);
-		InteractionResult result = state.use(world, player, hand, blockTrace);
+				new BlockHitResult(VecHelper.getCenterOf(pos), face, pos, true);
+		InteractionResult result = BlockHelper.invokeUse(state, level, player, hand, blockTrace);
 
 		if (!result.consumesAction())
 			return InteractionResult.PASS;
 
 		return result;
 	}
-
 }

@@ -4,11 +4,13 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllTags;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import java.util.concurrent.CompletableFuture;
 
 public class PressingRecipeGen extends ProcessingRecipeGen {
 
@@ -93,9 +95,9 @@ public class PressingRecipeGen extends ProcessingRecipeGen {
 				.whenModLoaded(Mods.RU.getId())),
 
 		// IE
-		
+
 		IE_PLATES = iePlates("aluminum", "lead", "silver", "nickel", "uranium", "constantan", "electrum", "steel"),
-		
+
 		// Vampirism
 
 		VMP_CURSED_PATH = moddedPaths(Mods.VMP, "cursed_earth"),
@@ -116,7 +118,7 @@ public class PressingRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe iePlates(String... metals) {
 		for (String metal : metals)
-			create(Mods.IE.recipeId("plate_" + metal), b -> b.require(AllTags.forgeItemTag("ingots/" + metal))
+			create(Mods.IE.recipeId("plate_" + metal), b -> b.require(AllTags.commonItemTag("ingots/" + metal))
 				.output(Mods.IE, "plate_" + metal)
 				.whenModLoaded(Mods.IE.getId()));
 		return null;
@@ -128,8 +130,8 @@ public class PressingRecipeGen extends ProcessingRecipeGen {
 				.whenModLoaded(mod.getId()));
 	}
 
-	public PressingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public PressingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

@@ -24,6 +24,8 @@ import com.simibubi.create.foundation.blockEntity.IMultiBlockEntityContainer;
 import net.createmod.catnip.nbt.NBTProcessors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -35,10 +37,14 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
@@ -61,13 +67,16 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.SpecialPlantable;
+import net.neoforged.neoforge.event.level.BlockDropsEvent;
 
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.common.util.IPlantable;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 
 public class BlockHelper {
@@ -201,16 +210,23 @@ public class BlockHelper {
 				return;
 			}
 
-			// fabric: exp handed in state.spawnAfterBreak
-
 			usedTool.mineBlock(world, state, pos, player);
 			player.awardStat(Stats.BLOCK_MINED.get(state.getBlock()));
 		}
 
-		if (world instanceof ServerLevel && world.getGameRules()
+		if (world instanceof ServerLevel serverLevel && world.getGameRules()
 			.getBoolean(GameRules.RULE_DOBLOCKDROPS)
 			&& (player == null || !player.isCreative())) {
-			for (ItemStack itemStack : Block.getDrops(state, (ServerLevel) world, pos, blockEntity, player, usedTool)) {
+			List<ItemStack> drops = Block.getDrops(state, serverLevel, pos, blockEntity, player, usedTool);
+			if (player != null) {
+				BlockDropsEvent event = new BlockDropsEvent(serverLevel, pos, state, blockEntity, List.of(), player, usedTool);
+				NeoForge.EVENT_BUS.post(event);
+				if (!event.isCanceled()) {
+					if ( event.getDroppedExperience() > 0)
+						state.getBlock().popExperience(serverLevel, pos, event.getDroppedExperience());
+				}
+			}
+			for (ItemStack itemStack : drops) {
 				if (itemStack.isEmpty())
 					continue;
 				droppedItemCallback.accept(itemStack);
@@ -218,8 +234,9 @@ public class BlockHelper {
 
 			// Simulating IceBlock#playerDestroy. Not calling method directly as it would drop item
 			// entities as a side-effect
+			Registry<Enchantment> enchantmentRegistry = world.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
 			if (state.getBlock() instanceof IceBlock
-				&& EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, usedTool) == 0) {
+				&& EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getHolderOrThrow(Enchantments.SILK_TOUCH, usedTool)) == 0) {
 				if (world.dimensionType()
 					.ultraWarm())
 					return;
@@ -279,16 +296,16 @@ public class BlockHelper {
 		CompoundTag data = null;
 		if (blockEntity == null)
 			return null;
-
+		RegistryAccess access = blockEntity.getLevel().registryAccess();
 		SafeNbtWriter writer = SafeNbtWriterRegistry.REGISTRY.get(blockEntity.getType());
 		if (AllBlockTags.SAFE_NBT.matches(blockState)) {
-			data = blockEntity.saveWithFullMetadata();
+			data = blockEntity.saveWithFullMetadata(access);
 		} else if (writer != null) {
 			data = new CompoundTag();
-			writer.writeSafe(blockEntity, data);
+			writer.writeSafe(blockEntity, data, access);
 		} else if (blockEntity instanceof PartialSafeNBT safeNbtBE) {
 			data = new CompoundTag();
-safeNbtBE.writeSafe(data);
+safeNbtBE.writeSafe(data, access);
 		} else if (Mods.FRAMEDBLOCKS.contains(blockState.getBlock())) {
 			data = FramedBlocksInSchematics.prepareBlockEntityData(blockState, blockEntity);
 }
@@ -299,6 +316,7 @@ safeNbtBE.writeSafe(data);
 										   @Nullable CompoundTag data) {
 		Block block = state.getBlock();
 		BlockEntity existingBlockEntity = world.getBlockEntity(target);
+		boolean alreadyPlaced = false;
 
 		StateFilter filter = SchematicStateFilterRegistry.REGISTRY.get(state);
 		if (filter != null) {
@@ -313,12 +331,15 @@ safeNbtBE.writeSafe(data);
 		if (state.hasProperty(BlockStateProperties.WATERLOGGED))
 			state = state.setValue(BlockStateProperties.WATERLOGGED, Boolean.FALSE);
 
-		if (block == Blocks.COMPOSTER)
+		if (block == Blocks.COMPOSTER) {
 			state = Blocks.COMPOSTER.defaultBlockState();
-		else if (block != Blocks.SEA_PICKLE && block instanceof IPlantable)
-			state = ((IPlantable) block).getPlant(world, target);
-		else if (state.is(BlockTags.CAULDRONS))
+		} else if (block != Blocks.SEA_PICKLE && block instanceof SpecialPlantable specialPlantable) {
+			alreadyPlaced = true;
+			if (specialPlantable.canPlacePlantAtPosition(stack, world, target, null))
+				specialPlantable.spawnPlantAtPosition(stack, world, target, null);
+		} else if (state.is(BlockTags.CAULDRONS)) {
 			state = Blocks.CAULDRON.defaultBlockState();
+		}
 
 		if (world.dimensionType()
 			.ultraWarm() && state.getFluidState().is(FluidTags.WATER)) {
@@ -336,7 +357,10 @@ safeNbtBE.writeSafe(data);
 			return;
 		}
 
-		if (state.getBlock() instanceof BaseRailBlock) {
+		//noinspection StatementWithEmptyBody
+		if (alreadyPlaced) {
+			// pass
+		} else if (state.getBlock() instanceof BaseRailBlock) {
 			placeRailWithoutUpdate(world, state, target);
 		} else if (AllBlocks.BELT.has(state)) {
 			world.setBlock(target, state, 2);
@@ -346,7 +370,7 @@ safeNbtBE.writeSafe(data);
 
 		if (data != null) {
 			if (existingBlockEntity instanceof IMergeableBE mergeable) {
-				BlockEntity loaded = BlockEntity.loadStatic(target, state, data);
+				BlockEntity loaded = BlockEntity.loadStatic(target, state, data, world.registryAccess());
 				if (loaded != null) {
 					if (existingBlockEntity.getType()
 						.equals(loaded.getType())) {
@@ -365,7 +389,7 @@ safeNbtBE.writeSafe(data);
 				if (blockEntity instanceof IMultiBlockEntityContainer imbe)
 					if (!imbe.isController())
 						data.put("Controller", NbtUtils.writeBlockPos(imbe.getController()));
-				blockEntity.load(data);
+				blockEntity.loadWithComponents(data, world.registryAccess());
 			}
 		}
 
@@ -426,6 +450,25 @@ safeNbtBE.writeSafe(data);
 			return state.getValue(BlazeBurnerBlock.HEAT_LEVEL) != HeatLevel.NONE;
 		}
 		return true;
+	}
+
+	public static InteractionResult invokeUse(BlockState state, Level level, Player player,
+											   InteractionHand hand, BlockHitResult ray) {
+		ItemInteractionResult iteminteractionresult = state.useItemOn(
+				player.getItemInHand(hand), level, player, hand, ray
+		);
+		if (iteminteractionresult.consumesAction()) {
+			return iteminteractionresult.result();
+		}
+
+		if (iteminteractionresult == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && hand == InteractionHand.MAIN_HAND) {
+			InteractionResult interactionresult = state.useWithoutItem(level, player, ray);
+			if (interactionresult.consumesAction()) {
+				return interactionresult;
+			}
+		}
+
+		return InteractionResult.PASS;
 	}
 
 	public static void runWithBreakEvents(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be, Player player, Runnable runnable) {

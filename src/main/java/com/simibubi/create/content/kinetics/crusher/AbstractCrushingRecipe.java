@@ -4,9 +4,9 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeParams;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
-import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.RecipeInput;
 
-public abstract class AbstractCrushingRecipe extends ProcessingRecipe<Container> {
+public abstract class AbstractCrushingRecipe extends ProcessingRecipe<RecipeInput> {
 
 	public AbstractCrushingRecipe(IRecipeTypeInfo recipeType, ProcessingRecipeParams params) {
 		super(recipeType, params);

@@ -4,7 +4,10 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.block.WrenchableDirectionalBlock;
+
 import com.simibubi.create.foundation.utility.AdventureUtil;
+
+import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
 
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
@@ -29,8 +32,6 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
 
 public class RedstoneLinkBlock extends WrenchableDirectionalBlock implements IBE<RedstoneLinkBlockEntity>, ConnectableRedstoneBlock {
 
@@ -156,8 +157,7 @@ public class RedstoneLinkBlock extends WrenchableDirectionalBlock implements IBE
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult hit) {
+	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
 		if (player.isShiftKeyDown() && !AdventureUtil.isAdventure(player) && toggleMode(state, level, pos) == InteractionResult.SUCCESS) {
 			level.scheduleTick(pos, this, 1);
 			return InteractionResult.SUCCESS;
@@ -220,7 +220,7 @@ public class RedstoneLinkBlock extends WrenchableDirectionalBlock implements IBE
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

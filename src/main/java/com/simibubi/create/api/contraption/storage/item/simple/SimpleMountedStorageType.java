@@ -2,6 +2,10 @@ package com.simibubi.create.api.contraption.storage.item.simple;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.serialization.MapCodec;
+
+import org.jetbrains.annotations.Nullable;
+
 import com.mojang.serialization.Codec;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageType;
 
@@ -16,7 +20,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
 public abstract class SimpleMountedStorageType<T extends SimpleMountedStorage> extends MountedItemStorageType<SimpleMountedStorage> {
-	protected SimpleMountedStorageType(Codec<T> codec) {
+	protected SimpleMountedStorageType(MapCodec<T> codec) {
 		super(codec);
 	}
 

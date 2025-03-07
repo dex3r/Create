@@ -1,17 +1,34 @@
 package com.simibubi.create.content.kinetics.deployer;
 
-import com.google.gson.JsonObject;
+import java.util.function.Function;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeParams;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 
 public class ItemApplicationRecipe extends ProcessingRecipe<Container> {
+	public static <T extends ProcessingRecipe<?>> MapCodec<T> codec(AllRecipeTypes recipeTypes) {
+		return RecordCodecBuilder.mapCodec(i -> i.group(
+			ProcessingRecipeSerializer.<T>codec(recipeTypes).forGetter(Function.identity()),
+			Codec.BOOL.optionalFieldOf("keep_held_item", false)
+				.forGetter(r -> r instanceof ItemApplicationRecipe iar && iar.keepHeldItem)
+		).apply(i, (parent, keepHeldItem) -> {
+			if (parent instanceof ItemApplicationRecipe iar)
+				iar.keepHeldItem = keepHeldItem;
+			return parent;
+		}));
+	}
 
 	private boolean keepHeldItem;
 
@@ -52,19 +69,6 @@ public class ItemApplicationRecipe extends ProcessingRecipe<Container> {
 	}
 
 	@Override
-	public void readAdditional(JsonObject json) {
-		super.readAdditional(json);
-		keepHeldItem = GsonHelper.getAsBoolean(json, "keepHeldItem", false);
-	}
-
-	@Override
-	public void writeAdditional(JsonObject json) {
-		super.writeAdditional(json);
-		if (keepHeldItem)
-			json.addProperty("keepHeldItem", keepHeldItem);
-	}
-
-	@Override
 	public void readAdditional(FriendlyByteBuf buffer) {
 		super.readAdditional(buffer);
 		keepHeldItem = buffer.readBoolean();
@@ -75,5 +79,4 @@ public class ItemApplicationRecipe extends ProcessingRecipe<Container> {
 		super.writeAdditional(buffer);
 		buffer.writeBoolean(keepHeldItem);
 	}
-
 }

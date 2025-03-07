@@ -13,10 +13,21 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.BBHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.SortedArraySet;
 import net.minecraft.world.level.Level;
@@ -159,7 +170,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 			} else if (blockState.getBlock() instanceof LiquidBlock flowingFluid) {
 				emptied = Blocks.AIR.defaultBlockState();
 				if (blockState.getValue(LiquidBlock.LEVEL) == 0)
-					fluid = ((LiquidBlockAccessor) flowingFluid).port_lib$getFluid().getSource();
+					fluid = flowingFluid.fluid;
 				else {
 					affectedArea = BBHelper.encapsulate(affectedArea, BoundingBox.fromCorners(currentPos, currentPos));
 					if (!blockEntity.isVirtual())
@@ -267,8 +278,8 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 	}
 
 	@Override
-	public void read(CompoundTag nbt, boolean clientPacket) {
-		super.read(nbt, clientPacket);
+	public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(nbt, registries, clientPacket);
 		if (!clientPacket && affectedArea != null)
 			frontier.add(new BlockPosEntry(rootPos, 0));
 	}

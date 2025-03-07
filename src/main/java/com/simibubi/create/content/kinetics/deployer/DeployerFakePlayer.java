@@ -7,6 +7,9 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.authlib.GameProfile;
@@ -15,21 +18,20 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.config.CKinetics;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -44,7 +46,6 @@ import io.github.fabricators_of_create.porting_lib.util.UsernameCache;
 
 public class DeployerFakePlayer extends FakePlayer {
 
-	private static final Connection NETWORK_MANAGER = new Connection(PacketFlow.CLIENTBOUND);
 	public static final UUID fallbackID = UUID.fromString("9e2faded-cafe-4ec2-c314-dad129ae971d");
 	Pair<BlockPos, Float> blockBreakingProgress;
 	ItemStack spawnedItemEffects;
@@ -54,8 +55,6 @@ public class DeployerFakePlayer extends FakePlayer {
 
 	public DeployerFakePlayer(ServerLevel world, @Nullable UUID owner) {
 		super(world, new DeployerGameProfile(fallbackID, "Deployer", owner));
-		// fabric: use the default FakePacketListener
-//		connection = new FakePlayNetHandler(world.getServer(), this);
 		this.owner = owner;
 	}
 
@@ -70,9 +69,9 @@ public class DeployerFakePlayer extends FakePlayer {
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
-	public float getEyeHeight(Pose poseIn) {
-		return 0;
+	@OnlyIn(Dist.CLIENT)
+	public EntityDimensions getDefaultDimensions(Pose pose) {
+		return super.getDefaultDimensions(pose).withEyeHeight(0);
 	}
 
 	@Override
@@ -91,9 +90,9 @@ public class DeployerFakePlayer extends FakePlayer {
 	}
 
 	@Override
-	public ItemStack eat(Level world, ItemStack stack) {
-		stack.shrink(1);
-		return stack;
+	public ItemStack eat(Level level, ItemStack food, FoodProperties foodProperties) {
+		food.shrink(1);
+		return food;
 	}
 
 	@Override
@@ -108,7 +107,7 @@ public class DeployerFakePlayer extends FakePlayer {
 
 	public static void deployerHasEyesOnHisFeet(EntityEvents.Size event) {
 		if (event.getEntity() instanceof DeployerFakePlayer)
-			event.setNewEyeHeight(0);
+			event.setNewSize(event.getNewSize().withEyeHeight(0));
 	}
 
 	public static boolean deployerCollectsDropsFromKilledEntities(LivingEntity target, DamageSource source, Collection<ItemEntity> drops, int lootingLevel, boolean recentlyHit) {
@@ -200,7 +199,4 @@ public class DeployerFakePlayer extends FakePlayer {
 			return result;
 		}
 	}
-
-	// fabric: FakePlayNetHandler removed, unused
-
 }

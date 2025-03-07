@@ -6,6 +6,11 @@ import com.simibubi.create.content.decoration.bracket.BracketedBlockEntityBehavi
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import dev.engine_room.flywheel.lib.model.baked.EmptyVirtualBlockGetter;
+
+import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
+
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;

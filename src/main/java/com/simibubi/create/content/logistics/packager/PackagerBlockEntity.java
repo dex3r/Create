@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
@@ -37,11 +38,23 @@ import com.simibubi.create.foundation.blockEntity.behaviour.inventory.InvManipul
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper;
 
+import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.BlockFace;
 import net.createmod.catnip.nbt.NBTHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -68,6 +81,8 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelp
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
+import org.jetbrains.annotations.Nullable;
+
 public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity {
 
 	public boolean redstonePowered;
@@ -80,7 +95,7 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 
 	public List<ItemStack> queuedExitingPackages;
 
-	public PackagerItemHandler inventory;
+	public final PackagerItemHandler inventory;
 
 	public static final int CYCLE = 20;
 	public int animationTicks;
@@ -105,6 +120,14 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 		queuedExitingPackages = new LinkedList<>();
 		signBasedAddress = "";
 		buttonCooldown = 0;
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+			Capabilities.ItemHandler.BLOCK,
+			AllBlockEntityTypes.PACKAGER.get(),
+			(be, context) -> be.inventory
+		);
 	}
 
 	@Override
@@ -430,7 +453,7 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 							continue;
 
 						ItemStack extracted = resource.toStack((int) extractedAmount);
-						if (requestQueue && !ItemHandlerHelper.canItemStacksStack(extracted, nextRequest.item()))
+						if (requestQueue && !ItemStack.isSameItemSameComponents(extracted, nextRequest.item()))
 							continue;
 
 						long inserted = extractedItems.insert(resource, extractedAmount, t);
@@ -551,35 +574,36 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 		redstonePowered = compound.getBoolean("Active");
 		animationInward = compound.getBoolean("AnimationInward");
 		animationTicks = compound.getInt("AnimationTicks");
 		signBasedAddress = compound.getString("SignAddress");
-		heldBox = ItemStack.of(compound.getCompound("HeldBox"));
-		previouslyUnwrapped = ItemStack.of(compound.getCompound("InsertedBox"));
+		heldBox = ItemStack.parseOptional(registries, compound.getCompound("HeldBox"));
+		previouslyUnwrapped = ItemStack.parseOptional(registries, compound.getCompound("InsertedBox"));
 		if (clientPacket)
 			return;
-		queuedExitingPackages = NBTHelper.readItemList(compound.getList("QueuedPackages", Tag.TAG_COMPOUND));
+		queuedExitingPackages = NBTHelper.readItemList(compound.getList("QueuedPackages", Tag.TAG_COMPOUND), registries);
 		if (compound.contains("LastSummary"))
-			availableItems = InventorySummary.read(compound.getCompound("LastSummary"));
+			availableItems = CatnipCodecUtils.decode(InventorySummary.CODEC, registries, compound.getCompound("LastSummary"))
+				.orElse(null);
 	}
 
 	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
-		super.write(compound, clientPacket);
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(compound, registries, clientPacket);
 		compound.putBoolean("Active", redstonePowered);
 		compound.putBoolean("AnimationInward", animationInward);
 		compound.putInt("AnimationTicks", animationTicks);
 		compound.putString("SignAddress", signBasedAddress);
-		compound.put("HeldBox", heldBox.serializeNBT());
-		compound.put("InsertedBox", previouslyUnwrapped.serializeNBT());
+		compound.put("HeldBox", heldBox.saveOptional(registries));
+		compound.put("InsertedBox", previouslyUnwrapped.saveOptional(registries));
 		if (clientPacket)
 			return;
-		compound.put("QueuedPackages", NBTHelper.writeItemList(queuedExitingPackages));
+		compound.put("QueuedPackages", NBTHelper.writeItemList(queuedExitingPackages, registries));
 		if (availableItems != null)
-			compound.put("LastSummary", availableItems.write());
+			compound.put("LastSummary", CatnipCodecUtils.encode(InventorySummary.CODEC, registries, availableItems).orElseThrow());
 	}
 
 	@Override

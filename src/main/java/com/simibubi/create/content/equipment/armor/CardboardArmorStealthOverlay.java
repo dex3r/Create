@@ -1,6 +1,7 @@
 package com.simibubi.create.content.equipment.armor;
 
 import com.simibubi.create.Create;
+import com.simibubi.create.foundation.mixin.accessor.GuiAccessor;
 import com.simibubi.create.infrastructure.fabric.HelmetOverlay;
 
 import net.createmod.catnip.animation.LerpedFloat;

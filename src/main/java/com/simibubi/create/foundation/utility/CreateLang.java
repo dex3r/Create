@@ -51,7 +51,7 @@ public class CreateLang extends Lang {
 	}
 
 	public static LangBuilder fluidName(FluidStack stack) {
-		return builder().add(stack.getDisplayName()
+		return builder().add(stack.getHoverName()
 				.copy());
 	}
 

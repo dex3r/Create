@@ -3,6 +3,7 @@ package com.simibubi.create.content.contraptions.mounted;
 import java.util.List;
 import java.util.UUID;
 
+import com.simibubi.create.AllAttachmentTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
@@ -27,6 +28,7 @@ import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
@@ -114,8 +116,7 @@ public class CartAssemblerBlockEntity extends SmartBlockEntity implements IDispl
 	}
 
 	protected void assemble(Level world, BlockPos pos, AbstractMinecart cart) {
-		if (!cart.getPassengers()
-			.isEmpty())
+		if (!cart.getPassengers().isEmpty())
 			return;
 
 		if (cart.create$getController()
@@ -165,10 +166,12 @@ public class CartAssemblerBlockEntity extends SmartBlockEntity implements IDispl
 		entity.startRiding(cart);
 
 		if (cart instanceof MinecartFurnace) {
-			CompoundTag nbt = NBTSerializer.serializeNBTCompound(cart);
-			nbt.putDouble("PushZ", 0);
-			nbt.putDouble("PushX", 0);
-			NBTSerializer.deserializeNBT(cart, nbt);
+			CompoundTag nbt = new CompoundTag();
+			if (cart.save(nbt)) {
+				nbt.putDouble("PushZ", 0);
+				nbt.putDouble("PushX", 0);
+				cart.load(nbt);
+			}
 		}
 
 		if (contraption.containsBlockBreakers())
@@ -220,10 +223,11 @@ public class CartAssemblerBlockEntity extends SmartBlockEntity implements IDispl
 	protected void disassembleCart(AbstractMinecart cart) {
 		cart.ejectPassengers();
 		if (cart instanceof MinecartFurnace) {
-			CompoundTag nbt = NBTSerializer.serializeNBTCompound(cart);
+			CompoundTag nbt = new CompoundTag();
+			cart.saveAsPassenger(nbt);
 			nbt.putDouble("PushZ", cart.getDeltaMovement().x);
 			nbt.putDouble("PushX", cart.getDeltaMovement().z);
-			NBTSerializer.deserializeNBT(cart, nbt);
+			cart.load(nbt);
 		}
 	}
 
@@ -236,15 +240,15 @@ public class CartAssemblerBlockEntity extends SmartBlockEntity implements IDispl
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
-		AssemblyException.write(compound, lastException);
-		super.write(compound, clientPacket);
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		AssemblyException.write(compound, registries, lastException);
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		lastException = AssemblyException.read(compound);
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		lastException = AssemblyException.read(compound, registries);
+		super.read(compound, registries, clientPacket);
 	}
 
 	@Override

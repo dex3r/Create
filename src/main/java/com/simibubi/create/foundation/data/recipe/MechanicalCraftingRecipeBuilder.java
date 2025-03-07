@@ -3,26 +3,27 @@ package com.simibubi.create.foundation.data.recipe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.simibubi.create.AllRecipeTypes;
+import com.simibubi.create.content.kinetics.crafter.MechanicalCraftingRecipe;
 
-import net.createmod.catnip.platform.CatnipServices;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
+
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
+
+import net.fabricmc.fabric.api.resource.conditions.v1.DefaultResourceConditions;
+
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
 
 import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
@@ -108,40 +109,48 @@ public class MechanicalCraftingRecipeBuilder {
 	}
 
 	/**
-	 * Builds this recipe into a {@link FinishedRecipe}.
+	 * Builds this recipe into a {@link RecipeOutput}.
 	 */
-	public void build(Consumer<FinishedRecipe> p_200464_1_) {
-		this.build(p_200464_1_, CatnipServices.REGISTRIES.getKeyOrThrow(this.result));
+	public void build(RecipeOutput output) {
+		this.build(output, RegisteredObjectsHelper.getKeyOrThrow(this.result));
 	}
 
 	/**
-	 * Builds this recipe into a {@link FinishedRecipe}. Use
-	 * {@link #build(Consumer)} if save is the same as the ID for the result.
+	 * Builds this recipe into a {@link RecipeOutput}. Use
+	 * {@link #build(RecipeOutput)} if save is the same as the ID for the result.
 	 */
-	public void build(Consumer<FinishedRecipe> p_200466_1_, String p_200466_2_) {
-		ResourceLocation resourcelocation = CatnipServices.REGISTRIES.getKeyOrThrow(this.result);
-		if ((new ResourceLocation(p_200466_2_)).equals(resourcelocation)) {
-			throw new IllegalStateException("Shaped Recipe " + p_200466_2_ + " should remove its 'save' argument");
+	public void build(RecipeOutput output, String id) {
+		ResourceLocation resourcelocation = RegisteredObjectsHelper.getKeyOrThrow(this.result);
+		if ((ResourceLocation.parse(id)).equals(resourcelocation)) {
+			throw new IllegalStateException("Shaped Recipe " + id + " should remove its 'save' argument");
 		} else {
-			this.build(p_200466_1_, new ResourceLocation(p_200466_2_));
+			this.build(output, ResourceLocation.parse(id));
 		}
 	}
 
 	/**
-	 * Builds this recipe into a {@link FinishedRecipe}.
+	 * Builds this recipe into a {@link RecipeOutput}.
 	 */
-	public void build(Consumer<FinishedRecipe> p_200467_1_, ResourceLocation p_200467_2_) {
-		validate(p_200467_2_);
-		p_200467_1_
-			.accept(new MechanicalCraftingRecipeBuilder.Result(p_200467_2_, result, count, pattern, key, acceptMirrored, recipeConditions));
+	public void build(RecipeOutput output, ResourceLocation id) {
+		validate(id);
+		MechanicalCraftingRecipe recipe = new MechanicalCraftingRecipe(
+				"",
+				CraftingBookCategory.MISC,
+				ShapedRecipePattern.of(key, pattern),
+				new ItemStack(result, count),
+				acceptMirrored
+		);
+		output.accept(id, recipe, null, recipeConditions.toArray(new ICondition[0]));
+		//output
+		//	.accept(new MechanicalCraftingRecipeBuilder.Result(id, result, count, pattern, key, acceptMirrored, recipeConditions));
 	}
 
 	/**
 	 * Makes sure that this recipe is valid.
 	 */
-	private void validate(ResourceLocation p_200463_1_) {
+	private void validate(ResourceLocation id) {
 		if (pattern.isEmpty()) {
-			throw new IllegalStateException("No pattern is defined for shaped recipe " + p_200463_1_ + "!");
+			throw new IllegalStateException("No pattern is defined for shaped recipe " + id + "!");
 		} else {
 			Set<Character> set = Sets.newHashSet(key.keySet());
 			set.remove(' ');
@@ -151,14 +160,14 @@ public class MechanicalCraftingRecipeBuilder {
 					char c0 = s.charAt(i);
 					if (!key.containsKey(c0) && c0 != ' ')
 						throw new IllegalStateException(
-							"Pattern in recipe " + p_200463_1_ + " uses undefined symbol '" + c0 + "'");
+							"Pattern in recipe " + id + " uses undefined symbol '" + c0 + "'");
 					set.remove(c0);
 				}
 			}
 
 			if (!set.isEmpty())
 				throw new IllegalStateException(
-					"Ingredients are defined but not used in pattern for recipe " + p_200463_1_);
+					"Ingredients are defined but not used in pattern for recipe " + id);
 		}
 	}
 
@@ -173,74 +182,6 @@ public class MechanicalCraftingRecipeBuilder {
 	public MechanicalCraftingRecipeBuilder withCondition(ConditionJsonProvider condition) {
 		recipeConditions.add(condition);
 		return this;
-	}
-
-	public class Result implements FinishedRecipe {
-		private final ResourceLocation id;
-		private final Item result;
-		private final int count;
-		private final List<String> pattern;
-		private final Map<Character, Ingredient> key;
-		private final boolean acceptMirrored;
-		private List<ConditionJsonProvider> recipeConditions;
-
-		public Result(ResourceLocation p_i48271_2_, Item p_i48271_3_, int p_i48271_4_, List<String> p_i48271_6_,
-			Map<Character, Ingredient> p_i48271_7_, boolean asymmetrical, List<ConditionJsonProvider> recipeConditions) {
-			this.id = p_i48271_2_;
-			this.result = p_i48271_3_;
-			this.count = p_i48271_4_;
-			this.pattern = p_i48271_6_;
-			this.key = p_i48271_7_;
-			this.acceptMirrored = asymmetrical;
-			this.recipeConditions = recipeConditions;
-		}
-
-		public void serializeRecipeData(JsonObject p_218610_1_) {
-			JsonArray jsonarray = new JsonArray();
-			for (String s : this.pattern)
-				jsonarray.add(s);
-
-			p_218610_1_.add("pattern", jsonarray);
-			JsonObject jsonobject = new JsonObject();
-			for (Entry<Character, Ingredient> entry : this.key.entrySet())
-				jsonobject.add(String.valueOf(entry.getKey()), entry.getValue()
-					.toJson());
-
-			p_218610_1_.add("key", jsonobject);
-			JsonObject jsonobject1 = new JsonObject();
-			jsonobject1.addProperty("item", CatnipServices.REGISTRIES.getKeyOrThrow(this.result)
-				.toString());
-			if (this.count > 1)
-				jsonobject1.addProperty("count", this.count);
-
-			p_218610_1_.add("result", jsonobject1);
-			p_218610_1_.addProperty("acceptMirrored", acceptMirrored);
-
-			if (recipeConditions.isEmpty())
-				return;
-
-			JsonArray conds = new JsonArray();
-			recipeConditions.forEach(c -> conds.add(c.toJson()));
-			p_218610_1_.add("conditions", conds);
-		}
-
-		public RecipeSerializer<?> getType() {
-			return AllRecipeTypes.MECHANICAL_CRAFTING.getSerializer();
-		}
-
-		public ResourceLocation getId() {
-			return this.id;
-		}
-
-		@Nullable
-		public JsonObject serializeAdvancement() {
-			return null;
-		}
-
-		@Nullable
-		public ResourceLocation getAdvancementId() {
-			return null;
-		}
 	}
 
 }

@@ -2,13 +2,13 @@ package com.simibubi.create.content.kinetics.deployer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.google.common.collect.Multimap;
+import com.google.common.collect.HashMultimap;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllTags.AllItemTags;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
@@ -23,7 +23,9 @@ import com.simibubi.create.foundation.utility.BlockHelper;
 import net.createmod.catnip.levelWrappers.WrappedLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
@@ -33,7 +35,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -115,7 +116,7 @@ public class DeployerHandler {
 				return false;
 
 		if (held.getItem() instanceof BucketItem bucketItem) {
-			Fluid fluid = ((BucketItemAccessor) bucketItem).port_lib$getContent();
+			Fluid fluid = bucketItem.content;
 			if (fluid != Fluids.EMPTY && world.getFluidState(targetPos)
 				.getType() == fluid)
 				return false;
@@ -129,8 +130,12 @@ public class DeployerHandler {
 	}
 
 	static void activate(DeployerFakePlayer player, Vec3 vec, BlockPos clickedPos, Vec3 extensionVector, Mode mode) {
-		Multimap<Attribute, AttributeModifier> attributeModifiers = player.getMainHandItem()
-			.getAttributeModifiers(EquipmentSlot.MAINHAND);
+		HashMultimap<Holder<Attribute>, AttributeModifier> attributeModifiers = HashMultimap.create();
+		player.getMainHandItem()
+			.getAttributeModifiers()
+			.modifiers()
+			.forEach(e -> attributeModifiers.put(e.attribute(), e.modifier()));
+
 		player.getAttributes()
 			.addTransientAttributeModifiers(attributeModifiers);
 		activateInner(player, vec, clickedPos, extensionVector, mode);
@@ -140,7 +145,6 @@ public class DeployerHandler {
 
 	private static void activateInner(DeployerFakePlayer player, Vec3 vec, BlockPos clickedPos, Vec3 extensionVector,
 									  Mode mode) {
-
 		Vec3 rayOrigin = vec.add(extensionVector.scale(3 / 2f + 1 / 64f));
 		Vec3 rayTarget = vec.add(extensionVector.scale(5 / 2f - 1 / 64f));
 		player.setPos(rayOrigin.x, rayOrigin.y, rayOrigin.z);
@@ -153,7 +157,7 @@ public class DeployerHandler {
 		List<Entity> entities = world.getEntitiesOfClass(Entity.class, new AABB(clickedPos))
 			.stream()
 			.filter(e -> !(e instanceof AbstractContraptionEntity))
-			.collect(Collectors.toList());
+			.toList();
 		InteractionHand hand = InteractionHand.MAIN_HAND;
 		if (!entities.isEmpty()) {
 			Entity entity = entities.get(world.random.nextInt(entities.size()));
@@ -182,9 +186,9 @@ public class DeployerHandler {
 						success = true;
 				}
 				if (!success && entity instanceof Player playerEntity) {
-					if (stack.isEdible()) {
-						FoodProperties foodProperties = item.getFoodProperties();
-						if (playerEntity.canEat(foodProperties.canAlwaysEat())) {
+					if (stack.has(DataComponents.FOOD)) {
+						FoodProperties foodProperties = item.getFoodProperties(stack, player);
+						if (foodProperties != null && playerEntity.canEat(foodProperties.canAlwaysEat())) {
 							ItemStack copy = stack.copy();
 							player.setItemInHand(hand, stack.finishUsingItem(world, playerEntity));
 							player.spawnedItemEffects = copy;
@@ -341,14 +345,13 @@ public class DeployerHandler {
 			bucketItem.checkExtraContent(player, world, stack, clickedPos);
 
 		ItemStack resultStack = onItemRightClick.getObject();
-		if (resultStack != stack || resultStack.getCount() != stack.getCount() || resultStack.getUseDuration() > 0
+		if (resultStack != stack || resultStack.getCount() != stack.getCount() || resultStack.getUseDuration(player) > 0
 			|| resultStack.getDamageValue() != stack.getDamageValue()) {
 			player.setItemInHand(hand, onItemRightClick.getObject());
 		}
 
-		CompoundTag tag = stack.getTag();
-		if (tag != null && stack.getItem() instanceof SandPaperItem && tag.contains("Polishing")) {
-			player.spawnedItemEffects = ItemStack.of(tag.getCompound("Polishing"));
+		if (stack.getItem() instanceof SandPaperItem && stack.has(AllDataComponents.SAND_PAPER_POLISHING)) {
+			player.spawnedItemEffects = stack.get(AllDataComponents.SAND_PAPER_POLISHING);
 			AllSoundEvents.SANDING_SHORT.playOnServer(world, pos, .25f, 1f);
 		}
 
@@ -370,9 +373,6 @@ public class DeployerHandler {
 			return false;
 
 		BlockEntity blockEntity = world.getBlockEntity(pos);
-//		if (player.getMainHandItem()
-//			.onBlockStartBreak(pos, player))
-//			return false;
 		if (player.blockActionRestricted(world, pos, gameType))
 			return false;
 
@@ -414,7 +414,7 @@ public class DeployerHandler {
 											  InteractionHand hand, BlockHitResult ray) {
 		if (state.getBlock() instanceof BeehiveBlock)
 			return safeOnBeehiveUse(state, world, pos, player, hand);
-		return state.use(world, player, hand, ray);
+		return BlockHelper.invokeUse(state, world, player, hand, ray);
 	}
 
 	protected static InteractionResult safeOnBeehiveUse(BlockState state, Level world, BlockPos pos, Player player,
@@ -433,7 +433,7 @@ public class DeployerHandler {
 				SoundSource.NEUTRAL, 1.0F, 1.0F);
 			// <> BeehiveBlock#dropHoneycomb
 			player.getInventory().placeItemBackInInventory(new ItemStack(Items.HONEYCOMB, 3));
-			prevHeldItem.hurtAndBreak(1, player, s -> s.broadcastBreakEvent(hand));
+			prevHeldItem.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
 			success = true;
 		}
 

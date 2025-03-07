@@ -1,19 +1,26 @@
 package com.simibubi.create.content.processing.recipe;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeFactory;
-import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
 
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
@@ -25,148 +32,107 @@ public class ProcessingRecipeSerializer<T extends ProcessingRecipe<?>> implement
 
 	private final ProcessingRecipeFactory<T> factory;
 
+	public final MapCodec<T> CODEC = AllRecipeTypes.CODEC.dispatchMap(ProcessingRecipe::getRecipeType, AllRecipeTypes::processingCodec);
+
+	public final StreamCodec<RegistryFriendlyByteBuf, T> STREAM_CODEC = StreamCodec.of(this::toNetwork, this::fromNetwork);
+
 	public ProcessingRecipeSerializer(ProcessingRecipeFactory<T> factory) {
 		this.factory = factory;
 	}
 
-	protected void writeToJson(JsonObject json, T recipe) {
-		JsonArray jsonIngredients = new JsonArray();
-		JsonArray jsonOutputs = new JsonArray();
+	public static <T extends ProcessingRecipe<?>> MapCodec<T> codec(AllRecipeTypes recipeTypes) {
+		return RecordCodecBuilder.mapCodec(instance -> instance.group(
+				Codec.either(Ingredient.CODEC, FluidIngredient.CODEC).listOf().fieldOf("ingredients").forGetter(i -> {
+					List<Either<Ingredient, FluidIngredient>> list = new ArrayList<>();
+					i.getIngredients().forEach(o -> list.add(Either.left(o)));
+					i.getFluidIngredients().forEach(o -> list.add(Either.right(o)));
+					return list;
+				}),
+				Codec.either(ProcessingOutput.CODEC, FluidStack.CODEC).listOf().fieldOf("results").forGetter(i -> {
+					List<Either<ProcessingOutput, FluidStack>> list = new ArrayList<>();
+					i.getRollableResults().forEach(o -> list.add(Either.left(o)));
+					i.getFluidResults().forEach(o -> list.add(Either.right(o)));
+					return list;
+				}),
+			ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("processing_time", 0).forGetter(T::getProcessingDuration),
+			HeatCondition.CODEC.optionalFieldOf("heat_requirement", HeatCondition.NONE).forGetter(T::getRequiredHeat)
+		).apply(instance, (ingredients, results, processingTime, heatRequirement) -> {
+			if (!(recipeTypes.serializerSupplier.get() instanceof ProcessingRecipeSerializer processingRecipeSerializer))
+				throw new RuntimeException("Not a processing recipe serializer " + recipeTypes.serializerSupplier.get());
 
-		recipe.ingredients.forEach(i -> jsonIngredients.add(i.toJson()));
-		recipe.fluidIngredients.forEach(i -> jsonIngredients.add(i.serialize()));
+			ProcessingRecipeBuilder<T> builder = new ProcessingRecipeBuilder<T>(processingRecipeSerializer.getFactory(), recipeTypes.id);
 
-		recipe.results.forEach(o -> jsonOutputs.add(o.serialize()));
-		recipe.fluidResults.forEach(o -> jsonOutputs.add(FluidHelper.serializeFluidStack(o)));
+			NonNullList<Ingredient> ingredientList = NonNullList.create();
+			NonNullList<FluidIngredient> fluidIngredientList = NonNullList.create();
 
-		json.add("ingredients", jsonIngredients);
-		json.add("results", jsonOutputs);
+			NonNullList<ProcessingOutput> processingOutputList = NonNullList.create();
+			NonNullList<FluidStack> fluidStackOutputList = NonNullList.create();
 
-		int processingDuration = recipe.getProcessingDuration();
-		if (processingDuration > 0)
-			json.addProperty("processingTime", processingDuration);
+			for (Either<Ingredient, FluidIngredient> either : ingredients) {
+				either.left().ifPresent(ingredientList::add);
+				either.right().ifPresent(fluidIngredientList::add);
+			}
 
-		HeatCondition requiredHeat = recipe.getRequiredHeat();
-		if (requiredHeat != HeatCondition.NONE)
-			json.addProperty("heatRequirement", requiredHeat.serialize());
+			for (Either<ProcessingOutput, FluidStack> either : results) {
+				either.left().ifPresent(processingOutputList::add);
+				either.right().ifPresent(fluidStackOutputList::add);
+			}
 
-		recipe.writeAdditional(json);
+			builder.withItemIngredients(ingredientList)
+					.withItemOutputs(processingOutputList)
+					.withFluidIngredients(fluidIngredientList)
+					.withFluidOutputs(fluidStackOutputList)
+					.duration(processingTime)
+					.requiresHeat(heatRequirement);
+
+			return builder.build();
+		}));
 	}
 
-	protected T readFromJson(ResourceLocation recipeId, JsonObject json) {
-		ProcessingRecipeBuilder<T> builder = new ProcessingRecipeBuilder<>(factory, recipeId);
-		NonNullList<Ingredient> ingredients = NonNullList.create();
-		NonNullList<FluidIngredient> fluidIngredients = NonNullList.create();
-		NonNullList<ProcessingOutput> results = NonNullList.create();
-		NonNullList<FluidStack> fluidResults = NonNullList.create();
+	protected void toNetwork(RegistryFriendlyByteBuf buffer, T recipe) {
+		ResourceLocation.STREAM_CODEC.encode(buffer, recipe.id);
 
-		for (JsonElement je : GsonHelper.getAsJsonArray(json, "ingredients")) {
-			if (FluidIngredient.isFluidIngredient(je))
-				fluidIngredients.add(FluidIngredient.deserialize(je));
-			else
-				ingredients.add(Ingredient.fromJson(je));
-		}
+		CatnipStreamCodecBuilders.nonNullList(Ingredient.CONTENTS_STREAM_CODEC).encode(buffer, recipe.ingredients);
+		CatnipStreamCodecBuilders.nonNullList(FluidIngredient.STREAM_CODEC).encode(buffer, recipe.fluidIngredients);
+		CatnipStreamCodecBuilders.nonNullList(ProcessingOutput.STREAM_CODEC).encode(buffer, recipe.results);
+		CatnipStreamCodecBuilders.nonNullList(FluidStack.STREAM_CODEC).encode(buffer, recipe.fluidResults);
 
-		for (JsonElement je : GsonHelper.getAsJsonArray(json, "results")) {
-			JsonObject jsonObject = je.getAsJsonObject();
-			if (GsonHelper.isValidNode(jsonObject, "fluid"))
-				fluidResults.add(FluidHelper.deserializeFluidStack(jsonObject));
-			else
-				results.add(ProcessingOutput.deserialize(je));
-		}
-
-		builder.withItemIngredients(ingredients)
-			.withItemOutputs(results)
-			.withFluidIngredients(fluidIngredients)
-			.withFluidOutputs(fluidResults);
-
-		if (GsonHelper.isValidNode(json, "processingTime"))
-			builder.duration(GsonHelper.getAsInt(json, "processingTime"));
-		if (GsonHelper.isValidNode(json, "heatRequirement"))
-			builder.requiresHeat(HeatCondition.deserialize(GsonHelper.getAsString(json, "heatRequirement")));
-
-		T recipe = builder.build();
-		recipe.readAdditional(json);
-		return recipe;
-	}
-
-	protected void writeToBuffer(FriendlyByteBuf buffer, T recipe) {
-		NonNullList<Ingredient> ingredients = recipe.ingredients;
-		NonNullList<FluidIngredient> fluidIngredients = recipe.fluidIngredients;
-		NonNullList<ProcessingOutput> outputs = recipe.results;
-		NonNullList<FluidStack> fluidOutputs = recipe.fluidResults;
-
-		buffer.writeVarInt(ingredients.size());
-		ingredients.forEach(i -> i.toNetwork(buffer));
-		buffer.writeVarInt(fluidIngredients.size());
-		fluidIngredients.forEach(i -> i.write(buffer));
-
-		buffer.writeVarInt(outputs.size());
-		outputs.forEach(o -> o.write(buffer));
-		buffer.writeVarInt(fluidOutputs.size());
-		fluidOutputs.forEach(o -> o.writeToPacket(buffer));
-
-		buffer.writeVarInt(recipe.getProcessingDuration());
-		buffer.writeVarInt(recipe.getRequiredHeat()
-			.ordinal());
+		ByteBufCodecs.VAR_INT.encode(buffer, recipe.getProcessingDuration());
+		HeatCondition.STREAM_CODEC.encode(buffer, recipe.getRequiredHeat());
 
 		recipe.writeAdditional(buffer);
 	}
 
-	protected T readFromBuffer(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-		NonNullList<Ingredient> ingredients = NonNullList.create();
-		NonNullList<FluidIngredient> fluidIngredients = NonNullList.create();
-		NonNullList<ProcessingOutput> results = NonNullList.create();
-		NonNullList<FluidStack> fluidResults = NonNullList.create();
+	protected T fromNetwork(RegistryFriendlyByteBuf buffer) {
+		ResourceLocation recipeId = ResourceLocation.STREAM_CODEC.decode(buffer);
 
-		int size = buffer.readVarInt();
-		for (int i = 0; i < size; i++)
-			ingredients.add(Ingredient.fromNetwork(buffer));
-
-		size = buffer.readVarInt();
-		for (int i = 0; i < size; i++)
-			fluidIngredients.add(FluidIngredient.read(buffer));
-
-		size = buffer.readVarInt();
-		for (int i = 0; i < size; i++)
-			results.add(ProcessingOutput.read(buffer));
-
-		size = buffer.readVarInt();
-		for (int i = 0; i < size; i++)
-			fluidResults.add(FluidStack.readFromPacket(buffer));
+		NonNullList<Ingredient> ingredients = CatnipStreamCodecBuilders.nonNullList(Ingredient.CONTENTS_STREAM_CODEC).decode(buffer);
+		NonNullList<FluidIngredient> fluidIngredients = CatnipStreamCodecBuilders.nonNullList(FluidIngredient.STREAM_CODEC).decode(buffer);
+		NonNullList<ProcessingOutput> results = CatnipStreamCodecBuilders.nonNullList(ProcessingOutput.STREAM_CODEC).decode(buffer);
+		NonNullList<FluidStack> fluidResults = CatnipStreamCodecBuilders.nonNullList(FluidStack.STREAM_CODEC).decode(buffer);
 
 		T recipe = new ProcessingRecipeBuilder<>(factory, recipeId).withItemIngredients(ingredients)
 			.withItemOutputs(results)
 			.withFluidIngredients(fluidIngredients)
 			.withFluidOutputs(fluidResults)
-			.duration(buffer.readVarInt())
-			.requiresHeat(HeatCondition.values()[buffer.readVarInt()])
+			.duration(ByteBufCodecs.VAR_INT.decode(buffer))
+			.requiresHeat(HeatCondition.STREAM_CODEC.decode(buffer))
 			.build();
 		recipe.readAdditional(buffer);
 		return recipe;
 	}
 
-	public final void write(JsonObject json, T recipe) {
-		writeToJson(json, recipe);
+	@Override
+	public MapCodec<T> codec() {
+		return CODEC;
 	}
 
 	@Override
-	public final T fromJson(ResourceLocation id, JsonObject json) {
-		return readFromJson(id, json);
-	}
-
-	@Override
-	public final void toNetwork(FriendlyByteBuf buffer, T recipe) {
-		writeToBuffer(buffer, recipe);
-	}
-
-	@Override
-	public final T fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
-		return readFromBuffer(id, buffer);
+	public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
+		return STREAM_CODEC;
 	}
 
 	public ProcessingRecipeFactory<T> getFactory() {
 		return factory;
 	}
-
 }

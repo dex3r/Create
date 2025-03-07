@@ -2,19 +2,23 @@ package com.simibubi.create.content.kinetics.gauge;
 
 import java.util.List;
 
-import com.simibubi.create.AllPackets;
+import com.simibubi.create.AllBlockEntityTypes;
+import com.simibubi.create.compat.Mods;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
 import com.simibubi.create.content.kinetics.base.IRotate.StressImpact;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.item.TooltipHelper;
+import net.createmod.catnip.platform.CatnipServices;
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import dan200.computercraft.api.peripheral.PeripheralCapability;
 import net.createmod.catnip.lang.LangBuilder;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -29,6 +33,16 @@ public class StressGaugeBlockEntity extends GaugeBlockEntity {
 
 	public StressGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		if (Mods.COMPUTERCRAFT.isLoaded()) {
+			event.registerBlockEntity(
+					PeripheralCapability.get(),
+					AllBlockEntityTypes.STRESSOMETER.get(),
+					(be, context) -> be.computerBehaviour.getPeripheralCapability()
+			);
+		}
 	}
 
 	@Override
@@ -120,14 +134,14 @@ public class StressGaugeBlockEntity extends GaugeBlockEntity {
 		}
 
 		if (!worldPosition.equals(lastSent))
-			AllPackets.getChannel().sendToServer(new GaugeObservedPacket(lastSent = worldPosition));
+			CatnipServices.NETWORK.sendToServer(new GaugeObservedPacket(lastSent = worldPosition));
 
 		return true;
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 		if (clientPacket && worldPosition != null && worldPosition.equals(lastSent))
 			lastSent = null;
 	}

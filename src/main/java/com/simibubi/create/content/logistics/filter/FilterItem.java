@@ -12,19 +12,18 @@ import net.fabricmc.api.Environment;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllKeys;
 import com.simibubi.create.content.logistics.box.PackageItem;
-import com.simibubi.create.content.logistics.filter.AttributeFilterMenu.WhitelistMode;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.recipe.ItemCopyingRecipe.SupportsItemCopying;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -82,8 +81,8 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
-	public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+	@OnlyIn(Dist.CLIENT)
+	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
 		if (AllKeys.shiftDown())
 			return;
 		List<Component> makeSummary = makeSummary(stack);
@@ -95,13 +94,12 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 
 	private List<Component> makeSummary(ItemStack filter) {
 		List<Component> list = new ArrayList<>();
-		if (!filter.hasTag())
+		if (filter.isComponentsPatchEmpty())
 			return list;
 
 		if (type == FilterType.REGULAR) {
 			ItemStackHandler filterItems = getFilterItems(filter);
-			boolean blacklist = filter.getOrCreateTag()
-				.getBoolean("Blacklist");
+			boolean blacklist = filter.getOrDefault(AllDataComponents.FILTER_ITEMS_BLACKLIST, false);
 
 			list.add((blacklist ? CreateLang.translateDirect("gui.filter.deny_list")
 				: CreateLang.translateDirect("gui.filter.allow_list")).withStyle(ChatFormatting.GOLD));
@@ -127,23 +125,21 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 		}
 
 		if (type == FilterType.ATTRIBUTE) {
-			WhitelistMode whitelistMode = WhitelistMode.values()[filter.getOrCreateTag()
-				.getInt("WhitelistMode")];
-			list.add((whitelistMode == WhitelistMode.WHITELIST_CONJ
+			AttributeFilterWhitelistMode whitelistMode = filter.get(AllDataComponents.ATTRIBUTE_FILTER_WHITELIST_MODE);
+			list.add((whitelistMode == AttributeFilterWhitelistMode.WHITELIST_CONJ
 				? CreateLang.translateDirect("gui.attribute_filter.allow_list_conjunctive")
-				: whitelistMode == WhitelistMode.WHITELIST_DISJ
+				: whitelistMode == AttributeFilterWhitelistMode.WHITELIST_DISJ
 				? CreateLang.translateDirect("gui.attribute_filter.allow_list_disjunctive")
 				: CreateLang.translateDirect("gui.attribute_filter.deny_list")).withStyle(ChatFormatting.GOLD));
 
 			int count = 0;
-			ListTag attributes = filter.getOrCreateTag()
-				.getList("MatchedAttributes", Tag.TAG_COMPOUND);
-			for (Tag inbt : attributes) {
-				CompoundTag compound = (CompoundTag) inbt;
-				ItemAttribute attribute = ItemAttribute.loadStatic(compound);
+			List<ItemAttribute.ItemAttributeEntry> attributes = filter.getOrDefault(AllDataComponents.ATTRIBUTE_FILTER_MATCHED_ATTRIBUTES, new ArrayList<>());
+			//noinspection DataFlowIssue
+			for (ItemAttribute.ItemAttributeEntry attributeEntry : attributes) {
+				ItemAttribute attribute = attributeEntry.attribute();
 				if (attribute == null)
 					continue;
-				boolean inverted = compound.getBoolean("Inverted");
+				boolean inverted = attributeEntry.inverted();
 				if (count > 3) {
 					list.add(Component.literal("- ...")
 						.withStyle(ChatFormatting.DARK_GRAY));
@@ -159,8 +155,7 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 		}
 
 		if (type == FilterType.PACKAGE) {
-			String address = filter.getOrCreateTag()
-				.getString("Address");
+			String address = PackageItem.getAddress(filter);
 			if (!address.isBlank())
 				list.add(CreateLang.text("-> ")
 					.style(ChatFormatting.GRAY)
@@ -177,9 +172,9 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 		ItemStack heldItem = player.getItemInHand(hand);
 
 		if (!player.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
-			if (!world.isClientSide && player instanceof ServerPlayer serverPlayer)
-				NetworkHooks.openScreen(serverPlayer, this, buf -> {
-					buf.writeItem(heldItem);
+			if (!world.isClientSide && player instanceof ServerPlayer)
+				player.openMenu(this, buf -> {
+					ItemStack.STREAM_CODEC.encode(buf, heldItem);
 				});
 			return InteractionResultHolder.success(heldItem);
 		}
@@ -207,11 +202,12 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 		ItemStackHandler newInv = new ItemStackHandler(18);
 		if (AllItems.FILTER.get() != stack.getItem())
 			throw new IllegalArgumentException("Cannot get filter items from non-filter: " + stack);
-		if (!stack.hasTag())
+		if (!stack.has(AllDataComponents.FILTER_ITEMS))
 			return newInv;
-		CompoundTag invNBT = stack.getOrCreateTagElement("Items");
-		if (!invNBT.isEmpty())
-			newInv.deserializeNBT(invNBT);
+
+		//noinspection DataFlowIssue - It's fine:tm: we check if it has the component before doing this
+		ItemHelper.fillItemStackHandler(stack.get(AllDataComponents.FILTER_ITEMS), newInv);
+
 		return newInv;
 	}
 
@@ -220,7 +216,7 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 			if (PackageItem.isPackage(filter) && PackageItem.isPackage(stack))
 				return doPackagesHaveSameData(filter, stack);
 
-			return ItemHandlerHelper.canItemStacksStack(filter, stack);
+			return ItemStack.isSameItemSameComponents(filter, stack);
 		}
 
 		if (PackageItem.isPackage(filter) && PackageItem.isPackage(stack))
@@ -230,23 +226,28 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 	}
 
 	public static boolean doPackagesHaveSameData(@NotNull ItemStack a, @NotNull ItemStack b) {
-		if (a.isEmpty() || a.hasTag() != b.hasTag())
+		if (a.isEmpty())
 			return false;
-		if (!a.hasTag())
-			return true;
-		if (!a.getTag().getAllKeys().equals(b.getTag().getAllKeys()))
+		if (!ItemStack.isSameItemSameComponents(a, b))
 			return false;
-		for (String key : a.getTag()
-			.getAllKeys()) {
-			if (key.equals("Fragment"))
+		for (TypedDataComponent<?> component : a.getComponents()) {
+			DataComponentType<?> type = component.type();
+			if (type.equals(AllDataComponents.PACKAGE_ORDER_DATA) ||
+				type.equals(AllDataComponents.PACKAGE_ORDER_CONTEXT))
 				continue;
-			if (!Objects.equals(a.getTag()
-					.get(key),
-				b.getTag()
-					.get(key)))
+			if (!Objects.equals(a.get(type), b.get(type)))
 				return false;
 		}
 		return true;
+	}
+
+	@Override
+	public DataComponentType<?> getComponentType() {
+		return switch (type) {
+		case ATTRIBUTE -> AllDataComponents.ATTRIBUTE_FILTER_MATCHED_ATTRIBUTES;
+		case PACKAGE -> AllDataComponents.PACKAGE_ADDRESS;
+		case REGULAR -> AllDataComponents.FILTER_ITEMS;
+		};
 	}
 
 }

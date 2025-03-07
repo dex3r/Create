@@ -2,6 +2,7 @@ package com.simibubi.create.foundation.data.recipe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import com.simibubi.create.AllBlocks;
@@ -9,6 +10,7 @@ import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.foundation.block.CopperBlockSet;
 import com.simibubi.create.foundation.block.CopperBlockSet.Variant;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
@@ -25,9 +27,9 @@ public class DeployingRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe
 
-	COGWHEEL = create("cogwheel", b -> b.require(I.shaft())
-		.require(I.planks())
-		.output(I.cog())),
+		COGWHEEL = create("cogwheel", b -> b.require(I.shaft())
+			.require(I.planks())
+			.output(I.cog())),
 
 		LARGE_COGWHEEL = create("large_cogwheel", b -> b.require(I.cog())
 			.require(I.planks())
@@ -35,44 +37,72 @@ public class DeployingRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe
 
-	CB1 = addWax(() -> Blocks.WAXED_COPPER_BLOCK, () -> Blocks.COPPER_BLOCK),
-		CB2 = addWax(() -> Blocks.WAXED_EXPOSED_COPPER, () -> Blocks.EXPOSED_COPPER),
-		CB3 = addWax(() -> Blocks.WAXED_WEATHERED_COPPER, () -> Blocks.WEATHERED_COPPER),
-		CB4 = addWax(() -> Blocks.WAXED_OXIDIZED_COPPER, () -> Blocks.OXIDIZED_COPPER),
+		COPPER_BLOCK = oxidizationChain(
+			List.of(() -> Blocks.COPPER_BLOCK, () -> Blocks.EXPOSED_COPPER, () -> Blocks.WEATHERED_COPPER, () -> Blocks.OXIDIZED_COPPER),
+			List.of(() -> Blocks.WAXED_COPPER_BLOCK, () -> Blocks.WAXED_EXPOSED_COPPER, () -> Blocks.WAXED_WEATHERED_COPPER, () -> Blocks.WAXED_OXIDIZED_COPPER)),
 
-		CCB1 = addWax(() -> Blocks.WAXED_CUT_COPPER, () -> Blocks.CUT_COPPER),
-		CCB2 = addWax(() -> Blocks.WAXED_EXPOSED_CUT_COPPER, () -> Blocks.EXPOSED_CUT_COPPER),
-		CCB3 = addWax(() -> Blocks.WAXED_WEATHERED_CUT_COPPER, () -> Blocks.WEATHERED_CUT_COPPER),
-		CCB4 = addWax(() -> Blocks.WAXED_OXIDIZED_CUT_COPPER, () -> Blocks.OXIDIZED_CUT_COPPER),
+		COPPER_BULB = oxidizationChain(
+			List.of(() -> Blocks.COPPER_BULB, () -> Blocks.EXPOSED_COPPER_BULB, () -> Blocks.WEATHERED_COPPER_BULB, () -> Blocks.OXIDIZED_COPPER_BULB),
+			List.of(() -> Blocks.WAXED_COPPER_BULB, () -> Blocks.WAXED_EXPOSED_COPPER_BULB, () -> Blocks.WAXED_WEATHERED_COPPER_BULB, () -> Blocks.WAXED_OXIDIZED_COPPER_BULB)),
 
-		CCST1 = addWax(() -> Blocks.WAXED_CUT_COPPER_STAIRS, () -> Blocks.CUT_COPPER_STAIRS),
-		CCST2 = addWax(() -> Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS, () -> Blocks.EXPOSED_CUT_COPPER_STAIRS),
-		CCST3 = addWax(() -> Blocks.WAXED_WEATHERED_CUT_COPPER_STAIRS, () -> Blocks.WEATHERED_CUT_COPPER_STAIRS),
-		CCST4 = addWax(() -> Blocks.WAXED_OXIDIZED_CUT_COPPER_STAIRS, () -> Blocks.OXIDIZED_CUT_COPPER_STAIRS),
+		CHISELED_COPPER = oxidizationChain(
+			List.of(() -> Blocks.CHISELED_COPPER, () -> Blocks.EXPOSED_CHISELED_COPPER, () -> Blocks.WEATHERED_CHISELED_COPPER, () -> Blocks.OXIDIZED_CHISELED_COPPER),
+			List.of(() -> Blocks.WAXED_CHISELED_COPPER, () -> Blocks.WAXED_EXPOSED_CHISELED_COPPER, () -> Blocks.WAXED_WEATHERED_CHISELED_COPPER, () -> Blocks.WAXED_OXIDIZED_CHISELED_COPPER)),
 
-		CCS1 = addWax(() -> Blocks.WAXED_CUT_COPPER_SLAB, () -> Blocks.CUT_COPPER_SLAB),
-		CCS2 = addWax(() -> Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB, () -> Blocks.EXPOSED_CUT_COPPER_SLAB),
-		CCS3 = addWax(() -> Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB, () -> Blocks.WEATHERED_CUT_COPPER_SLAB),
-		CCS4 = addWax(() -> Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB, () -> Blocks.OXIDIZED_CUT_COPPER_SLAB);
+		COPPER_GRATE = oxidizationChain(
+			List.of(() -> Blocks.COPPER_GRATE, () -> Blocks.EXPOSED_COPPER_GRATE, () -> Blocks.WEATHERED_COPPER_GRATE, () -> Blocks.OXIDIZED_COPPER_GRATE),
+			List.of(() -> Blocks.WAXED_COPPER_GRATE, () -> Blocks.WAXED_EXPOSED_COPPER_GRATE, () -> Blocks.WAXED_WEATHERED_COPPER_GRATE, () -> Blocks.WAXED_OXIDIZED_COPPER_GRATE)),
 
-	GeneratedRecipe
+		COPPER_DOOR = oxidizationChain(
+			List.of(() -> Blocks.COPPER_DOOR, () -> Blocks.EXPOSED_COPPER_DOOR, () -> Blocks.WEATHERED_COPPER_DOOR, () -> Blocks.OXIDIZED_COPPER_DOOR),
+			List.of(() -> Blocks.WAXED_COPPER_DOOR, () -> Blocks.WAXED_EXPOSED_COPPER_DOOR, () -> Blocks.WAXED_WEATHERED_COPPER_DOOR, () -> Blocks.WAXED_OXIDIZED_COPPER_DOOR)),
 
-		CB_OX = oxidizationChain(List.of(() -> Blocks.COPPER_BLOCK, () -> Blocks.EXPOSED_COPPER, () -> Blocks.WEATHERED_COPPER, () -> Blocks.OXIDIZED_COPPER)),
-		CCB_OX = oxidizationChain(List.of(() -> Blocks.CUT_COPPER, () -> Blocks.EXPOSED_CUT_COPPER, () -> Blocks.WEATHERED_CUT_COPPER, () -> Blocks.OXIDIZED_CUT_COPPER)),
-		CCST_OX = oxidizationChain(List.of(() -> Blocks.CUT_COPPER_STAIRS, () -> Blocks.EXPOSED_CUT_COPPER_STAIRS, () -> Blocks.WEATHERED_CUT_COPPER_STAIRS, () -> Blocks.OXIDIZED_CUT_COPPER_STAIRS)),
-		CCS_OX = oxidizationChain(List.of(() -> Blocks.CUT_COPPER_SLAB, () -> Blocks.EXPOSED_CUT_COPPER_SLAB, () -> Blocks.WEATHERED_CUT_COPPER_SLAB, () -> Blocks.OXIDIZED_CUT_COPPER_SLAB));
+		COPPER_TRAPDOOR = oxidizationChain(
+			List.of(() -> Blocks.COPPER_TRAPDOOR, () -> Blocks.EXPOSED_COPPER_TRAPDOOR, () -> Blocks.WEATHERED_COPPER_TRAPDOOR, () -> Blocks.OXIDIZED_COPPER_TRAPDOOR),
+			List.of(() -> Blocks.WAXED_COPPER_TRAPDOOR, () -> Blocks.WAXED_EXPOSED_COPPER_TRAPDOOR, () -> Blocks.WAXED_WEATHERED_COPPER_TRAPDOOR, () -> Blocks.WAXED_OXIDIZED_COPPER_TRAPDOOR)),
+
+		CUT_COPPER = oxidizationChain(
+			List.of(() -> Blocks.CUT_COPPER, () -> Blocks.EXPOSED_CUT_COPPER, () -> Blocks.WEATHERED_CUT_COPPER, () -> Blocks.OXIDIZED_CUT_COPPER),
+			List.of(() -> Blocks.WAXED_CUT_COPPER, () -> Blocks.WAXED_EXPOSED_CUT_COPPER, () -> Blocks.WAXED_WEATHERED_CUT_COPPER, () -> Blocks.WAXED_OXIDIZED_CUT_COPPER)),
+
+		CUT_COPPER_STAIRS = oxidizationChain(
+			List.of(() -> Blocks.CUT_COPPER_STAIRS, () -> Blocks.EXPOSED_CUT_COPPER_STAIRS, () -> Blocks.WEATHERED_CUT_COPPER_STAIRS, () -> Blocks.OXIDIZED_CUT_COPPER_STAIRS),
+			List.of(() -> Blocks.WAXED_CUT_COPPER_STAIRS, () -> Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS, () -> Blocks.WAXED_WEATHERED_CUT_COPPER_STAIRS, () -> Blocks.WAXED_OXIDIZED_CUT_COPPER_STAIRS)),
+
+		CUT_COPPER_SLAB = oxidizationChain(
+			List.of(() -> Blocks.CUT_COPPER_SLAB, () -> Blocks.EXPOSED_CUT_COPPER_SLAB, () -> Blocks.WEATHERED_CUT_COPPER_SLAB, () -> Blocks.OXIDIZED_CUT_COPPER_SLAB),
+			List.of(() -> Blocks.WAXED_CUT_COPPER_SLAB, () -> Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB, () -> Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB, () -> Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB))
+
+		;
 
 	public GeneratedRecipe copperChain(CopperBlockSet set) {
 		for (Variant<?> variant : set.getVariants()) {
 			List<Supplier<ItemLike>> chain = new ArrayList<>(4);
+			List<Supplier<ItemLike>> waxedChain = new ArrayList<>(4);
 
 			for (WeatherState state : WeatherState.values()) {
-				addWax(set.get(variant, state, true)::get, set.get(variant, state, false)::get);
+				waxedChain.add(set.get(variant, state, true)::get);
 				chain.add(set.get(variant, state, false)::get);
 			}
 
-			oxidizationChain(chain);
+			oxidizationChain(chain, waxedChain);
 		}
+		return null;
+	}
+
+	public GeneratedRecipe oxidizationChain(List<Supplier<ItemLike>> chain, List<Supplier<ItemLike>> waxedChain) {
+		for (int i = 0; i < chain.size() - 1; i++) {
+			Supplier<ItemLike> to = chain.get(i);
+			Supplier<ItemLike> from = chain.get(i + 1);
+			createWithDeferredId(idWithSuffix(to, "_from_deoxidising"), b -> b.require(from.get())
+				.require(ItemTags.AXES)
+				.toolNotConsumed()
+				.output(to.get()));
+		}
+
+		for (int i = 0; i < chain.size(); i++)
+			addWax(waxedChain.get(i), chain.get(i));
+
 		return null;
 	}
 
@@ -88,20 +118,8 @@ public class DeployingRecipeGen extends ProcessingRecipeGen {
 			.output(waxed.get()));
 	}
 
-	public GeneratedRecipe oxidizationChain(List<Supplier<ItemLike>> chain) {
-		for (int i = 0; i < chain.size() - 1; i++) {
-			Supplier<ItemLike> to = chain.get(i);
-			Supplier<ItemLike> from = chain.get(i + 1);
-			createWithDeferredId(idWithSuffix(to, "_from_deoxidising"), b -> b.require(from.get())
-				.require(ItemTags.AXES)
-				.toolNotConsumed()
-				.output(to.get()));
-		}
-		return null;
-	}
-
-	public DeployingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public DeployingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

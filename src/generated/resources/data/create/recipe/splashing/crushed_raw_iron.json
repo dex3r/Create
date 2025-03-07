@@ -1,0 +1,22 @@
+{
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "item": "create:crushed_raw_iron"
+    }
+  ],
+  "results": [
+    {
+      "count": 9,
+      "item": {
+        "id": "minecraft:iron_nugget"
+      }
+    },
+    {
+      "chance": 0.75,
+      "item": {
+        "id": "minecraft:redstone"
+      }
+    }
+  ]
+}

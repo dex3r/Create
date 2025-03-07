@@ -5,9 +5,16 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.content.fluids.potion.PotionFluidHandler;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.MilkBucketItem;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
@@ -62,7 +69,7 @@ public class GenericItemFilling {
 		Storage<FluidVariant> tank = FluidStorage.ITEM.find(stack, ContainerItemContext.withConstant(stack));
 		if (tank == null)
 			return false;
-		if (!isFluidHandlerValid(stack, tank))
+		if (!isFluidHandlerValid(stack, capability))
 			return false;
 		return tank.supportsInsertion();
 	}
@@ -115,10 +122,10 @@ public class GenericItemFilling {
 		availableFluid.shrink(requiredAmount);
 
 		if (stack.getItem() == Items.GLASS_BOTTLE && canFillGlassBottleInternally(toFill)) {
-			ItemStack fillBottle = ItemStack.EMPTY;
+			ItemStack fillBottle;
 			Fluid fluid = toFill.getFluid();
 			if (FluidHelper.isWater(fluid))
-				fillBottle = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
+				fillBottle = PotionContents.createItemStack(Items.POTION, Potions.WATER);
 			else if (fluid.isSame(AllFluids.TEA.get()))
 				fillBottle = AllItems.BUILDERS_TEA.asStack();
 			else

@@ -1,0 +1,23 @@
+{
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "item": "minecraft:soul_sand"
+    }
+  ],
+  "results": [
+    {
+      "chance": 0.125,
+      "count": 4,
+      "item": {
+        "id": "minecraft:quartz"
+      }
+    },
+    {
+      "chance": 0.02,
+      "item": {
+        "id": "minecraft:gold_nugget"
+      }
+    }
+  ]
+}

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
@@ -20,9 +19,9 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -34,7 +33,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler
 
 public class RedstoneRequesterScreen extends AbstractSimiContainerScreen<RedstoneRequesterMenu> {
 
-	private EditBox addressBox;
+	private AddressEditBox addressBox;
 	private IconButton confirmButton;
 	private List<Rect2i> extraAreas = Collections.emptyList();
 	private List<Integer> amounts = new ArrayList<>();
@@ -175,11 +174,11 @@ public class RedstoneRequesterScreen extends AbstractSimiContainerScreen<Redston
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double pDelta) {
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
 		int x = leftPos;
 		int y = topPos;
 
-		if (addressBox.mouseScrolled(mouseX, mouseY, pDelta))
+		if (addressBox.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
 			return true;
 
 		for (int i = 0; i < amounts.size(); i++) {
@@ -190,12 +189,12 @@ public class RedstoneRequesterScreen extends AbstractSimiContainerScreen<Redston
 				if (itemStack.isEmpty())
 					return true;
 				amounts.set(i,
-					Mth.clamp((int) (amounts.get(i) + Math.signum(pDelta) * (hasShiftDown() ? 10 : 1)), 1, 256));
+					Mth.clamp((int) (amounts.get(i) + Math.signum(scrollY) * (hasShiftDown() ? 10 : 1)), 1, 256));
 				return true;
 			}
 		}
 
-		return super.mouseScrolled(mouseX, mouseY, pDelta);
+		return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
 	}
 
 	@Override
@@ -229,8 +228,7 @@ public class RedstoneRequesterScreen extends AbstractSimiContainerScreen<Redston
 
 	@Override
 	public void removed() {
-		AllPackets.getChannel()
-			.sendToServer(new RedstoneRequesterConfigurationPacket(menu.contentHolder.getBlockPos(),
+		CatnipServices.NETWORK.sendToServer(new RedstoneRequesterConfigurationPacket(menu.contentHolder.getBlockPos(),
 				addressBox.getValue(), allowPartial.green, amounts));
 		super.removed();
 	}

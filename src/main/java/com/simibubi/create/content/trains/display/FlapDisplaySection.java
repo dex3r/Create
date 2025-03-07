@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -133,7 +134,7 @@ public class FlapDisplaySection {
 		if (wideFlaps)
 			NBTHelper.putMarker(tag, "Wide");
 		if (component != null)
-			tag.putString("Text", Component.Serializer.toJson(component));
+			tag.putString("Text", Component.Serializer.toJson(component, RegistryAccess.EMPTY));
 		if (sendTransition)
 			NBTHelper.putMarker(tag, "Transition");
 		sendTransition = false;
@@ -154,13 +155,15 @@ public class FlapDisplaySection {
 		if (!tag.contains("Text"))
 			return section;
 
-		section.component = Component.Serializer.fromJson(tag.getString("Text"));
+		section.component = Component.Serializer.fromJson(tag.getString("Text"), RegistryAccess.EMPTY);
 		section.refresh(tag.getBoolean("Transition"));
 		return section;
 	}
 
 	public void update(CompoundTag tag) {
-		component = Component.Serializer.fromJson(tag.getString("Text"));
+		String text = tag.getString("Text");
+		if (!text.isEmpty())
+			component = Component.Serializer.fromJson(text, RegistryAccess.EMPTY);
 		if (cyclingOptions == null)
 			cyclingOptions = getFlapCycle(cycle);
 		refresh(tag.getBoolean("Transition"));

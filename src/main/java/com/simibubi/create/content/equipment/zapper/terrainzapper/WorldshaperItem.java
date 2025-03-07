@@ -2,16 +2,20 @@ package com.simibubi.create.content.equipment.zapper.terrainzapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.zapper.PlacementPatterns;
 import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.gui.ScreenOpener;
-import net.createmod.catnip.nbt.NBTHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +31,12 @@ public class WorldshaperItem extends ZapperItem {
 
 	public WorldshaperItem(Properties properties) {
 		super(properties);
+	}
+
+	@Override
+	@OnlyIn(Dist.CLIENT)
+	public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+		consumer.accept(SimpleCustomRenderer.create(this, new WorldshaperItemRenderer()));
 	}
 
 	@Override
@@ -47,16 +57,14 @@ public class WorldshaperItem extends ZapperItem {
 
 	@Override
 	public Component validateUsage(ItemStack item) {
-		if (!item.getOrCreateTag()
-			.contains("BrushParams"))
+		if (!item.has(AllDataComponents.SHAPER_BRUSH_PARAMS))
 			return CreateLang.translateDirect("terrainzapper.shiftRightClickToSet");
 		return super.validateUsage(item);
 	}
 
 	@Override
 	protected boolean canActivateWithoutSelectedBlock(ItemStack stack) {
-		CompoundTag tag = stack.getOrCreateTag();
-		TerrainTools tool = NBTHelper.readEnum(tag, "Tool", TerrainTools.class);
+		TerrainTools tool = stack.getOrDefault(AllDataComponents.SHAPER_TOOL, TerrainTools.Fill);
 		return !tool.requiresSelectedBlock();
 	}
 
@@ -67,12 +75,10 @@ public class WorldshaperItem extends ZapperItem {
 		BlockPos targetPos = raytrace.getBlockPos();
 		List<BlockPos> affectedPositions = new ArrayList<>();
 
-		CompoundTag tag = stack.getOrCreateTag();
-		Brush brush = NBTHelper.readEnum(tag, "Brush", TerrainBrushes.class)
-			.get();
-		BlockPos params = NbtUtils.readBlockPos(tag.getCompound("BrushParams"));
-		PlacementOptions option = NBTHelper.readEnum(tag, "Placement", PlacementOptions.class);
-		TerrainTools tool = NBTHelper.readEnum(tag, "Tool", TerrainTools.class);
+		Brush brush = stack.getOrDefault(AllDataComponents.SHAPER_BRUSH, TerrainBrushes.Cuboid).get();
+		BlockPos params = stack.get(AllDataComponents.SHAPER_BRUSH_PARAMS);
+		PlacementOptions option = stack.getOrDefault(AllDataComponents.SHAPER_PLACEMENT_OPTIONS, PlacementOptions.Merged);
+		TerrainTools tool = stack.getOrDefault(AllDataComponents.SHAPER_TOOL, TerrainTools.Fill);
 
 		brush.set(params.getX(), params.getY(), params.getZ());
 		targetPos = targetPos.offset(brush.getOffset(player.getLookAngle(), raytrace.getDirection(), option));
@@ -86,18 +92,10 @@ public class WorldshaperItem extends ZapperItem {
 
 	public static void configureSettings(ItemStack stack, PlacementPatterns pattern, TerrainBrushes brush,
 		int brushParamX, int brushParamY, int brushParamZ, TerrainTools tool, PlacementOptions placement) {
-		ZapperItem.configureSettings(stack, pattern);
-		CompoundTag nbt = stack.getOrCreateTag();
-		NBTHelper.writeEnum(nbt, "Brush", brush);
-		nbt.put("BrushParams", NbtUtils.writeBlockPos(new BlockPos(brushParamX, brushParamY, brushParamZ)));
-		NBTHelper.writeEnum(nbt, "Tool", tool);
-		NBTHelper.writeEnum(nbt, "Placement", placement);
+		stack.set(AllDataComponents.PLACEMENT_PATTERN, pattern);
+		stack.set(AllDataComponents.SHAPER_BRUSH, brush);
+		stack.set(AllDataComponents.SHAPER_BRUSH_PARAMS, new BlockPos(brushParamX, brushParamY, brushParamZ));
+		stack.set(AllDataComponents.SHAPER_TOOL, tool);
+		stack.set(AllDataComponents.SHAPER_PLACEMENT_OPTIONS, placement);
 	}
-
-//	@Override
-//	@Environment(EnvType.CLIENT)
-//	public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-//		consumer.accept(SimpleCustomRenderer.create(this, new WorldshaperItemRenderer()));
-//	}
-
 }

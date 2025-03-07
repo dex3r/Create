@@ -3,12 +3,10 @@ package com.simibubi.create.content.equipment.armor;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import org.jetbrains.annotations.Nullable;
-
-import com.simibubi.create.content.equipment.armor.CapacityEnchantment.ICapacityEnchantable;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.foundation.item.LayeredArmorItem;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
@@ -23,14 +21,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 
-public class BacktankItem extends BaseArmorItem implements ICapacityEnchantable {
+public class BacktankItem extends BaseArmorItem {
 	public static final EquipmentSlot SLOT = EquipmentSlot.CHEST;
 	public static final ArmorItem.Type TYPE = ArmorItem.Type.CHESTPLATE;
 	public static final int BAR_COLOR = 0xEFEFEF;
 
 	private final Supplier<BacktankBlockItem> blockItem;
 
-	public BacktankItem(ArmorMaterial material, Properties properties, ResourceLocation textureLoc, Supplier<BacktankBlockItem> placeable) {
+	public BacktankItem(Holder<ArmorMaterial> material, Properties properties, ResourceLocation textureLoc, Supplier<BacktankBlockItem> placeable) {
 		super(material, TYPE, properties, textureLoc);
 		this.blockItem = placeable;
 	}
@@ -50,11 +48,6 @@ public class BacktankItem extends BaseArmorItem implements ICapacityEnchantable 
 	public InteractionResult useOn(UseOnContext ctx) {
 		return blockItem.get()
 			.useOn(ctx);
-	}
-
-	@Override
-	public boolean canBeDepleted() {
-		return false;
 	}
 
 	@Override
@@ -82,8 +75,7 @@ public class BacktankItem extends BaseArmorItem implements ICapacityEnchantable 
 	}
 
 	public static int getRemainingAir(ItemStack stack) {
-		CompoundTag orCreateTag = stack.getOrCreateTag();
-		return orCreateTag.getInt("Air");
+		return stack.getOrDefault(AllDataComponents.BACKTANK_AIR, 0);
 	}
 
 	public static class BacktankBlockItem extends BlockItem {
@@ -105,7 +97,7 @@ public class BacktankItem extends BaseArmorItem implements ICapacityEnchantable 
 	}
 
 	public static class Layered extends BacktankItem implements LayeredArmorItem {
-		public Layered(ArmorMaterial material, Properties properties, ResourceLocation textureLoc, Supplier<BacktankBlockItem> placeable) {
+		public Layered(Holder<ArmorMaterial> material, Properties properties, ResourceLocation textureLoc, Supplier<BacktankBlockItem> placeable) {
 			super(material, properties, textureLoc, placeable);
 		}
 

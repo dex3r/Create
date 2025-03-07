@@ -1,20 +1,18 @@
 package com.simibubi.create.content.trains.track;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllPackets;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllTags;
 import com.simibubi.create.content.trains.track.TrackPlacement.PlacementInfo;
 import com.simibubi.create.foundation.utility.CreateLang;
+import net.createmod.catnip.platform.CatnipServices;
 
 import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.AxisDirection;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -81,16 +79,15 @@ public class TrackBlockItem extends BlockItem {
 		} else if (player.isShiftKeyDown()) {
 			if (!level.isClientSide) {
 				player.displayClientMessage(CreateLang.translateDirect("track.selection_cleared"), true);
-				stack.setTag(null);
+				stack.remove(AllDataComponents.TRACK_CONNECTING_FROM);
 			} else
 				level.playSound(player, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.75f, 1);
 			return InteractionResult.SUCCESS;
 		}
 
 		boolean placing = !(state.getBlock() instanceof ITrackBlock);
-		CompoundTag tag = stack.getTag();
-		boolean extend = tag.getBoolean("ExtendCurve");
-		tag.remove("ExtendCurve");
+		boolean extend = stack.getOrDefault(AllDataComponents.TRACK_EXTENDED_CURVE, false);
+		stack.remove(AllDataComponents.TRACK_EXTENDED_CURVE);
 
 		if (placing) {
 			if (!state.canBeReplaced())
@@ -116,7 +113,7 @@ public class TrackBlockItem extends BlockItem {
 
 		stack = player.getMainHandItem();
 		if (AllTags.AllBlockTags.TRACKS.matches(stack)) {
-			stack.setTag(null);
+			stack.remove(AllDataComponents.TRACK_CONNECTING_FROM);
 			player.setItemInHand(pContext.getHand(), stack);
 		}
 
@@ -145,29 +142,25 @@ public class TrackBlockItem extends BlockItem {
 		Vec3 normal = track.getUpNormal(world, pos, blockState)
 			.normalize();
 
-		CompoundTag compoundTag = heldItem.getOrCreateTagElement("ConnectingFrom");
-		compoundTag.put("Pos", NbtUtils.writeBlockPos(pos));
-		compoundTag.put("Axis", VecHelper.writeNBT(axis));
-		compoundTag.put("Normal", VecHelper.writeNBT(normal));
-		compoundTag.put("End", VecHelper.writeNBT(end));
+		heldItem.set(AllDataComponents.TRACK_CONNECTING_FROM, new TrackPlacement.ConnectingFrom(pos, axis, normal, end));
 		return true;
 	}
 
 	@Environment(EnvType.CLIENT)
-	public static InteractionResult sendExtenderPacket(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
+	public static InteractionResult sendExtenderPacket(Player player, Level level, InteractionHand hand, BlockHitResult hitResult) {
 		ItemStack stack = player.getItemInHand(hand);
-		if (!AllTags.AllBlockTags.TRACKS.matches(stack) || !stack.hasTag())
+		if (!level.isClientSide)
+			return InteractionResult.PASS;
+		if (!AllTags.AllBlockTags.TRACKS.matches(stack))
 			return InteractionResult.PASS;
 		if (Minecraft.getInstance().options.keySprint.isDown())
-			AllPackets.getChannel()
-				.sendToServer(new PlaceExtendedCurvePacket(hand == InteractionHand.MAIN_HAND, true));
+			CatnipServices.NETWORK.sendToServer(new PlaceExtendedCurvePacket(hand == InteractionHand.MAIN_HAND, true));
 		return InteractionResult.PASS;
 	}
 
 	@Override
 	public boolean isFoil(ItemStack stack) {
-		return stack.hasTag() && stack.getTag()
-			.contains("ConnectingFrom");
+		return stack.has(AllDataComponents.TRACK_CONNECTING_FROM);
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.simibubi.create.content.redstone.diodes;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.tterrag.registrate.providers.DataGenContext;
 
@@ -14,8 +15,8 @@ import io.github.fabricators_of_create.porting_lib.models.generators.block.Block
 public class PoweredLatchGenerator extends AbstractDiodeGenerator {
 
 	@Override
-	protected <T extends Block> Vector<ModelFile> createModels(DataGenContext<Block, T> ctx, BlockModelProvider prov) {
-		Vector<ModelFile> models = makeVector(2);
+	protected <T extends Block> List<ModelFile> createModels(DataGenContext<Block, T> ctx, BlockModelProvider prov) {
+		List<ModelFile> models = new ArrayList<>(2);
 		String name = ctx.getName();
 		ResourceLocation off = existing("latch_off");
 		ResourceLocation on = existing("latch_on");

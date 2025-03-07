@@ -33,7 +33,7 @@ public class SlidingDoorBlockEntity extends SmartBlockEntity {
 		if (deferUpdate && !level.isClientSide()) {
 			deferUpdate = false;
 			BlockState blockState = getBlockState();
-			blockState.neighborChanged(level, worldPosition, Blocks.AIR, worldPosition, false);
+			blockState.handleNeighborChanged(level, worldPosition, Blocks.AIR, worldPosition, false);
 		}
 
 		super.tick();

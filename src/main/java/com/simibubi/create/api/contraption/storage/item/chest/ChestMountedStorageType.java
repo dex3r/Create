@@ -15,6 +15,9 @@ import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
+
 public class ChestMountedStorageType extends SimpleMountedStorageType<ChestMountedStorage> {
 	public ChestMountedStorageType() {
 		super(ChestMountedStorage.CODEC);

@@ -3,33 +3,36 @@ package com.simibubi.create.content.logistics.item.filter.attribute.attributes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.logistics.item.filter.attribute.AllItemAttributeTypes;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttributeType;
 
-import net.createmod.catnip.nbt.NBTHelper;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Holder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
-public class EnchantAttribute implements ItemAttribute {
-	private @Nullable Enchantment enchantment;
+import javax.annotation.Nullable;
 
-	public EnchantAttribute(@Nullable Enchantment enchantment) {
-		this.enchantment = enchantment;
-	}
+public record EnchantAttribute(@Nullable Holder<Enchantment> enchantment) implements ItemAttribute {
+	public static final MapCodec<EnchantAttribute> CODEC = Enchantment.CODEC
+			.xmap(EnchantAttribute::new, EnchantAttribute::enchantment)
+			.fieldOf("value");
+
+	public static final StreamCodec<RegistryFriendlyByteBuf, EnchantAttribute> STREAM_CODEC = Enchantment.STREAM_CODEC
+		.map(EnchantAttribute::new, EnchantAttribute::enchantment);
 
 	@Override
 	public boolean appliesTo(ItemStack itemStack, Level level) {
-		return EnchantmentHelper.getEnchantments(itemStack).containsKey(enchantment);
+		return EnchantmentHelper.getEnchantmentsForCrafting(itemStack).keySet().contains(enchantment);
 	}
 
 	@Override
@@ -41,30 +44,13 @@ public class EnchantAttribute implements ItemAttribute {
 	public Object[] getTranslationParameters() {
 		String parameter = "";
 		if (enchantment != null)
-            parameter = Component.translatable(enchantment.getDescriptionId()).getString();
+			parameter = enchantment.value().description().getString();
 		return new Object[]{parameter};
 	}
 
 	@Override
 	public ItemAttributeType getType() {
 		return AllItemAttributeTypes.HAS_ENCHANT;
-	}
-
-	@Override
-	public void save(CompoundTag nbt) {
-		if (enchantment == null)
-			return;
-		ResourceLocation id = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
-		if (id == null)
-			return;
-		NBTHelper.writeResourceLocation(nbt, "enchantId", id);
-	}
-
-	@Override
-	public void load(CompoundTag nbt) {
-		if (nbt.contains("enchantId")) {
-			enchantment = BuiltInRegistries.ENCHANTMENT.get(NBTHelper.readResourceLocation(nbt, "enchantId"));
-		}
 	}
 
 	public static class Type implements ItemAttributeType {
@@ -77,11 +63,21 @@ public class EnchantAttribute implements ItemAttribute {
 		public List<ItemAttribute> getAllAttributes(ItemStack stack, Level level) {
 			List<ItemAttribute> list = new ArrayList<>();
 
-			for (Enchantment enchantment : EnchantmentHelper.getEnchantments(stack).keySet()) {
-				list.add(new EnchantAttribute(enchantment));
+			for (Holder<Enchantment> enchantmentHolder : EnchantmentHelper.getEnchantmentsForCrafting(stack).keySet()) {
+				list.add(new EnchantAttribute(enchantmentHolder));
 			}
 
 			return list;
+		}
+
+		@Override
+		public MapCodec<? extends ItemAttribute> codec() {
+			return CODEC;
+		}
+
+		@Override
+		public StreamCodec<? super RegistryFriendlyByteBuf, ? extends ItemAttribute> streamCodec() {
+			return STREAM_CODEC;
 		}
 	}
 }

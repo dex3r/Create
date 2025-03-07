@@ -4,11 +4,11 @@ import java.util.Collection;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
 import com.simibubi.create.foundation.utility.fabric.ReachUtil;
 
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -16,6 +16,7 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -33,9 +34,7 @@ public class HighlightCommand {
 						Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "players");
 						BlockPos pos = BlockPosArgument.getLoadedBlockPos(ctx, "pos");
 
-						for (ServerPlayer p : players) {
-							AllPackets.getChannel().sendToClient(new HighlightPacket(pos), p);
-						}
+						CatnipServices.NETWORK.sendToClients(players, new HighlightPacket(pos));
 
 						return players.size();
 					}))
@@ -43,7 +42,7 @@ public class HighlightCommand {
 				.executes(ctx -> {
 					BlockPos pos = BlockPosArgument.getLoadedBlockPos(ctx, "pos");
 
-					AllPackets.getChannel().sendToClient(new HighlightPacket(pos), (ServerPlayer) ctx.getSource().getEntity());
+					CatnipServices.NETWORK.sendToClient((ServerPlayer) ctx.getSource().getEntity(), new HighlightPacket(pos));
 
 					return Command.SINGLE_SUCCESS;
 				}))
@@ -65,7 +64,7 @@ public class HighlightCommand {
 	}
 
 	private static int highlightAssemblyExceptionFor(ServerPlayer player, CommandSourceStack source) {
-		double distance = ReachUtil.reach(player);
+		double distance = player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE);
 		Vec3 start = player.getEyePosition(1);
 		Vec3 look = player.getViewVector(1);
 		Vec3 end = start.add(look.x * distance, look.y * distance, look.z * distance);
@@ -100,7 +99,8 @@ public class HighlightCommand {
 
 		BlockPos p = exception.getPosition();
 		String command = "/create highlight " + p.getX() + " " + p.getY() + " " + p.getZ();
-		return player.server.getCommands()
-			.performPrefixedCommand(source, command);
+		player.server.getCommands().performPrefixedCommand(source, command);
+
+		return Command.SINGLE_SUCCESS;
 	}
 }

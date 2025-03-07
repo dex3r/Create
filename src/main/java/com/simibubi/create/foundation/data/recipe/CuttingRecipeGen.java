@@ -1,6 +1,7 @@
 package com.simibubi.create.foundation.data.recipe;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
@@ -131,17 +132,17 @@ public class CuttingRecipeGen extends ProcessingRecipeGen {
 		return null;
 	}
 
+	public CuttingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
+	}
+
 	GeneratedRecipe ieWires(String... metals) {
 		for (String metal : metals)
 			create(Mods.IE.recipeId("wire_" + metal), b -> b.duration(50)
-				.require(AllTags.forgeItemTag("plates/" + metal))
+				.require(AllTags.commonItemTag("plates/" + metal))
 				.output(1, Mods.IE, "wire_" + metal, 2)
 				.whenModLoaded(Mods.IE.getId()));
 		return null;
-	}
-
-	public CuttingRecipeGen(FabricDataOutput output) {
-		super(output);
 	}
 
 	@Override

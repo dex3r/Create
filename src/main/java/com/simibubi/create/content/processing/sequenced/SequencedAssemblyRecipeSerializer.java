@@ -1,87 +1,76 @@
 package com.simibubi.create.content.processing.sequenced;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.util.Optional;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 public class SequencedAssemblyRecipeSerializer implements RecipeSerializer<SequencedAssemblyRecipe> {
 
+	private final MapCodec<SequencedAssemblyRecipe> CODEC = RecordCodecBuilder.mapCodec(
+		i -> i.group(
+			Ingredient.CODEC.fieldOf("ingredient").forGetter(SequencedAssemblyRecipe::getIngredient),
+			ProcessingOutput.CODEC.fieldOf("transitional_item").forGetter(r -> r.transitionalItem),
+			SequencedRecipe.CODEC.listOf().fieldOf("sequence").forGetter(SequencedAssemblyRecipe::getSequence),
+			ProcessingOutput.CODEC.listOf().fieldOf("results").forGetter(r -> r.resultPool),
+			ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("loops").forGetter(r -> Optional.of(r.getLoops()))
+		).apply(i, (ingredient, transitionalItem, sequence, results, loops) -> {
+			SequencedAssemblyRecipe recipe = new SequencedAssemblyRecipe(this);
+			recipe.ingredient = ingredient;
+			recipe.transitionalItem = transitionalItem;
+			recipe.sequence.addAll(sequence);
+			recipe.resultPool.addAll(results);
+			recipe.loops = loops.orElse(5);
+
+			for (int j = 0; j < recipe.sequence.size(); j++)
+				sequence.get(j).initFromSequencedAssembly(recipe, j == 0);
+
+			return recipe;
+		})
+	);
+
+	public final StreamCodec<RegistryFriendlyByteBuf, SequencedAssemblyRecipe> STREAM_CODEC = StreamCodec.of(
+			this::toNetwork, this::fromNetwork
+	);
+
 	public SequencedAssemblyRecipeSerializer() {}
 
-	protected void writeToJson(JsonObject json, SequencedAssemblyRecipe recipe) {
-		JsonArray nestedRecipes = new JsonArray();
-		JsonArray results = new JsonArray();
-		json.add("ingredient", recipe.getIngredient().toJson());
-		recipe.getSequence().forEach(i -> nestedRecipes.add(i.toJson()));
-		recipe.resultPool.forEach(p -> results.add(p.serialize()));
-		json.add("transitionalItem", recipe.transitionalItem.serialize());
-		json.add("sequence", nestedRecipes);
-		json.add("results", results);
-		json.addProperty("loops", recipe.loops);
-	}
-
-	protected SequencedAssemblyRecipe readFromJson(ResourceLocation recipeId, JsonObject json) {
-		SequencedAssemblyRecipe recipe = new SequencedAssemblyRecipe(recipeId, this);
-		recipe.ingredient = Ingredient.fromJson(json.get("ingredient"));
-		recipe.transitionalItem = ProcessingOutput.deserialize(GsonHelper.getAsJsonObject(json, "transitionalItem"));
-		int i = 0;
-		for (JsonElement je : GsonHelper.getAsJsonArray(json, "sequence"))
-			recipe.getSequence().add(SequencedRecipe.fromJson(je.getAsJsonObject(), recipe, i++));
-		for (JsonElement je : GsonHelper.getAsJsonArray(json, "results"))
-			recipe.resultPool.add(ProcessingOutput.deserialize(je));
-		if (GsonHelper.isValidNode(json, "loops"))
-			recipe.loops = GsonHelper.getAsInt(json, "loops");
-		return recipe;
-	}
-
-	protected void writeToBuffer(FriendlyByteBuf buffer, SequencedAssemblyRecipe recipe) {
-		recipe.getIngredient().toNetwork(buffer);
-		buffer.writeVarInt(recipe.getSequence().size());
-		recipe.getSequence().forEach(sr -> sr.writeToBuffer(buffer));
-		buffer.writeVarInt(recipe.resultPool.size());
-		recipe.resultPool.forEach(sr -> sr.write(buffer));
+	protected void toNetwork(RegistryFriendlyByteBuf buffer, SequencedAssemblyRecipe recipe) {
+		Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.getIngredient());
+		SequencedRecipe.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buffer, recipe.getSequence());
+		ProcessingOutput.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buffer, recipe.resultPool);
 		recipe.transitionalItem.write(buffer);
 		buffer.writeInt(recipe.loops);
 	}
 
-	protected SequencedAssemblyRecipe readFromBuffer(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-		SequencedAssemblyRecipe recipe = new SequencedAssemblyRecipe(recipeId, this);
-		recipe.ingredient = Ingredient.fromNetwork(buffer);
-		int size = buffer.readVarInt();
-		for (int i = 0; i < size; i++)
-			recipe.getSequence().add(SequencedRecipe.readFromBuffer(buffer));
-		size = buffer.readVarInt();
-		for (int i = 0; i < size; i++)
-			recipe.resultPool.add(ProcessingOutput.read(buffer));
+	protected SequencedAssemblyRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+		SequencedAssemblyRecipe recipe = new SequencedAssemblyRecipe(this);
+		recipe.ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+		recipe.getSequence().addAll(SequencedRecipe.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buffer));
+		recipe.resultPool.addAll(ProcessingOutput.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buffer));
 		recipe.transitionalItem = ProcessingOutput.read(buffer);
 		recipe.loops = buffer.readInt();
 		return recipe;
 	}
 
-	public final void write(JsonObject json, SequencedAssemblyRecipe recipe) {
-		writeToJson(json, recipe);
+	@Override
+	public @NotNull MapCodec<SequencedAssemblyRecipe> codec() {
+		return CODEC;
 	}
 
 	@Override
-	public final SequencedAssemblyRecipe fromJson(ResourceLocation id, JsonObject json) {
-		return readFromJson(id, json);
-	}
-
-	@Override
-	public final void toNetwork(FriendlyByteBuf buffer, SequencedAssemblyRecipe recipe) {
-		writeToBuffer(buffer, recipe);
-	}
-
-	@Override
-	public final SequencedAssemblyRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
-		return readFromBuffer(id, buffer);
+	public @NotNull StreamCodec<RegistryFriendlyByteBuf, SequencedAssemblyRecipe> streamCodec() {
+		return STREAM_CODEC;
 	}
 
 }

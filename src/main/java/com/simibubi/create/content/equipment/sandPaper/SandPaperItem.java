@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.item.CustomUseEffectsItem;
 import com.simibubi.create.foundation.mixin.accessor.LivingEntityAccessor;
@@ -14,7 +15,6 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -35,7 +35,6 @@ import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -48,7 +47,7 @@ import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
 public class SandPaperItem extends Item implements CustomUseEffectsItem {
 
 	public SandPaperItem(Properties properties) {
-		super(properties.defaultDurability(8));
+		super(properties.durability(8));
 	}
 
 	@Override
@@ -56,8 +55,7 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 		ItemStack itemstack = playerIn.getItemInHand(handIn);
 		InteractionResultHolder<ItemStack> FAIL = new InteractionResultHolder<>(InteractionResult.FAIL, itemstack);
 
-		if (itemstack.getOrCreateTag()
-			.contains("Polishing")) {
+		if (itemstack.has(AllDataComponents.SAND_PAPER_POLISHING)) {
 			playerIn.startUsingItem(handIn);
 			return new InteractionResultHolder<>(InteractionResult.PASS, itemstack);
 		}
@@ -69,16 +67,13 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 			ItemStack item = itemInOtherHand.copy();
 			ItemStack toPolish = item.split(1);
 			playerIn.startUsingItem(handIn);
-			itemstack.getOrCreateTag()
-				.put("Polishing", NBTSerializer.serializeNBT(toPolish));
+			itemstack.set(AllDataComponents.SAND_PAPER_POLISHING, toPolish);
 			playerIn.setItemInHand(otherHand, item);
 			return new InteractionResultHolder<>(InteractionResult.SUCCESS, itemstack);
 		}
 
-		HitResult raytraceresult = getPlayerPOVHitResult(worldIn, playerIn, ClipContext.Fluid.NONE);
-		if (!(raytraceresult instanceof BlockHitResult ray))
-			return FAIL;
-		Vec3 hitVec = ray.getLocation();
+		BlockHitResult raytraceresult = getPlayerPOVHitResult(worldIn, playerIn, ClipContext.Fluid.NONE);
+		Vec3 hitVec = raytraceresult.getLocation();
 
 		AABB bb = new AABB(hitVec, hitVec).inflate(1f);
 		ItemEntity pickUp = null;
@@ -105,8 +100,7 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 		playerIn.startUsingItem(handIn);
 
 		if (!worldIn.isClientSide) {
-			itemstack.getOrCreateTag()
-				.put("Polishing", NBTSerializer.serializeNBT(toPolish));
+			itemstack.set(AllDataComponents.SAND_PAPER_POLISHING, toPolish);
 			if (item.isEmpty())
 				pickUp.discard();
 			else
@@ -120,9 +114,9 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 	public ItemStack finishUsingItem(ItemStack stack, Level worldIn, LivingEntity entityLiving) {
 		if (!(entityLiving instanceof Player player))
 			return stack;
-		CompoundTag tag = stack.getOrCreateTag();
-		if (tag.contains("Polishing")) {
-			ItemStack toPolish = ItemStack.of(tag.getCompound("Polishing"));
+		if (stack.has(AllDataComponents.SAND_PAPER_POLISHING)) {
+			ItemStack toPolish = stack.get(AllDataComponents.SAND_PAPER_POLISHING);
+			//noinspection DataFlowIssue - toPolish won't be null as we do call .has before calling .get
 			ItemStack polished =
 				SandPaperPolishingRecipe.applyPolish(worldIn, entityLiving.position(), toPolish, stack);
 
@@ -142,8 +136,8 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 						.placeItemBackInInventory(polished);
 				}
 			}
-			tag.remove("Polishing");
-			stack.hurtAndBreak(1, entityLiving, p -> p.broadcastBreakEvent(p.getUsedItemHand()));
+			stack.remove(AllDataComponents.SAND_PAPER_POLISHING);
+			stack.hurtAndBreak(1, entityLiving, LivingEntity.getSlotForHand(entityLiving.getUsedItemHand()));
 		}
 
 		return stack;
@@ -161,12 +155,12 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 	public void releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
 		if (!(entityLiving instanceof Player player))
 			return;
-		CompoundTag tag = stack.getOrCreateTag();
-		if (tag.contains("Polishing")) {
-			ItemStack toPolish = ItemStack.of(tag.getCompound("Polishing"));
+		if (stack.has(AllDataComponents.SAND_PAPER_POLISHING)) {
+			ItemStack toPolish = stack.get(AllDataComponents.SAND_PAPER_POLISHING);
+			//noinspection DataFlowIssue - toPolish won't be null as we do call .has before calling .get
 			player.getInventory()
 				.placeItemBackInInventory(toPolish);
-			tag.remove("Polishing");
+			stack.remove(AllDataComponents.SAND_PAPER_POLISHING);
 		}
 	}
 
@@ -198,7 +192,7 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 		if (newState.isPresent()) {
 			level.setBlockAndUpdate(pos, newState.get());
 			if (player != null)
-				stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(p.getUsedItemHand()));
+				stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(player.getUsedItemHand()));
 			return InteractionResult.sidedSuccess(level.isClientSide);
 		}
 
@@ -218,9 +212,8 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 
 	@Override
 	public boolean triggerUseEffects(ItemStack stack, LivingEntity entity, int count, RandomSource random) {
-		CompoundTag tag = stack.getOrCreateTag();
-		if (tag.contains("Polishing")) {
-			ItemStack polishing = ItemStack.of(tag.getCompound("Polishing"));
+		if (stack.has(AllDataComponents.SAND_PAPER_POLISHING)) {
+			ItemStack polishing = stack.get(AllDataComponents.SAND_PAPER_POLISHING);
 			((LivingEntityAccessor) entity).create$callSpawnItemParticles(polishing, 1);
 		}
 
@@ -243,7 +236,7 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack) {
+	public int getUseDuration(ItemStack stack, LivingEntity entity) {
 		return 32;
 	}
 

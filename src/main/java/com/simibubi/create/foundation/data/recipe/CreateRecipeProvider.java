@@ -2,14 +2,24 @@ package com.simibubi.create.foundation.data.recipe;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
+
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+
+import net.minecraft.core.HolderLookup;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllTags;
 import com.simibubi.create.Create;
 
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -25,14 +35,14 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 
 	protected final List<GeneratedRecipe> all = new ArrayList<>();
 
-	public CreateRecipeProvider(FabricDataOutput output) {
-		super(output);
+	public CreateRecipeProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override
-	public void buildRecipes(Consumer<FinishedRecipe> p_200404_1_) {
-		all.forEach(c -> c.register(p_200404_1_));
-		Create.LOGGER.info(getName() + " registered " + all.size() + " recipe" + (all.size() == 1 ? "" : "s"));
+	public void buildRecipes(@NotNull RecipeOutput pRecipeOutput) {
+		all.forEach(c -> c.register(pRecipeOutput));
+		Create.LOGGER.info("{} registered {} recipe{}", getName(), all.size(), all.size() == 1 ? "" : "s");
 	}
 
 	protected GeneratedRecipe register(GeneratedRecipe recipe) {
@@ -42,7 +52,7 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 
 	@FunctionalInterface
 	public interface GeneratedRecipe {
-		void register(Consumer<FinishedRecipe> consumer);
+		void register(RecipeOutput output);
 	}
 
 	protected static class Marker {
@@ -67,11 +77,11 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 		}
 
 		static TagKey<Item> goldSheet() {
-			return AllTags.forgeItemTag("gold_plates");
+			return AllTags.commonItemTag("gold_plates");
 		}
 
 		static TagKey<Item> stone() {
-			return Tags.Items.STONE;
+			return Tags.Items.STONES;
 		}
 
 		static ItemLike andesiteAlloy() {
@@ -103,11 +113,11 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 		}
 
 		static TagKey<Item> brass() {
-			return AllTags.forgeItemTag("brass_ingots");
+			return AllTags.commonItemTag("brass_ingots");
 		}
 
 		static TagKey<Item> brassSheet() {
-			return AllTags.forgeItemTag("brass_plates");
+			return AllTags.commonItemTag("brass_plates");
 		}
 
 		static TagKey<Item> iron() {
@@ -119,15 +129,15 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 		}
 
 		static TagKey<Item> zinc() {
-			return AllTags.forgeItemTag("zinc_ingots");
+			return AllTags.commonItemTag("zinc_ingots");
 		}
 
 		static TagKey<Item> ironSheet() {
-			return AllTags.forgeItemTag("iron_plates");
+			return AllTags.commonItemTag("iron_plates");
 		}
 
 		static TagKey<Item> sturdySheet() {
-			return AllTags.forgeItemTag("obsidian_plates");
+			return AllTags.commonItemTag("obsidian_plates");
 		}
 
 		static ItemLike brassCasing() {
@@ -151,15 +161,15 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 		}
 
 		static TagKey<Item> brassBlock() {
-			return AllTags.forgeItemTag("brass_blocks");
+			return AllTags.commonItemTag("brass_blocks");
 		}
 
 		static TagKey<Item> zincBlock() {
-			return AllTags.forgeItemTag("zinc_blocks");
+			return AllTags.commonItemTag("zinc_blocks");
 		}
 
 		static TagKey<Item> wheatFlour() {
-			return AllTags.forgeItemTag("wheat_flour");
+			return AllTags.commonItemTag("flours/wheat");
 		}
 
 		static TagKey<Item> copper() {
@@ -167,7 +177,7 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 		}
 
 		static TagKey<Item> copperNugget() {
-			return AllTags.forgeItemTag("copper_nuggets");
+			return AllTags.commonItemTag("copper_nuggets");
 		}
 
 		static TagKey<Item> copperBlock() {
@@ -175,15 +185,15 @@ public abstract class CreateRecipeProvider extends FabricRecipeProvider {
 		}
 
 		static TagKey<Item> copperSheet() {
-			return AllTags.forgeItemTag("copper_plates");
+			return AllTags.commonItemTag("copper_plates");
 		}
 
 		static TagKey<Item> brassNugget() {
-			return AllTags.forgeItemTag("brass_nuggets");
+			return AllTags.commonItemTag("brass_nuggets");
 		}
 
 		static TagKey<Item> zincNugget() {
-			return AllTags.forgeItemTag("zinc_nuggets");
+			return AllTags.commonItemTag("zinc_nuggets");
 		}
 
 		static ItemLike copperCasing() {

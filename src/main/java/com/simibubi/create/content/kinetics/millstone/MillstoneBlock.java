@@ -6,12 +6,15 @@ import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.block.IBE;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -51,15 +54,13 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-								 BlockHitResult hit) {
-		if (!player.getItemInHand(handIn)
-			.isEmpty())
-			return InteractionResult.PASS;
-		if (worldIn.isClientSide)
-			return InteractionResult.SUCCESS;
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (!stack.isEmpty())
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		if (level.isClientSide)
+			return ItemInteractionResult.SUCCESS;
 
-		withBlockEntityDo(worldIn, pos, millstone -> {
+		withBlockEntityDo(level, pos, millstone -> {
 			boolean emptyOutput = true;
 			ItemStackHandler inv = millstone.outputInv;
 			for (int slot = 0; slot < inv.getSlotCount(); slot++) {
@@ -84,7 +85,7 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
 			millstone.sendData();
 		});
 
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	@Override
@@ -136,7 +137,7 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

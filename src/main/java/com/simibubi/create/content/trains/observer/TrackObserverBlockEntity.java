@@ -87,7 +87,7 @@ public class TrackObserverBlockEntity extends SmartBlockEntity implements Transf
 
 	@Override
 	protected AABB createRenderBoundingBox() {
-		return new AABB(worldPosition, edgePoint.getGlobalPosition()).inflate(2);
+		return new AABB(Vec3.atLowerCornerOf(worldPosition), Vec3.atLowerCornerOf(edgePoint.getGlobalPosition())).inflate(2);
 	}
 
 	@Override

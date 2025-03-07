@@ -1,0 +1,19 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "minecraft:weathered_copper_bulb"
+    },
+    {
+      "item": "minecraft:honeycomb_block"
+    }
+  ],
+  "keep_held_item": true,
+  "results": [
+    {
+      "item": {
+        "id": "minecraft:waxed_weathered_copper_bulb"
+      }
+    }
+  ]
+}

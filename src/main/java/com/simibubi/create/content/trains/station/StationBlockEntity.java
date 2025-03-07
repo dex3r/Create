@@ -14,11 +14,12 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
+import com.simibubi.create.compat.Mods;
 import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
@@ -36,7 +37,7 @@ import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.CarriageBogey;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 import com.simibubi.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.entity.TrainPacket;
+import com.simibubi.create.content.trains.entity.AddTrainPacket;
 import com.simibubi.create.content.trains.entity.TravellingPoint;
 import com.simibubi.create.content.trains.graph.DiscoveredPath;
 import com.simibubi.create.content.trains.graph.EdgePointType;
@@ -55,21 +56,26 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+
+import dan200.computercraft.api.peripheral.PeripheralCapability;
+import net.createmod.catnip.platform.CatnipServices;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import dan200.computercraft.api.peripheral.PeripheralCapability;
+import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.data.WorldAttached;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
-import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.data.WorldAttached;
-import net.createmod.catnip.math.VecHelper;
-import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -129,6 +135,22 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 			.startWithValue(0);
 	}
 
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.TRACK_STATION.get(),
+				(be, context) -> be.depotBehaviour.itemHandler
+		);
+
+		if (Mods.COMPUTERCRAFT.isLoaded()) {
+			event.registerBlockEntity(
+					PeripheralCapability.get(),
+					AllBlockEntityTypes.TRACK_STATION.get(),
+					(be, context) -> be.computerBehaviour.getPeripheralCapability()
+			);
+		}
+	}
+
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		behaviours.add(edgePoint = new TrackTargetingBehaviour<>(this, EdgePointType.STATION));
@@ -142,16 +164,16 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		lastException = AssemblyException.read(tag);
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		lastException = AssemblyException.read(tag, registries);
 		failedCarriageIndex = tag.getInt("FailedCarriageIndex");
-		super.read(tag, clientPacket);
+		super.read(tag, registries, clientPacket);
 		invalidateRenderBoundingBox();
 
 		if (tag.contains("ForceFlag"))
 			trainPresent = tag.getBoolean("ForceFlag");
 		if (tag.contains("PrevTrainName"))
-			lastDisassembledTrainName = Component.Serializer.fromJson(tag.getString("PrevTrainName"));
+			lastDisassembledTrainName = Component.Serializer.fromJson(tag.getString("PrevTrainName"), registries);
 		lastDisassembledMapColorIndex = tag.getInt("PrevTrainColor");
 
 		if (!clientPacket)
@@ -173,15 +195,15 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
-		AssemblyException.write(tag, lastException);
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		AssemblyException.write(tag, registries, lastException);
 		tag.putInt("FailedCarriageIndex", failedCarriageIndex);
 
 		if (lastDisassembledTrainName != null)
-			tag.putString("PrevTrainName", Component.Serializer.toJson(lastDisassembledTrainName));
+			tag.putString("PrevTrainName", Component.Serializer.toJson(lastDisassembledTrainName, registries));
 		tag.putInt("PrevTrainColor", lastDisassembledMapColorIndex);
 
-		super.write(tag, clientPacket);
+		super.write(tag, registries, clientPacket);
 
 		if (!clientPacket)
 			return;
@@ -462,7 +484,7 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 		if (train == null)
 			return;
 
-		ItemStack schedule = train.runtime.returnSchedule();
+		ItemStack schedule = train.runtime.returnSchedule(level.registryAccess());
 		if (schedule.isEmpty())
 			return;
 		if (sender != null && sender.getMainHandItem()
@@ -829,7 +851,7 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 		}
 
 		Train train = new Train(UUID.randomUUID(), playerUUID, graph, carriages, spacing, contraptions.stream()
-			.anyMatch(CarriageContraption::hasBackwardControls));
+			.anyMatch(CarriageContraption::hasBackwardControls), 0);
 
 		if (lastDisassembledTrainName != null) {
 			train.name = lastDisassembledTrainName;
@@ -854,8 +876,7 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 
 		train.collectInitiallyOccupiedSignalBlocks();
 		Create.RAILWAYS.addTrain(train);
-		AllPackets.getChannel()
-			.sendToClientsInServer(new TrainPacket(train, true), level.getServer());
+		CatnipServices.NETWORK.sendToAllClients(new AddTrainPacket(train));
 		clearException();
 
 		award(AllAdvancements.TRAIN);
@@ -884,13 +905,13 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 	@Environment(EnvType.CLIENT)
 	public AABB getRenderBoundingBox() {
 		if (isAssembling())
-			return INFINITE_EXTENT_AABB;
+			return AABB.INFINITE;
 		return super.getRenderBoundingBox();
 	}
 
 	@Override
 	protected AABB createRenderBoundingBox() {
-		return new AABB(worldPosition, edgePoint.getGlobalPosition()).inflate(2);
+		return new AABB(Vec3.atLowerCornerOf(worldPosition), Vec3.atLowerCornerOf(edgePoint.getGlobalPosition())).inflate(2);
 	}
 
 	public ItemStack getAutoSchedule() {
@@ -907,7 +928,7 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 		ItemStack stack = getAutoSchedule();
 		if (!AllItems.SCHEDULE.isIn(stack))
 			return;
-		Schedule schedule = ScheduleItem.getSchedule(stack);
+		Schedule schedule = ScheduleItem.getSchedule(level.registryAccess(), stack);
 		if (schedule == null || schedule.entries.isEmpty())
 			return;
 		GlobalStation station = getStation();

@@ -12,9 +12,19 @@ import com.simibubi.create.foundation.fluid.CombinedTankWrapper;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+
 import net.createmod.catnip.lang.Lang;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -67,16 +77,16 @@ public class FluidThresholdCondition extends CargoThresholdCondition {
 	}
 
 	@Override
-	protected void writeAdditional(CompoundTag tag) {
-		super.writeAdditional(tag);
-		tag.put("Bucket", compareStack.serializeNBT());
+	protected void writeAdditional(HolderLookup.Provider registries, CompoundTag tag) {
+		super.writeAdditional(registries, tag);
+		tag.put("Bucket", compareStack.serializeNBT(registries));
 	}
 
 	@Override
-	protected void readAdditional(CompoundTag tag) {
-		super.readAdditional(tag);
+	protected void readAdditional(HolderLookup.Provider registries, CompoundTag tag) {
+		super.readAdditional(registries, tag);
 		if (tag.contains("Bucket"))
-			compareStack = FilterItemStack.of(tag.getCompound("Bucket"));
+			compareStack = FilterItemStack.of(registries, tag.getCompound("Bucket"));
 	}
 
 	@Override
@@ -99,7 +109,7 @@ public class FluidThresholdCondition extends CargoThresholdCondition {
 				compareStack.isEmpty() ? CreateLang.translateDirect("schedule.condition.threshold.anything")
 					: compareStack.isFilterItem()
 						? CreateLang.translateDirect("schedule.condition.threshold.matching_content")
-						: loadFluid().getDisplayName())
+						: loadFluid().getHoverName())
 				.withStyle(ChatFormatting.DARK_AQUA));
 	}
 

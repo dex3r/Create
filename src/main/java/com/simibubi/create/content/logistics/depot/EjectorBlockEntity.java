@@ -7,8 +7,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.behaviour.DirectBeltInputBehaviour;
 import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
@@ -25,15 +25,28 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
+import net.createmod.catnip.data.IntAttached;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.LongAttached;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.nbt.NBTHelper;
+
+import net.createmod.catnip.platform.CatnipServices;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -105,6 +118,14 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 		this.state = State.RETRACTING;
 		launchedItems = new ArrayList<>();
 		powered = false;
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.WEIGHTED_EJECTOR.get(),
+				(be, context) -> be.depotBehaviour.itemHandler
+		);
 	}
 
 	@Override
@@ -179,8 +200,7 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 
 			if (launcher.getHorizontalDistance() * launcher.getHorizontalDistance()
 				+ launcher.getVerticalDistance() * launcher.getVerticalDistance() >= 25 * 25)
-				AllPackets.getChannel()
-					.sendToServer(new EjectorAwardPacket(worldPosition));
+				CatnipServices.NETWORK.sendToServer(new EjectorAwardPacket(worldPosition));
 
 			if (!(playerEntity.getItemBySlot(EquipmentSlot.CHEST)
 				.getItem() instanceof ElytraItem))
@@ -191,8 +211,7 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 			playerEntity.setDeltaMovement(playerEntity.getDeltaMovement()
 				.scale(.75f));
 			deployElytra(playerEntity);
-			AllPackets.getChannel()
-				.sendToServer(new EjectorElytraPacket(worldPosition));
+			CatnipServices.NETWORK.sendToServer(new EjectorElytraPacket(worldPosition));
 		}
 
 		if (doLogic) {
@@ -377,7 +396,7 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 		Vec3 source = getLaunchedItemLocation(time);
 		Vec3 target = getLaunchedItemLocation(time + 1);
 
-		BlockHitResult rayTraceBlocks = level.clip(new ClipContext(source, target, Block.COLLIDER, Fluid.NONE, null));
+		BlockHitResult rayTraceBlocks = level.clip(new ClipContext(source, target, Block.COLLIDER, Fluid.NONE, CollisionContext.empty()));
 		boolean miss = rayTraceBlocks.getType() == Type.MISS;
 
 		if (!miss && rayTraceBlocks.getType() == Type.BLOCK) {
@@ -523,15 +542,15 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 	}
 
 	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
-		super.write(compound, clientPacket);
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(compound, registries, clientPacket);
 		compound.putInt("HorizontalDistance", launcher.getHorizontalDistance());
 		compound.putInt("VerticalDistance", launcher.getVerticalDistance());
 		compound.putBoolean("Powered", powered);
 		NBTHelper.writeEnum(compound, "State", state);
 		compound.put("Lid", lidProgress.writeNBT());
 		compound.put("LaunchedItems",
-			NBTHelper.writeCompoundList(launchedItems, ia -> ia.serializeNBT(NBTSerializer::serializeNBTCompound)));
+			NBTHelper.writeCompoundList(launchedItems, ia -> ia.serializeNBT(s -> (CompoundTag) s.saveOptional(registries))));
 
 		if (earlyTarget != null) {
 			compound.put("EarlyTarget", VecHelper.writeNBT(earlyTarget.getFirst()));
@@ -541,15 +560,15 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 	}
 
 	@Override
-	public void writeSafe(CompoundTag compound) {
-		super.writeSafe(compound);
+	public void writeSafe(CompoundTag compound, HolderLookup.Provider registries) {
+		super.writeSafe(compound, registries);
 		compound.putInt("HorizontalDistance", launcher.getHorizontalDistance());
 		compound.putInt("VerticalDistance", launcher.getVerticalDistance());
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 		int horizontalDistance = compound.getInt("HorizontalDistance");
 		int verticalDistance = compound.getInt("VerticalDistance");
 
@@ -563,13 +582,13 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 		state = NBTHelper.readEnum(compound, "State", State.class);
 		lidProgress.readNBT(compound.getCompound("Lid"), false);
 		launchedItems = NBTHelper.readCompoundList(compound.getList("LaunchedItems", Tag.TAG_COMPOUND),
-			nbt -> LongAttached.read(nbt, ItemStack::of));
+			nbt -> LongAttached.read(nbt, t -> ItemStack.parseOptional(registries, t)));
 
 		earlyTarget = null;
 		earlyTargetTime = 0;
 		if (compound.contains("EarlyTarget")) {
 			earlyTarget = Pair.of(VecHelper.readNBT(compound.getList("EarlyTarget", Tag.TAG_DOUBLE)),
-				NbtUtils.readBlockPos(compound.getCompound("EarlyTargetPos")));
+					NBTHelper.readBlockPos(compound, "EarlyTargetPos"));
 			earlyTargetTime = compound.getFloat("EarlyTargetTime");
 		}
 
@@ -615,7 +634,7 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 	@Override
 	@Environment(EnvType.CLIENT)
 	public AABB getRenderBoundingBox() {
-		return INFINITE_EXTENT_AABB;
+		return AABB.INFINITE;
 	}
 
 	private static abstract class EntityHack extends Entity {

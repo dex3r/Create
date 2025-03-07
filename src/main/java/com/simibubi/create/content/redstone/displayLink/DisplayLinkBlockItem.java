@@ -3,6 +3,9 @@ package com.simibubi.create.content.redstone.displayLink;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -12,7 +15,7 @@ import net.minecraft.world.phys.AABB;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-public class DisplayLinkBlockItem extends ClickToLinkBlockItem /* FIXME - Used to implement BlockUseBypassingItem, check if still neeed */ {
+public class DisplayLinkBlockItem extends ClickToLinkBlockItem {
 
 	public DisplayLinkBlockItem(Block pBlock, Properties pProperties) {
 		super(pBlock, pProperties);

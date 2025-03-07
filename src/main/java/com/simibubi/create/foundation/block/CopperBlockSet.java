@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.simibubi.create.foundation.data.TagGen;
@@ -23,7 +25,6 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.lang.Lang;
-import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -36,9 +37,7 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WeatheringCopper.WeatherState;
 import net.minecraft.world.level.block.WeatheringCopperFullBlock;
 import net.minecraft.world.level.block.WeatheringCopperSlabBlock;
-import net.minecraft.world.level.block.WeatheringCopperStairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
-import net.minecraft.world.level.block.state.BlockState;
 
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelProvider;
 
@@ -156,7 +155,7 @@ public class CopperBlockSet {
 					.requires(unwaxed)
 					.requires(Items.HONEYCOMB)
 					.unlockedBy("has_unwaxed", RegistrateRecipeProvider.has(unwaxed))
-					.save(prov, new ResourceLocation(ctx.getId()
+					.save(prov, ResourceLocation.fromNamespaceAndPath(ctx.getId()
 						.getNamespace(), "crafting/" + generalDirectory + ctx.getName() + "_from_honeycomb"));
 			});
 		}
@@ -244,7 +243,7 @@ public class CopperBlockSet {
 		public void generateBlockState(DataGenContext<Block, Block> ctx, RegistrateBlockstateProvider prov,
 									   CopperBlockSet blocks, WeatherState state, boolean waxed) {
 			Block block = ctx.get();
-			String path = CatnipServices.REGISTRIES.getKeyOrThrow(block)
+			String path = RegisteredObjectsHelper.getKeyOrThrow(block)
 				.getPath();
 			String baseLoc = ModelProvider.BLOCK_FOLDER + "/" + blocks.generalDirectory + getWeatherStatePrefix(state);
 
@@ -334,23 +333,12 @@ public class CopperBlockSet {
 																  boolean waxed) {
 			if (!blocks.hasVariant(parent)) {
 				throw new IllegalStateException(
-					"Cannot add StairVariant '" + toString() + "' without parent Variant '" + parent.toString() + "'!");
+						"Cannot add StairVariant '" + this + "' without parent Variant '" + parent.toString() + "'!");
 			}
-			Supplier<BlockState> defaultStateSupplier = () -> blocks.get(parent, state, waxed)
-				.getDefaultState();
 			if (waxed) {
-				return p -> new StairBlock(defaultStateSupplier.get(), p);
+				return CreateCopperStairBlock::new;
 			} else {
-				return p -> {
-					WeatheringCopperStairBlock block =
-						new WeatheringCopperStairBlock(state, Blocks.AIR.defaultBlockState(), p);
-					// WeatheringCopperStairBlock does not have a constructor that takes a Supplier,
-					// so setting the field directly is the easiest solution
-					// fabric: unnecessary
-//					ObfuscationReflectionHelper.setPrivateValue(StairBlock.class, block, defaultStateSupplier,
-//						"stateSupplier");
-					return block;
-				};
+				return p -> new CreateWeatheringCopperStairBlock(state, p);
 			}
 		}
 

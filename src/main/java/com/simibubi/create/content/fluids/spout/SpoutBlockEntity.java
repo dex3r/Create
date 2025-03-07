@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.behaviour.spouting.BlockSpoutingBehaviour;
@@ -27,8 +29,13 @@ import com.simibubi.create.foundation.fluid.FluidHelper;
 
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.nbt.NBTHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -62,6 +69,18 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	public SpoutBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		processingTicks = -1;
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.FluidHandler.BLOCK,
+				AllBlockEntityTypes.SPOUT.get(),
+				(be, context) -> {
+					if (context != Direction.DOWN)
+						return be.tank.getCapability();
+					return null;
+				}
+		);
 	}
 
 	@Override
@@ -152,8 +171,8 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	}
 
 	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
-		super.write(compound, clientPacket);
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(compound, registries, clientPacket);
 
 		compound.putInt("ProcessingTicks", processingTicks);
 		if (sendSplash && clientPacket) {
@@ -176,8 +195,8 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 		processingTicks = compound.getInt("ProcessingTicks");
 
 		createdChocolateBerries = compound.contains("ChocolateBerries");

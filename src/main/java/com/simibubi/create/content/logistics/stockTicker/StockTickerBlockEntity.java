@@ -8,10 +8,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.contraptions.actors.seat.SeatEntity;
@@ -28,10 +27,12 @@ import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -75,10 +76,17 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 		hiddenCategoriesByPlayer = new HashMap<>();
 	}
 
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+			Capabilities.ItemHandler.BLOCK,
+			AllBlockEntityTypes.STOCK_TICKER.get(),
+			(be, context) -> be.receivedPayments
+		);
+	}
+
 	public void refreshClientStockSnapshot() {
 		ticksSinceLastUpdate = 0;
-		AllPackets.getChannel()
-			.sendToServer(new LogisticalStockRequestPacket(worldPosition));
+		CatnipServices.NETWORK.sendToServer(new LogisticalStockRequestPacket(worldPosition));
 	}
 
 	public List<List<BigItemStack>> getClientStockSnapshot() {
@@ -124,11 +132,11 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 	}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
-		super.write(tag, clientPacket);
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(tag, registries, clientPacket);
 		tag.putString("PreviousAddress", previouslyUsedAddress);
-		tag.put("ReceivedPayments", receivedPayments.serializeNBT());
-		tag.put("Categories", NBTHelper.writeItemList(categories));
+		tag.put("ReceivedPayments", receivedPayments.serializeNBT(registries));
+		tag.put("Categories", NBTHelper.writeItemList(categories, registries));
 		tag.put("HiddenCategories", NBTHelper.writeCompoundList(hiddenCategoriesByPlayer.entrySet(), e -> {
 			CompoundTag c = new CompoundTag();
 			c.putUUID("Id", e.getKey());
@@ -141,11 +149,11 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		super.read(tag, clientPacket);
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(tag, registries, clientPacket);
 		previouslyUsedAddress = tag.getString("PreviousAddress");
-		receivedPayments.deserializeNBT(tag.getCompound("ReceivedPayments"));
-		categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND));
+		receivedPayments.deserializeNBT(registries, tag.getCompound("ReceivedPayments"));
+		categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND), registries);
 		categories.removeIf(stack -> !stack.isEmpty() && !(stack.getItem() instanceof FilterItem));
 		hiddenCategoriesByPlayer.clear();
 
@@ -235,8 +243,8 @@ public class StockTickerBlockEntity extends StockCheckingBlockEntity implements 
 	}
 
 	@Override
-	@Nullable
-	public Storage<ItemVariant> getItemStorage(@Nullable Direction side) {
+	@org.jetbrains.annotations.Nullable
+	public Storage<ItemVariant> getItemStorage(@org.jetbrains.annotations.Nullable Direction side) {
 		return this.receivedPayments;
 	}
 

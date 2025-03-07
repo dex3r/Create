@@ -6,6 +6,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllShapes;
@@ -24,6 +27,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
@@ -70,6 +74,8 @@ public class CartAssemblerBlock extends BaseRailBlock
 		EnumProperty.create("shape", RailShape.class, RailShape.EAST_WEST, RailShape.NORTH_SOUTH);
 	public static final Property<CartAssembleRailType> RAIL_TYPE =
 		EnumProperty.create("rail_type", CartAssembleRailType.class);
+
+	public static final MapCodec<CartAssemblerBlock> CODEC = simpleCodec(CartAssemblerBlock::new);
 
 	public CartAssemblerBlock(Properties properties) {
 		super(true, properties);
@@ -163,13 +169,9 @@ public class CartAssemblerBlock extends BaseRailBlock
 	}
 
 	@Override
-	@Nonnull
-	public InteractionResult use(@Nonnull BlockState state, @Nonnull Level world, @Nonnull BlockPos pos, Player player,
-		@Nonnull InteractionHand hand, @Nonnull BlockHitResult blockRayTraceResult) {
-
-		ItemStack itemStack = player.getItemInHand(hand);
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		Item previousItem = getRailItem(state);
-		Item heldItem = itemStack.getItem();
+		Item heldItem = stack.getItem();
 		if (heldItem != previousItem) {
 
 			CartAssembleRailType newType = null;
@@ -177,19 +179,19 @@ public class CartAssemblerBlock extends BaseRailBlock
 				if (heldItem == type.getItem())
 					newType = type;
 			if (newType == null)
-				return InteractionResult.PASS;
-			world.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1, 1);
-			world.setBlockAndUpdate(pos, state.setValue(RAIL_TYPE, newType));
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1, 1);
+			level.setBlockAndUpdate(pos, state.setValue(RAIL_TYPE, newType));
 
 			if (!player.isCreative()) {
-				itemStack.shrink(1);
+				stack.shrink(1);
 				player.getInventory()
 					.placeItemBackInInventory(new ItemStack(previousItem));
 			}
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		}
 
-		return InteractionResult.PASS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	@Override
@@ -314,7 +316,7 @@ public class CartAssemblerBlock extends BaseRailBlock
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 
@@ -367,5 +369,10 @@ public class CartAssemblerBlock extends BaseRailBlock
 		default:
 			return Direction.NORTH;
 		}
+	}
+
+	@Override
+	protected @NotNull MapCodec<? extends BaseRailBlock> codec() {
+		return CODEC;
 	}
 }

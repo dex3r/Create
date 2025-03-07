@@ -13,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.player.Player;
 
@@ -28,15 +29,14 @@ public class CardboardArmorHandler {
 		if (!testForStealth(entity))
 			return;
 
-		event.setNewSize(EntityDimensions.fixed(0.6F, 0.8F));
-		event.setNewEyeHeight(0.6F);
+		event.setNewSize(EntityDimensions.fixed(0.6F, 0.8F).withEyeHeight(0.6F));
 
 		if (!entity.level()
 			.isClientSide() && entity instanceof Player p)
 			AllAdvancements.CARDBOARD_ARMOR.awardTo(p);
 	}
 
-	public static void playersStealthWhenWearingCardboard(LivingEntityEvents.LivingVisibilityEvent event) {
+	public static void playersStealthWhenWearingCardboard(LivingEvent.LivingVisibilityEvent event) {
 		LivingEntity entity = event.getEntity();
 		if (!testForStealth(entity))
 			return;
@@ -52,11 +52,10 @@ public class CardboardArmorHandler {
 		if (testForStealth(mob.getTarget())) {
 			mob.setTarget(null);
 			if (mob.targetSelector != null)
-				mob.targetSelector.getRunningGoals()
-					.forEach(wrappedGoal -> {
-						if (wrappedGoal.getGoal() instanceof TargetGoal tg)
-							tg.stop();
-					});
+				for (WrappedGoal goal : mob.targetSelector.getAvailableGoals()) {
+					if (goal.isRunning() && goal.getGoal() instanceof TargetGoal tg)
+						tg.stop();
+				}
 		}
 
 		if (entity instanceof NeutralMob nMob && entity.level() instanceof ServerLevel sl) {

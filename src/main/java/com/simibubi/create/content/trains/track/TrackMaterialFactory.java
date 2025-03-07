@@ -3,12 +3,16 @@ package com.simibubi.create.content.trains.track;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllTags;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
@@ -25,8 +29,8 @@ public class TrackMaterialFactory {
 	private NonNullSupplier<NonNullSupplier<? extends TrackBlock>> trackBlock;
 	private Ingredient sleeperIngredient = Ingredient.EMPTY;
 	private Ingredient railsIngredient = Ingredient.fromValues(Stream.of(
-			TagValueAccessor.createTagValue(AllTags.forgeItemTag("iron_nuggets")),
-			TagValueAccessor.createTagValue(AllTags.forgeItemTag("zinc_nuggets"))
+			TagValueAccessor.createTagValue(Tags.Items.NUGGETS_IRON),
+			TagValueAccessor.createTagValue(AllTags.commonItemTag("nuggets/zinc"))
 	));
 	private ResourceLocation particle;
 	private TrackMaterial.TrackType trackType = TrackMaterial.TrackType.STANDARD;
@@ -62,7 +66,7 @@ public class TrackMaterialFactory {
 	}
 
 	public TrackMaterialFactory defaultModels() { // was setBuiltin
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> this.modelHolder = TrackMaterial.TrackModelHolder.DEFAULT);
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> this.modelHolder = TrackMaterial.TrackModelHolder.DEFAULT);
 		return this;
 	}
 
@@ -103,18 +107,18 @@ public class TrackMaterialFactory {
 	}
 
 	public TrackMaterialFactory standardModels() { // was defaultModels
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> {
 			String namespace = id.getNamespace();
 			String prefix = "block/track/" + id.getPath() + "/";
-			tieModel = PartialModel.of(new ResourceLocation(namespace, prefix + "tie"));
-			leftSegmentModel = PartialModel.of(new ResourceLocation(namespace, prefix + "segment_left"));
-			rightSegmentModel = PartialModel.of(new ResourceLocation(namespace, prefix + "segment_right"));
+			tieModel = PartialModel.of(ResourceLocation.fromNamespaceAndPath(namespace, prefix + "tie"));
+			leftSegmentModel = PartialModel.of(ResourceLocation.fromNamespaceAndPath(namespace, prefix + "segment_left"));
+			rightSegmentModel = PartialModel.of(ResourceLocation.fromNamespaceAndPath(namespace, prefix + "segment_right"));
 		});
 		return this;
 	}
 
 	public TrackMaterialFactory customModels(Supplier<Supplier<PartialModel>> tieModel, Supplier<Supplier<PartialModel>> leftSegmentModel, Supplier<Supplier<PartialModel>> rightSegmentModel) {
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> {
 			this.tieModel = tieModel.get().get();
 			this.leftSegmentModel = leftSegmentModel.get().get();
 			this.rightSegmentModel = rightSegmentModel.get().get();
@@ -135,7 +139,7 @@ public class TrackMaterialFactory {
 		assert sleeperIngredient != null;
 		assert railsIngredient != null;
 		assert id != null;
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> {
 			assert modelHolder != null;
 			if (tieModel != null || leftSegmentModel != null || rightSegmentModel != null) {
 				assert tieModel != null && leftSegmentModel != null && rightSegmentModel != null;

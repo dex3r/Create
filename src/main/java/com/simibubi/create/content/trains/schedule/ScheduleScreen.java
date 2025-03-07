@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.AllPackets;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.GlobalRailwayManager;
 import com.simibubi.create.content.trains.graph.EdgePointType;
@@ -39,12 +39,13 @@ import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import dev.engine_room.flywheel.lib.transform.TransformStack;
-import net.createmod.catnip.animation.LerpedFloat;
-import net.createmod.catnip.animation.LerpedFloat.Chaser;
-import net.createmod.catnip.data.IntAttached;
-import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.data.IntAttached;
+import net.createmod.catnip.data.Pair;
+import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.animation.LerpedFloat.Chaser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -98,10 +99,9 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 	public ScheduleScreen(ScheduleMenu menu, Inventory inv, Component title) {
 		super(menu, inv, title);
 		schedule = new Schedule();
-		CompoundTag tag = menu.contentHolder.getOrCreateTag()
-			.getCompound("Schedule");
+		CompoundTag tag = menu.contentHolder.getOrDefault(AllDataComponents.TRAIN_SCHEDULE, new CompoundTag());
 		if (!tag.isEmpty())
-			schedule = Schedule.fromTag(tag);
+			schedule = Schedule.fromTag(menu.player.registryAccess(), tag);
 		menu.slotsActive = false;
 		editorSubWidgets = new ModularGuiLine();
 	}
@@ -192,8 +192,7 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 		for (int i = 0; i < field.slotsTargeted(); i++) {
 			ItemStack item = field.getItem(i);
 			menu.ghostInventory.setStackInSlot(i, item);
-			AllPackets.getChannel()
-				.sendToServer(new GhostItemSubmitPacket(item, i));
+			CatnipServices.NETWORK.sendToServer(new GhostItemSubmitPacket(item, i));
 		}
 
 		if (field instanceof ScheduleInstruction instruction) {
@@ -278,8 +277,7 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 		IScheduleInput editing = editingCondition == null ? editingDestination : editingCondition;
 		for (int i = 0; i < editing.slotsTargeted(); i++) {
 			editing.setItem(i, menu.ghostInventory.getStackInSlot(i));
-			AllPackets.getChannel()
-				.sendToServer(new GhostItemSubmitPacket(ItemStack.EMPTY, i));
+			CatnipServices.NETWORK.sendToServer(new GhostItemSubmitPacket(ItemStack.EMPTY, i));
 		}
 
 		editorSubWidgets.saveValues(editing.getData());
@@ -375,12 +373,12 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		partialTicks = minecraft.getFrameTime();
+		partialTicks = minecraft.getTimer().getGameTimeDeltaPartialTick(false);
 
 		if (menu.slotsActive)
 			super.render(graphics, mouseX, mouseY, partialTicks);
 		else {
-			renderBackground(graphics);
+			renderBackground(graphics, mouseX, mouseY, partialTicks);
 			renderBg(graphics, partialTicks, mouseX, mouseY);
 			for (Renderable widget : ((ScreenAccessor) this).port_lib$getRenderables())
 				widget.render(graphics, mouseX, mouseY, partialTicks);
@@ -713,7 +711,7 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 					renderActionTooltip(graphics,
 						ImmutableList.of(CreateLang.translateDirect("gui.schedule.duplicate")), mx, my);
 					if (click == 0) {
-						entries.add(entries.indexOf(entry), entry.clone());
+						entries.add(entries.indexOf(entry), entry.clone(minecraft.level.registryAccess()));
 						init();
 					}
 					return true;
@@ -910,11 +908,11 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 	}
 
 	@Override
-	public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
-		if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(Mth.clamp(pDelta, -1.0D, 1.0D)))
+	public boolean mouseScrolled(double pMouseX, double pMouseY, double pScrollX, double pScrollY) {
+		if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(Mth.clamp(pScrollY, -1.0D, 1.0D)))
 			return true;
 		if (editingCondition != null || editingDestination != null)
-			return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+			return super.mouseScrolled(pMouseX, pMouseY, pScrollX, pScrollY);
 
 		if (hasShiftDown()) {
 			List<ScheduleEntry> entries = schedule.entries;
@@ -943,12 +941,12 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 					break;
 				float chaseTarget = horizontalScrolls.get(i)
 					.getChaseTarget();
-				if (pDelta > 0 && !Mth.equal(chaseTarget, 0)) {
+				if (pScrollY > 0 && !Mth.equal(chaseTarget, 0)) {
 					horizontalScrolls.get(i)
 						.chase(chaseTarget - 1, 0.5f, Chaser.EXP);
 					return true;
 				}
-				if (pDelta < 0 && !Mth.equal(chaseTarget, entry.conditions.size() - 1)) {
+				if (pScrollY < 0 && !Mth.equal(chaseTarget, entry.conditions.size() - 1)) {
 					horizontalScrolls.get(i)
 						.chase(chaseTarget + 1, 0.5f, Chaser.EXP);
 					return true;
@@ -966,13 +964,13 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 			max += CARD_HEADER + 24 + maxRows * 18 + 10;
 		}
 		if (max > 0) {
-			chaseTarget -= pDelta * 12;
+			chaseTarget -= pScrollY * 12;
 			chaseTarget = Mth.clamp(chaseTarget, 0, max);
 			scroll.chase((int) chaseTarget, 0.7f, Chaser.EXP);
 		} else
 			scroll.chase(0, 0.7f, Chaser.EXP);
 
-		return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+		return super.mouseScrolled(pMouseX, pMouseY, pScrollX, pScrollY);
 	}
 
 	@Override
@@ -1072,8 +1070,7 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> im
 	@Override
 	public void removed() {
 		super.removed();
-		AllPackets.getChannel()
-			.sendToServer(new ScheduleEditPacket(schedule));
+		CatnipServices.NETWORK.sendToServer(new ScheduleEditPacket(schedule));
 	}
 
 	@Override

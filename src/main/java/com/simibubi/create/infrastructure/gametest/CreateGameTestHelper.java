@@ -29,7 +29,7 @@ import com.simibubi.create.foundation.mixin.accessor.GameTestHelperAccessor;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap.Entry;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -42,6 +42,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeverBlock;
@@ -158,7 +159,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 			ItemStack filter = ContraptionControlsMovement.getFilter(actor.right);
 			if (filter != null && filter.is(item.asItem())) {
 				controls.handlePlayerInteraction(
-						makeMockPlayer(), InteractionHand.MAIN_HAND, localPos, contraption.entity
+						makeMockPlayer(GameType.CREATIVE), InteractionHand.MAIN_HAND, localPos, contraption.entity
 				);
 				toggled.set(true);
 			}
@@ -174,9 +175,9 @@ public class CreateGameTestHelper extends GameTestHelper {
 		BlockEntity be = getBlockEntity(pos);
 		BlockEntityType<?> actualType = be == null ? null : be.getType();
 		if (actualType != type) {
-			String actualId = actualType == null ? "null" : CatnipServices.REGISTRIES.getKeyOrThrow(actualType).toString();
+			String actualId = actualType == null ? "null" : RegisteredObjectsHelper.getKeyOrThrow(actualType).toString();
 			String error = "Expected block entity at pos [%s] with type [%s], got [%s]".formatted(
-					pos, CatnipServices.REGISTRIES.getKeyOrThrow(type), actualId
+					pos, RegisteredObjectsHelper.getKeyOrThrow(type), actualId
 			);
 			fail(error);
 		}
@@ -189,7 +190,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	public <T extends BlockEntity & IMultiBlockEntityContainer> T getControllerBlockEntity(BlockEntityType<T> type, BlockPos anySegment) {
 		T be = getBlockEntity(type, anySegment).getControllerBE();
 		if (be == null)
-			fail("Could not get block entity controller with type [%s] from pos [%s]".formatted(CatnipServices.REGISTRIES.getKeyOrThrow(type), anySegment));
+			fail("Could not get block entity controller with type [%s] from pos [%s]".formatted(RegisteredObjectsHelper.getKeyOrThrow(type), anySegment));
 		return be;
 	}
 
@@ -228,7 +229,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	 */
 	public void spawnItems(BlockPos pos, Item item, int amount) {
 		while (amount > 0) {
-			int toSpawn = Math.min(amount, item.getMaxStackSize());
+			int toSpawn = Math.min(amount, item.getMaxStackSize(new ItemStack(item)));
 			amount -= toSpawn;
 			ItemStack stack = new ItemStack(item, toSpawn);
 			spawnItem(pos, stack);
@@ -297,7 +298,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	 */
 	public void assertFluidPresent(FluidStack fluid, BlockPos pos) {
 		FluidStack contained = getTankContents(pos);
-		if (!fluid.isFluidEqual(contained))
+		if (!FluidStack.isSameFluidSameComponents(fluid, contained))
 			fail("Different fluids");
 		if (fluid.getAmount() != contained.getAmount())
 			fail("Different amounts");

@@ -3,9 +3,16 @@ package com.simibubi.create.content.contraptions.behaviour.dispenser.storage;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
+
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllMountedStorageTypes;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageType;
 import com.simibubi.create.api.contraption.storage.item.menu.MountedStorageMenus;
@@ -24,7 +31,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandle
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 
 public class DispenserMountedStorage extends SimpleMountedStorage {
-	public static final Codec<DispenserMountedStorage> CODEC = SimpleMountedStorage.codec(DispenserMountedStorage::new);
+	public static final MapCodec<DispenserMountedStorage> CODEC = SimpleMountedStorage.codec(DispenserMountedStorage::new);
 
 	protected DispenserMountedStorage(MountedItemStorageType<?> type, ItemStackHandler handler) {
 		super(type, handler);

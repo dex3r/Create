@@ -6,6 +6,7 @@ import java.util.List;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.equipment.clipboard.ClipboardOverrides.ClipboardType;
 import com.simibubi.create.content.trains.track.TrackBlockOutline;
@@ -60,7 +61,7 @@ public class ClipboardValueSettingsHandler {
 		if (!(smartBE instanceof ClipboardBlockEntity) && !smartBE.getAllBehaviours()
 			.stream()
 			.anyMatch(b -> b instanceof ClipboardCloneable cc
-				&& cc.writeToClipboard(new CompoundTag(), target.getDirection()))
+				&& cc.writeToClipboard(mc.level.registryAccess(), new CompoundTag(), target.getDirection()))
 			&& !(smartBE instanceof ClipboardCloneable))
 			return false;
 
@@ -101,22 +102,21 @@ public class ClipboardValueSettingsHandler {
 			return;
 		}
 
-		CompoundTag tagElement = player.getMainHandItem()
-			.getTagElement("CopiedValues");
+		CompoundTag tagElement = mc.player.getMainHandItem().get(AllDataComponents.CLIPBOARD_COPIED_VALUES);
 
 		boolean canCopy = smartBE.getAllBehaviours()
 			.stream()
 			.anyMatch(b -> b instanceof ClipboardCloneable cc
-				&& cc.writeToClipboard(new CompoundTag(), target.getDirection()))
+				&& cc.writeToClipboard(mc.level.registryAccess(), new CompoundTag(), target.getDirection()))
 			|| smartBE instanceof ClipboardCloneable ccbe
-				&& ccbe.writeToClipboard(new CompoundTag(), target.getDirection());
+				&& ccbe.writeToClipboard(mc.level.registryAccess(), new CompoundTag(), target.getDirection());
 
 		boolean canPaste = tagElement != null && (smartBE.getAllBehaviours()
 			.stream()
-			.anyMatch(b -> b instanceof ClipboardCloneable cc && cc.readFromClipboard(
-				tagElement.getCompound(cc.getClipboardKey()), player, target.getDirection(), true))
-			|| smartBE instanceof ClipboardCloneable ccbe && ccbe.readFromClipboard(
-				tagElement.getCompound(ccbe.getClipboardKey()), player, target.getDirection(), true));
+			.anyMatch(b -> b instanceof ClipboardCloneable cc && cc.readFromClipboard(mc.level.registryAccess(),
+				tagElement.getCompound(cc.getClipboardKey()), mc.player, target.getDirection(), true))
+			|| smartBE instanceof ClipboardCloneable ccbe && ccbe.readFromClipboard(mc.level.registryAccess(),
+				tagElement.getCompound(ccbe.getClipboardKey()), mc.player, target.getDirection(), true));
 
 		if (!canCopy && !canPaste)
 			return;
@@ -151,6 +151,17 @@ public class ClipboardValueSettingsHandler {
 			return InteractionResult.PASS;
 
 		if (smartBE instanceof ClipboardBlockEntity cbe) {
+			if (event instanceof ICancellableEvent cancellableEvent) {
+				cancellableEvent.setCanceled(true);
+
+				switch (event) {
+					case EntityInteractSpecific e -> e.setCancellationResult(InteractionResult.SUCCESS);
+					case EntityInteract e -> e.setCancellationResult(InteractionResult.SUCCESS);
+					case RightClickBlock e -> e.setCancellationResult(InteractionResult.SUCCESS);
+					case RightClickItem e -> e.setCancellationResult(InteractionResult.SUCCESS);
+					default -> {}
+				}
+			}
 
 			if (!world.isClientSide()) {
 				List<List<ClipboardEntry>> listTo = ClipboardEntry.readAll(itemStack);
@@ -195,7 +206,8 @@ public class ClipboardValueSettingsHandler {
 				.component(), true);
 			return InteractionResult.SUCCESS;
 		}
-		CompoundTag tag = itemStack.getTagElement("CopiedValues");
+
+		CompoundTag tag = itemStack.get(AllDataComponents.CLIPBOARD_COPIED_VALUES);
 		if (paste && tag == null)
 			return InteractionResult.PASS;
 		if (!paste)
@@ -210,11 +222,11 @@ public class ClipboardValueSettingsHandler {
 			String clipboardKey = cc.getClipboardKey();
 			if (paste) {
 				anySuccess |=
-					cc.readFromClipboard(tag.getCompound(clipboardKey), player, face, world.isClientSide());
+					cc.readFromClipboard(world.registryAccess(), tag.getCompound(clipboardKey), player, event.getFace(), world.isClientSide());
 				continue;
 			}
 			CompoundTag compoundTag = new CompoundTag();
-			boolean success = cc.writeToClipboard(compoundTag, face);
+			boolean success = cc.writeToClipboard(world.registryAccess(), compoundTag, event.getFace());
 			anySuccess |= success;
 			if (success)
 				tag.put(clipboardKey, compoundTag);
@@ -224,11 +236,11 @@ public class ClipboardValueSettingsHandler {
 			anyValid = true;
 			String clipboardKey = ccbe.getClipboardKey();
 			if (paste) {
-				anySuccess |= ccbe.readFromClipboard(tag.getCompound(clipboardKey), player, face,
+				anySuccess |= ccbe.readFromClipboard(world.registryAccess(), tag.getCompound(clipboardKey), player, event.getFace(),
 					world.isClientSide());
 			} else {
 				CompoundTag compoundTag = new CompoundTag();
-				boolean success = ccbe.writeToClipboard(compoundTag, face);
+				boolean success = ccbe.writeToClipboard(world.registryAccess(), compoundTag, event.getFace());
 				anySuccess |= success;
 				if (success)
 					tag.put(clipboardKey, compoundTag);
@@ -236,7 +248,11 @@ public class ClipboardValueSettingsHandler {
 		}
 
 		if (!anyValid)
-			return InteractionResult.PASS;
+			return;
+
+		((ICancellableEvent) event).setCanceled(true);
+		if (event instanceof RightClickBlock rightClickBlock)
+			rightClickBlock.setCancellationResult(InteractionResult.SUCCESS);
 
 		if (world.isClientSide())
 			return InteractionResult.SUCCESS;
@@ -253,8 +269,7 @@ public class ClipboardValueSettingsHandler {
 
 		if (!paste) {
 			ClipboardOverrides.switchTo(ClipboardType.WRITTEN, itemStack);
-			itemStack.getOrCreateTag()
-				.put("CopiedValues", tag);
+			itemStack.set(AllDataComponents.CLIPBOARD_COPIED_VALUES, tag);
 		}
 		return InteractionResult.SUCCESS;
 	}

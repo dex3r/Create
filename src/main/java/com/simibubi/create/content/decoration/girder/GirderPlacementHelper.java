@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -81,8 +82,8 @@ public class GirderPlacementHelper implements IPlacementHelper {
 		for (Direction dir : directions) {
 			int range = AllConfigs.server().equipment.placementAssistRange.get();
 			if (player != null) {
-				AttributeInstance reach = player.getAttribute(ReachEntityAttributes.REACH);
-				if (reach != null && reach.hasModifier(ExtendoGripItem.singleRangeAttributeModifier))
+				AttributeInstance reach = player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
+				if (reach != null && reach.hasModifier(ExtendoGripItem.singleRangeAttributeModifier.id()))
 					range += 4;
 			}
 			int poles = attachedPoles(world, pos, dir);

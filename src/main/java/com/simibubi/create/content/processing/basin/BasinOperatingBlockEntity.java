@@ -12,8 +12,9 @@ import com.simibubi.create.foundation.blockEntity.behaviour.simple.DeferralBehav
 import com.simibubi.create.foundation.recipe.RecipeFinder;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -87,7 +88,7 @@ public abstract class BasinOperatingBlockEntity extends KineticBlockEntity {
 		return true;
 	}
 
-	protected <C extends Container> boolean matchBasinRecipe(Recipe<C> recipe) {
+	protected <I extends RecipeInput> boolean matchBasinRecipe(Recipe<I> recipe) {
 		if (recipe == null)
 			return false;
 		Optional<BasinBlockEntity> basin = getBasin();
@@ -123,9 +124,10 @@ public abstract class BasinOperatingBlockEntity extends KineticBlockEntity {
 		if (getBasin().map(BasinBlockEntity::isEmpty)
 			.orElse(true))
 			return new ArrayList<>();
-		
-		List<Recipe<?>> list = RecipeFinder.get(getRecipeCacheKey(), level, this::matchStaticFilters);
+
+		List<RecipeHolder<? extends Recipe<?>>> list = RecipeFinder.get(getRecipeCacheKey(), level, this::matchStaticFilters);
 		return list.stream()
+			.map(RecipeHolder::value)
 			.filter(this::matchBasinRecipe)
 			.sorted((r1, r2) -> r2.getIngredients()
 				.size()
@@ -149,7 +151,7 @@ public abstract class BasinOperatingBlockEntity extends KineticBlockEntity {
 		return Optional.empty();
 	}
 
-	protected abstract <C extends Container> boolean matchStaticFilters(Recipe<C> recipe);
+	protected abstract boolean matchStaticFilters(RecipeHolder<? extends Recipe<?>> recipe);
 
 	protected abstract Object getRecipeCacheKey();
 }

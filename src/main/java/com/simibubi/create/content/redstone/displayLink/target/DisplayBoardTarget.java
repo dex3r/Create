@@ -9,9 +9,6 @@ import com.simibubi.create.content.redstone.displayLink.source.SingleLineDisplay
 import com.simibubi.create.content.trains.display.FlapDisplayBlockEntity;
 import com.simibubi.create.content.trains.display.FlapDisplayLayout;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,8 +16,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public class DisplayBoardTarget extends DisplayTarget {
 
@@ -90,7 +87,7 @@ public class DisplayBoardTarget extends DisplayTarget {
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public AABB getMultiblockBounds(LevelAccessor level, BlockPos pos) {
 		AABB baseShape = super.getMultiblockBounds(level, pos);
 		BlockEntity be = level.getBlockEntity(pos);

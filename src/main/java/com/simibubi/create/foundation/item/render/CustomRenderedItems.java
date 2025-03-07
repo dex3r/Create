@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 
 public class CustomRenderedItems {

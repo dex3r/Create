@@ -1,25 +1,33 @@
 package com.simibubi.create.content.processing.sequenced;
 
-import java.util.Arrays;
-
-import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
 
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 public class SequencedRecipe<T extends ProcessingRecipe<?>> {
+	public static final Codec<SequencedRecipe<?>> CODEC = AllRecipeTypes.CODEC
+		.<ProcessingRecipe<?>>dispatch(ProcessingRecipe::getRecipeType, AllRecipeTypes::processingCodec)
+		.validate(r -> r instanceof IAssemblyRecipe ? DataResult.success(r) :
+			DataResult.error(() -> r.getType() + " is not a supported recipe type"))
+		.xmap(SequencedRecipe::new, SequencedRecipe::getRecipe);
 
-	private T wrapped;
+	public static final StreamCodec<RegistryFriendlyByteBuf, SequencedRecipe<?>> STREAM_CODEC = StreamCodec.of(
+			(b, v) -> v.writeToBuffer(b), SequencedRecipe::readFromBuffer
+	);
+
+	private final T wrapped;
 
 	public SequencedRecipe(T wrapped) {
 		this.wrapped = wrapped;
@@ -33,50 +41,29 @@ public class SequencedRecipe<T extends ProcessingRecipe<?>> {
 		return wrapped;
 	}
 
-	public JsonObject toJson() {
+	private void writeToBuffer(RegistryFriendlyByteBuf buffer) {
 		@SuppressWarnings("unchecked")
 		ProcessingRecipeSerializer<T> serializer = (ProcessingRecipeSerializer<T>) wrapped.getSerializer();
-		JsonObject json = new JsonObject();
-		json.addProperty("type", CatnipServices.REGISTRIES.getKeyOrThrow(serializer)
-			.toString());
-		serializer.write(json, wrapped);
-		return json;
+		buffer.writeResourceLocation(RegisteredObjectsHelper.getKeyOrThrow(serializer));
+		serializer.STREAM_CODEC.encode(buffer, wrapped);
 	}
 
-	public static SequencedRecipe<?> fromJson(JsonObject json, SequencedAssemblyRecipe parent, int index) {
-		ResourceLocation parentId = parent.getId();
-		Recipe<?> recipe = RecipeManager.fromJson(
-			new ResourceLocation(parentId.getNamespace(), parentId.getPath() + "_step_" + index), json);
-		if (recipe instanceof ProcessingRecipe<?> processingRecipe && recipe instanceof IAssemblyRecipe assemblyRecipe) {
-			if (assemblyRecipe.supportsAssembly()) {
-				Ingredient transit = Ingredient.of(parent.getTransitionalItem());
-
-				processingRecipe.getIngredients()
-					.set(0, index == 0 ? Ingredient.fromValues(ImmutableList.of(transit, parent.getIngredient()).stream().flatMap(i -> Arrays.stream(i.values))) : transit);
-				SequencedRecipe<?> sequencedRecipe = new SequencedRecipe<>(processingRecipe);
-				return sequencedRecipe;
-			}
-		}
-		throw new JsonParseException("Not a supported recipe type");
-	}
-
-	public void writeToBuffer(FriendlyByteBuf buffer) {
-		@SuppressWarnings("unchecked")
-		ProcessingRecipeSerializer<T> serializer = (ProcessingRecipeSerializer<T>) wrapped.getSerializer();
-		buffer.writeResourceLocation(CatnipServices.REGISTRIES.getKeyOrThrow(serializer));
-		buffer.writeResourceLocation(wrapped.getId());
-		serializer.toNetwork(buffer, wrapped);
-	}
-
-	public static SequencedRecipe<?> readFromBuffer(FriendlyByteBuf buffer) {
+	private static SequencedRecipe<?> readFromBuffer(RegistryFriendlyByteBuf buffer) {
 		ResourceLocation resourcelocation = buffer.readResourceLocation();
-		ResourceLocation resourcelocation1 = buffer.readResourceLocation();
 		RecipeSerializer<?> serializer = BuiltInRegistries.RECIPE_SERIALIZER.get(resourcelocation);
-		if (!(serializer instanceof ProcessingRecipeSerializer))
+		//noinspection rawtypes
+		if (!(serializer instanceof ProcessingRecipeSerializer processingRecipeSerializer))
 			throw new JsonParseException("Not a supported recipe type");
-		@SuppressWarnings("rawtypes")
-		ProcessingRecipe recipe = (ProcessingRecipe) serializer.fromNetwork(resourcelocation1, buffer);
+		@SuppressWarnings({"rawtypes", "unchecked"})
+		ProcessingRecipe recipe = (ProcessingRecipe) processingRecipeSerializer.STREAM_CODEC.decode(buffer);
 		return new SequencedRecipe<>(recipe);
 	}
 
+	void initFromSequencedAssembly(SequencedAssemblyRecipe parent, boolean isFirst) {
+		if (getAsAssemblyRecipe().supportsAssembly()) {
+			Ingredient transit = Ingredient.of(parent.getTransitionalItem());
+			wrapped.getIngredients()
+					.set(0, isFirst ? CompoundIngredient.of(transit, parent.getIngredient()) : transit);
+		}
+	}
 }

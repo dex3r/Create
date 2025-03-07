@@ -25,11 +25,17 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.Iterate;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -60,7 +66,7 @@ public class ChassisBlockEntity extends SmartBlockEntity {
 		range.requiresWrench();
 		range.between(1, max);
 		range.withClientCallback(
-			i -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> ChassisRangeDisplay.display(this)));
+			i -> CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> ChassisRangeDisplay.display(this)));
 		range.setValue(max / 2);
 		range.withFormatter(s -> String.valueOf(currentlySelectedRange));
 		behaviours.add(range);
@@ -75,8 +81,8 @@ public class ChassisBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		super.read(tag, clientPacket);
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(tag, registries, clientPacket);
 		if (clientPacket)
 			currentlySelectedRange = getRange();
 	}

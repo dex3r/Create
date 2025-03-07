@@ -6,14 +6,22 @@ import java.util.function.Predicate;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
+import com.simibubi.create.foundation.utility.DistExecutor;
+
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.math.BlockFace;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.animation.LerpedFloat;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
@@ -23,7 +31,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 
@@ -121,7 +129,7 @@ public class PipeConnection {
 		// Manage existing flow
 		Flow flow = this.flow.get();
 		FluidStack provided = flow.inbound ? flowSource.provideFluid(extractionPredicate) : internalFluid;
-		if (!hasPressure() || provided.isEmpty() || !provided.isFluidEqual(flow.fluid)) {
+		if (!hasPressure() || provided.isEmpty() || !FluidStack.isSameFluidSameComponents(provided, flow.fluid)) {
 			this.flow = Optional.empty();
 			return true;
 		}
@@ -210,7 +218,7 @@ public class PipeConnection {
 			flow.complete = true;
 	}
 
-	public void serializeNBT(CompoundTag tag, boolean clientPacket) {
+	public void serializeNBT(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		CompoundTag connectionData = new CompoundTag();
 		tag.put(side.getName(), connectionData);
 
@@ -222,12 +230,12 @@ public class PipeConnection {
 		}
 
 		if (hasOpenEnd())
-			connectionData.put("OpenEnd", ((OpenEndedPipe) source.get()).serializeNBT());
+			connectionData.put("OpenEnd", ((OpenEndedPipe) source.get()).serializeNBT(registries));
 
 		if (hasFlow()) {
 			CompoundTag flowData = new CompoundTag();
 			Flow flow = this.flow.get();
-			flow.fluid.writeToNBT(flowData);
+			flowData.put("Fluid", flow.fluid.saveOptional(registries));
 			flowData.putBoolean("In", flow.inbound);
 			if (!flow.complete)
 				flowData.put("Progress", flow.progress.writeNBT());
@@ -240,7 +248,7 @@ public class PipeConnection {
 		return source.orElse(null) instanceof OpenEndedPipe;
 	}
 
-	public void deserializeNBT(CompoundTag tag, BlockPos blockEntityPos, boolean clientPacket) {
+	public void deserializeNBT(CompoundTag tag, HolderLookup.Provider registries, BlockPos blockEntityPos, boolean clientPacket) {
 		CompoundTag connectionData = tag.getCompound(side.getName());
 
 		if (connectionData.contains("Pressure")) {
@@ -251,13 +259,14 @@ public class PipeConnection {
 
 		source = Optional.empty();
 		if (connectionData.contains("OpenEnd"))
-			source = Optional.of(OpenEndedPipe.fromNBT(connectionData.getCompound("OpenEnd"), blockEntityPos));
+			source = Optional.of(OpenEndedPipe.fromNBT(connectionData.getCompound("OpenEnd"), registries, blockEntityPos));
 
 		if (connectionData.contains("Flow")) {
 			CompoundTag flowData = connectionData.getCompound("Flow");
-			FluidStack fluid = FluidStack.loadFluidStackFromNBT(flowData);
+
+			FluidStack fluid = FluidStack.parseOptional(registries, flowData.getCompound("Fluid"));
 			boolean inbound = flowData.getBoolean("In");
-			if (!flow.isPresent()) {
+			if (flow.isEmpty()) {
 				flow = Optional.of(new Flow(inbound, fluid));
 				if (clientPacket)
 					particleSplashNextTick = true;
@@ -363,11 +372,11 @@ public class PipeConnection {
 	public static final RandomSource r = RandomSource.create();
 
 	public void spawnSplashOnRim(Level world, BlockPos pos, FluidStack fluid) {
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> spawnSplashOnRimInner(world, pos, fluid));
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> spawnSplashOnRimInner(world, pos, fluid));
 	}
 
 	public void spawnParticles(Level world, BlockPos pos, FluidStack fluid) {
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> spawnParticlesInner(world, pos, fluid));
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> spawnParticlesInner(world, pos, fluid));
 	}
 
 	@Environment(EnvType.CLIENT)

@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -71,17 +72,15 @@ public class WhistleExtenderBlock extends Block implements IWrenchable {
 	}
 
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-		BlockHitResult pHit) {
-		if (pPlayer == null || !AllBlocks.STEAM_WHISTLE.isIn(pPlayer.getItemInHand(pHand)))
-			return InteractionResult.PASS;
-		Level level = pLevel;
-		BlockPos findRoot = findRoot(level, pPos);
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (player == null || !AllBlocks.STEAM_WHISTLE.isIn(stack))
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		BlockPos findRoot = findRoot(level, pos);
 		BlockState blockState = level.getBlockState(findRoot);
 		if (blockState.getBlock()instanceof WhistleBlock whistle)
-			return whistle.use(blockState, pLevel, findRoot, pPlayer, pHand,
-				new BlockHitResult(pHit.getLocation(), pHit.getDirection(), findRoot, pHit.isInside()));
-		return InteractionResult.PASS;
+			return whistle.useItemOn(stack, blockState, level, findRoot, player, hand,
+				new BlockHitResult(hitResult.getLocation(), hitResult.getDirection(), findRoot, hitResult.isInside()));
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	@Override

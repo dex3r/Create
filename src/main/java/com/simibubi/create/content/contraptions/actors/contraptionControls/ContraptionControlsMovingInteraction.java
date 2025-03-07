@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
@@ -17,6 +16,8 @@ import com.simibubi.create.content.contraptions.elevator.ElevatorContraption;
 import com.simibubi.create.content.contraptions.elevator.ElevatorTargetFloorPacket;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
+
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -105,9 +106,8 @@ public class ContraptionControlsMovingInteraction extends MovingInteractionBehav
 	}
 
 	private void send(AbstractContraptionEntity contraptionEntity, ItemStack filter, boolean disable) {
-		AllPackets.getChannel().sendToClientsTracking(
-			new ContraptionDisableActorPacket(contraptionEntity.getId(), filter, !disable), contraptionEntity
-		);
+		CatnipServices.NETWORK.sendToClientsTrackingEntity(contraptionEntity,
+			new ContraptionDisableActorPacket(contraptionEntity.getId(), filter, !disable));
 	}
 
 	private boolean elevatorInteraction(BlockPos localPos, AbstractContraptionEntity contraptionEntity,
@@ -124,7 +124,7 @@ public class ContraptionControlsMovingInteraction extends MovingInteractionBehav
 		if (efs.currentTargetY == contraption.clientYTarget)
 			return true;
 
-		AllPackets.getChannel().sendToServer(new ElevatorTargetFloorPacket(contraptionEntity, efs.currentTargetY));
+		CatnipServices.NETWORK.sendToServer(new ElevatorTargetFloorPacket(contraptionEntity, efs.currentTargetY));
 		if (contraption.presentBlockEntities.get(ctx.localPos) instanceof ContraptionControlsBlockEntity cbe)
 			cbe.pressButton();
 		return true;

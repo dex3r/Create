@@ -1,11 +1,11 @@
 
 package com.simibubi.create.foundation.data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -239,7 +239,7 @@ public class BlockStateGen {
 			ResourceLocation top = p.modLoc("block/linear_chassis_end");
 			ResourceLocation top_sticky = p.modLoc("block/linear_chassis_end_sticky");
 
-			Vector<ModelFile> models = new Vector<>(4);
+			List<ModelFile> models = new ArrayList<>(4);
 			for (boolean isTopSticky : Iterate.trueAndFalse)
 				for (boolean isBottomSticky : Iterate.trueAndFalse)
 					models.add(p.models()
@@ -265,8 +265,8 @@ public class BlockStateGen {
 			String templateModelPath = "block/radial_chassis";
 			ModelFile base = p.models()
 				.getExistingFile(p.modLoc(templateModelPath + "/base"));
-			Vector<ModelFile> faces = new Vector<>(3);
-			Vector<ModelFile> stickyFaces = new Vector<>(3);
+			List<ModelFile> faces = new ArrayList<>(3);
+			List<ModelFile> stickyFaces = new ArrayList<>(3);
 
 			for (Axis axis : Iterate.axes) {
 				String suffix = "side_" + axis.getSerializedName();

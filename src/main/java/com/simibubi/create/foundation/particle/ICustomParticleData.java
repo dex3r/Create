@@ -1,11 +1,10 @@
 package com.simibubi.create.foundation.particle;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleOptions.Deserializer;
 import net.minecraft.core.particles.ParticleType;
 
 import net.fabricmc.api.EnvType;
@@ -14,16 +13,21 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 
 public interface ICustomParticleData<T extends ParticleOptions> {
 
-	Deserializer<T> getDeserializer();
+	MapCodec<T> getCodec(ParticleType<T> type);
 
-	Codec<T> getCodec(ParticleType<T> type);
+	StreamCodec<? super RegistryFriendlyByteBuf, T> getStreamCodec();
 
-	public default ParticleType<T> createType() {
-		return new ParticleType<>(false, getDeserializer()) {
+	default ParticleType<T> createType() {
+		return new ParticleType<>(false) {
 
 			@Override
-			public Codec<T> codec() {
+			public @NotNull MapCodec<T> codec() {
 				return ICustomParticleData.this.getCodec(this);
+			}
+
+			@Override
+			public @NotNull StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec() {
+				return ICustomParticleData.this.getStreamCodec();
 			}
 		};
 	}

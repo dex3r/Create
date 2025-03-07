@@ -1,10 +1,14 @@
 package com.simibubi.create.foundation.data.recipe;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.simibubi.create.AllFluids;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 
 import io.github.tropheusj.milk.Milk;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluids;
 
@@ -44,8 +48,8 @@ public class EmptyingRecipeGen extends ProcessingRecipeGen {
 
 	;
 
-	public EmptyingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public EmptyingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

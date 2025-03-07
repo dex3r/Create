@@ -5,7 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeParams;
 
-import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 
 @ParametersAreNonnullByDefault
@@ -16,7 +16,7 @@ public class CrushingRecipe extends AbstractCrushingRecipe {
 	}
 
 	@Override
-	public boolean matches(Container inv, Level worldIn) {
+	public boolean matches(RecipeInput inv, Level worldIn) {
 		if (inv.isEmpty())
 			return false;
 		return ingredients.get(0)

@@ -6,7 +6,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+
+import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
+
 import net.createmod.catnip.data.LongAttached;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 

@@ -82,7 +82,7 @@ public class SteamEngineRenderer extends SafeBlockEntityRenderer<SteamEngineBloc
 			.rotateYDegrees(roll90 ? -90 : 0)
 			.uncenter();
 	}
-
+	
 	@Override
 	public int getViewDistance() {
 		return 128;

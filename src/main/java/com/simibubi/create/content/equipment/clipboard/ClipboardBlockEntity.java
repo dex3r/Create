@@ -8,8 +8,14 @@ import com.simibubi.create.content.logistics.AddressEditBoxHelper;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
+import net.createmod.catnip.platform.CatnipServices;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -48,7 +54,7 @@ public class ClipboardBlockEntity extends SmartBlockEntity {
 	public void lazyTick() {
 		super.lazyTick();
 		if (level.isClientSide())
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::advertiseToAddressHelper);
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> this::advertiseToAddressHelper);
 	}
 
 	public void updateWrittenState() {
@@ -58,7 +64,7 @@ public class ClipboardBlockEntity extends SmartBlockEntity {
 		if (level.isClientSide())
 			return;
 		boolean isWritten = blockState.getValue(ClipboardBlock.WRITTEN);
-		boolean shouldBeWritten = dataContainer.getTag() != null;
+		boolean shouldBeWritten = !dataContainer.getComponentsPatch().isEmpty();
 		if (isWritten == shouldBeWritten)
 			return;
 		level.setBlockAndUpdate(worldPosition, blockState.setValue(ClipboardBlock.WRITTEN, shouldBeWritten));
@@ -68,22 +74,22 @@ public class ClipboardBlockEntity extends SmartBlockEntity {
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
 
 	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
-		super.write(tag, clientPacket);
-		tag.put("Item", NBTSerializer.serializeNBT(dataContainer));
+	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(tag, registries, clientPacket);
+		tag.put("Item", dataContainer.saveOptional(registries));
 		if (clientPacket && lastEdit != null)
 			tag.putUUID("LastEdit", lastEdit);
 	}
 
 	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
-		super.read(tag, clientPacket);
-		dataContainer = ItemStack.of(tag.getCompound("Item"));
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(tag, registries, clientPacket);
+		dataContainer = ItemStack.parseOptional(registries, tag.getCompound("Item"));
 		if (!AllBlocks.CLIPBOARD.isIn(dataContainer))
 			dataContainer = AllBlocks.CLIPBOARD.asStack();
 
 		if (clientPacket)
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> readClientSide(tag));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> readClientSide(tag));
 	}
 
 	@Environment(EnvType.CLIENT)

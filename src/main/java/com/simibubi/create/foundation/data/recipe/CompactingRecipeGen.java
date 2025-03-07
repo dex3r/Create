@@ -5,6 +5,9 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllTags.AllFluidTags;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderLookup.Provider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
@@ -13,6 +16,8 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
 import io.github.fabricators_of_create.porting_lib.tags.Tags;
+
+import java.util.concurrent.CompletableFuture;
 
 public class CompactingRecipeGen extends ProcessingRecipeGen {
 
@@ -44,7 +49,7 @@ public class CompactingRecipeGen extends ProcessingRecipeGen {
 			.require(AllItems.CINDER_FLOUR.get())
 			.output(AllItems.BLAZE_CAKE_BASE.get(), 1)),
 
-		HONEY = create("honey", b -> b.require(AllFluidTags.HONEY.tag, FluidConstants.BUCKET)
+		HONEY = create("honey", b -> b.require(Tags.Fluids.HONEY, FluidConstants.BUCKET)
 			.output(Items.HONEY_BLOCK, 1)),
 
 		ICE = create("ice", b -> b
@@ -55,8 +60,8 @@ public class CompactingRecipeGen extends ProcessingRecipeGen {
 
 	;
 
-	public CompactingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public CompactingRecipeGen(PackOutput output, CompletableFuture<Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

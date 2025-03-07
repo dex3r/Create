@@ -17,7 +17,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -42,11 +41,6 @@ public abstract class AbstractFunnelBlock extends Block
 			.setValue(WATERLOGGED, false));
 	}
 
-//	@Environment(EnvType.CLIENT)
-//	public void initializeClient(Consumer<IClientBlockExtensions> consumer) {
-//		consumer.accept(new ReducedDestroyEffects());
-//	}
-
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		return withWater(defaultBlockState().setValue(POWERED, context.getLevel()
@@ -66,7 +60,7 @@ public abstract class AbstractFunnelBlock extends Block
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

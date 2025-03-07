@@ -3,11 +3,10 @@ package com.simibubi.create.content.kinetics.chainConveyor;
 import java.util.Map;
 import java.util.UUID;
 
-import com.simibubi.create.AllPackets;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.world.entity.player.Player;
 
 public class ServerChainConveyorHandler {
@@ -24,7 +23,7 @@ public class ServerChainConveyorHandler {
 		if (hangingPlayers.size() != count)
 			sync();
 	}
-	
+
 	public static void handleStopRidingPacket(Player player) {
 		if (hangingPlayers.removeInt(player.getUUID()) != 0)
 			sync();
@@ -56,8 +55,7 @@ public class ServerChainConveyorHandler {
 	}
 
 	public static void sync() {
-		ClientboundChainConveyorRidingPacket packet = new ClientboundChainConveyorRidingPacket(hangingPlayers.keySet());
-		AllPackets.getChannel().sendToClientsInCurrentServer(packet);
+		CatnipServices.NETWORK.sendToAllClients(new ClientboundChainConveyorRidingPacket(hangingPlayers.keySet()));
 	}
 
 }

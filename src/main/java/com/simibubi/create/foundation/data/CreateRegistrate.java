@@ -10,6 +10,26 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
+import com.simibubi.create.foundation.item.render.CustomRenderedItems;
+import com.simibubi.create.foundation.mixin.accessor.AbstractRegistrateAccessor;
+import com.simibubi.create.impl.registrate.CreateRegistrateRegistrationCallbackImpl;
+import com.simibubi.create.impl.registrate.CreateRegistrateRegistrationCallbackImpl.CallbackImpl;
+
+import com.tterrag.registrate.builders.ItemBuilder;
+import com.tterrag.registrate.fabric.SimpleFlowableFluid;
+
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
+import net.neoforged.neoforge.registries.DeferredHolder;
+
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.CreateClient;
@@ -24,26 +44,19 @@ import com.simibubi.create.content.fluids.VirtualFluid;
 import com.simibubi.create.foundation.block.connected.CTModel;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.item.TooltipModifier;
-import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
-import com.simibubi.create.foundation.item.render.CustomRenderedItems;
-import com.simibubi.create.impl.registrate.CreateRegistrateRegistrationCallbackImpl;
-import com.simibubi.create.impl.registrate.CreateRegistrateRegistrationCallbackImpl.CallbackImpl;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.FluidBuilder;
-import com.tterrag.registrate.builders.ItemBuilder;
-import com.tterrag.registrate.fabric.EnvExecutor;
-import com.tterrag.registrate.fabric.RegistryObject;
-import com.tterrag.registrate.fabric.SimpleFlowableFluid;
+import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -98,11 +111,14 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 		return this;
 	}
 
+	@Nullable
+	public ResourceKey<CreativeModeTab> getCreativeTab() {
+		return currentTab;
+	}
+
 	@Override
-	protected <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type,
-													   Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator,
-													   NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
-		RegistryEntry<T> entry = super.accept(name, type, builder, creator, entryFactory);
+	protected <R, T extends R> RegistryEntry<R, T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<DeferredHolder<R, T>, ? extends RegistryEntry<R, T>> entryFactory) {
+		RegistryEntry<R, T> entry = super.accept(name, type, builder, creator, entryFactory);
 		if (type.equals(Registries.ITEM) && currentTooltipModifierFactory != null) {
 			// grab the factory here for the lambda, it can change between now and registration
 			Function<Item, TooltipModifier> factory = currentTooltipModifierFactory;
@@ -212,11 +228,11 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 
 	public <T extends SimpleFlowableFluid> FluidBuilder<T, CreateRegistrate> virtualFluid(String name,
 //		BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory,
-		NonNullFunction<SimpleFlowableFluid.Properties, T> sourceFactory,
-																						NonNullFunction<SimpleFlowableFluid.Properties, T> flowingFactory) {
+																						  NonNullFunction<SimpleFlowableFluid.Properties, T> sourceFactory,
+																						  NonNullFunction<SimpleFlowableFluid.Properties, T> flowingFactory) {
 		return entry(name,
 			c -> new VirtualFluidBuilder<>(self(), self(), name, c, new ResourceLocation(getModid(), "fluid/" + name + "_still"),
-				new ResourceLocation(getModid(), "fluid/" + name + "_flow"), sourceFactory, flowingFactory));
+				ResourceLocation.fromNamespaceAndPath(getModid(), "fluid/" + name + "_flow"), sourceFactory, flowingFactory));
 	}
 
 	public <T extends SimpleFlowableFluid> FluidBuilder<T, CreateRegistrate> virtualFluid(String name,
@@ -228,7 +244,7 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 	public FluidBuilder<VirtualFluid, CreateRegistrate> virtualFluid(String name) {
 		return entry(name,
 			c -> new VirtualFluidBuilder<>(self(), self(), name, c, new ResourceLocation(getModid(), "fluid/" + name + "_still"),
-				new ResourceLocation(getModid(), "fluid/" + name + "_flow"), /*null, */VirtualFluid::createSource, VirtualFluid::createFlowing));
+				ResourceLocation.fromNamespaceAndPath(getModid(), "fluid/" + name + "_flow"), /*null, */VirtualFluid::createSource, VirtualFluid::createFlowing));
 	}
 
 	public FluidBuilder<VirtualFluid, CreateRegistrate> virtualFluid(String name, ResourceLocation still, ResourceLocation flow) {
@@ -238,13 +254,13 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 	}
 
 	public FluidBuilder<SimpleFlowableFluid.Flowing, CreateRegistrate> standardFluid(String name) {
-		return fluid(name, new ResourceLocation(getModid(), "fluid/" + name + "_still"), new ResourceLocation(getModid(), "fluid/" + name + "_flow"));
+		return fluid(name, ResourceLocation.fromNamespaceAndPath(getModid(), "fluid/" + name + "_still"), ResourceLocation.fromNamespaceAndPath(getModid(), "fluid/" + name + "_flow"));
 	}
 
 /*
 	public FluidBuilder<ForgeFlowingFluid.Flowing, CreateRegistrate> standardFluid(String name,
 																				   FluidBuilder.FluidTypeFactory typeFactory) {
-		return fluid(name, new ResourceLocation(getModid(), "fluid/" + name + "_still"), new ResourceLocation(getModid(), "fluid/" + name + "_flow"),
+		return fluid(name, ResourceLocation.fromNamespaceAndPath(getModid(), "fluid/" + name + "_still"), ResourceLocation.fromNamespaceAndPath(getModid(), "fluid/" + name + "_flow"),
 			typeFactory);
 	}
 
@@ -272,34 +288,30 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 
 	public static <T extends Block> NonNullConsumer<? super T> casingConnectivity(
 		BiConsumer<T, CasingConnectivity> consumer) {
-		return entry -> onClient(() -> () -> registerCasingConnectivity(entry, consumer));
+		return entry -> CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> registerCasingConnectivity(entry, consumer));
 	}
 
 	public static <T extends Block> NonNullConsumer<? super T> blockModel(
 		Supplier<NonNullFunction<BakedModel, ? extends BakedModel>> func) {
-		return entry -> onClient(() -> () -> registerBlockModel(entry, func));
+		return entry -> CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> registerBlockModel(entry, func));
 	}
 
 	public static <T extends Item> NonNullConsumer<? super T> itemModel(
 		Supplier<NonNullFunction<BakedModel, ? extends BakedModel>> func) {
-		return entry -> onClient(() -> () -> registerItemModel(entry, func));
+		return entry -> CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> registerItemModel(entry, func));
 	}
 
-	public static <T extends Block> NonNullConsumer<T> connectedTextures(
-			Supplier<ConnectedTextureBehaviour> behavior) {
-		return entry -> onClient(() -> () -> registerCTBehviour(entry, behavior));
+	public static NonNullConsumer<? super Block> connectedTextures(
+		Supplier<ConnectedTextureBehaviour> behavior) {
+		return entry -> CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> registerCTBehviour(entry, behavior));
 	}
 
 	public static <T extends Item, P> NonNullUnaryOperator<ItemBuilder<T, P>> customRenderedItem(
-			Supplier<Supplier<CustomRenderedItemModelRenderer>> supplier) {
+		Supplier<Supplier<CustomRenderedItemModelRenderer>> supplier) {
 		return b -> {
-			onClient(() -> () -> customRenderedItem(b, supplier));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> customRenderedItem(b, supplier));
 			return b;
 		};
-	}
-
-	protected static void onClient(Supplier<Runnable> toRun) {
-		EnvExecutor.runWhenOn(EnvType.CLIENT, toRun);
 	}
 
 	@Environment(EnvType.CLIENT)
@@ -312,24 +324,31 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 	private static void registerBlockModel(Block entry,
 										   Supplier<NonNullFunction<BakedModel, ? extends BakedModel>> func) {
 		CreateClient.MODEL_SWAPPER.getCustomBlockModels()
-			.register(CatnipServices.REGISTRIES.getKeyOrThrow(entry), func.get());
+			.register(RegisteredObjectsHelper.getKeyOrThrow(entry), func.get());
 	}
 
 	@Environment(EnvType.CLIENT)
 	private static void registerItemModel(Item entry,
 										  Supplier<NonNullFunction<BakedModel, ? extends BakedModel>> func) {
 		CreateClient.MODEL_SWAPPER.getCustomItemModels()
-			.register(CatnipServices.REGISTRIES.getKeyOrThrow(entry), func.get());
+			.register(RegisteredObjectsHelper.getKeyOrThrow(entry), func.get());
 	}
 
 	@Environment(EnvType.CLIENT)
 	private static void registerCTBehviour(Block entry, Supplier<ConnectedTextureBehaviour> behaviorSupplier) {
 		ConnectedTextureBehaviour behavior = behaviorSupplier.get();
 		CreateClient.MODEL_SWAPPER.getCustomBlockModels()
-			.register(CatnipServices.REGISTRIES.getKeyOrThrow(entry), new CTModelProvider(behavior));
+			.register(RegisteredObjectsHelper.getKeyOrThrow(entry), model -> new CTModel(model, behavior));
 	}
 
+	@Override
+	protected void onData(@NotNull GatherDataEvent event) {} // NO-OP so this doesn't run before create can add its generators
 
+	@ApiStatus.Internal
+	public RegistrateDataProvider setDataProvider(RegistrateDataProvider provider) {
+		((AbstractRegistrateAccessor) this).create$setProvider(provider);
+		return provider;
+	}
 
 	@Environment(EnvType.CLIENT)
 	private static <T extends Item, P> void customRenderedItem(ItemBuilder<T, P> b,

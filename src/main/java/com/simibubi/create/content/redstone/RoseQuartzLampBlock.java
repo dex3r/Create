@@ -164,12 +164,6 @@ public class RoseQuartzLampBlock extends Block implements IWrenchable, WeakPower
 	}
 
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-		BlockHitResult pHit) {
-		return InteractionResult.PASS;
-	}
-
-	@Override
 	public BlockState getRotatedBlockState(BlockState originalState, Direction targetedFace) {
 		return originalState.cycle(POWERING);
 	}

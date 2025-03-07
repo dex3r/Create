@@ -2,7 +2,10 @@ package com.simibubi.create.content.trains.schedule;
 
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +23,8 @@ public class ScheduleMenu extends GhostItemMenu<ItemStack> {
 	public int targetSlotsActive = 1;
 
 	static final int slots = 2;
-	public ScheduleMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+
+	public ScheduleMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id, inv, extraData);
 	}
 
@@ -45,8 +49,8 @@ public class ScheduleMenu extends GhostItemMenu<ItemStack> {
 	}
 
 	@Override
-	protected ItemStack createOnClient(FriendlyByteBuf extraData) {
-		return extraData.readItem();
+	protected ItemStack createOnClient(RegistryFriendlyByteBuf extraData) {
+		return ItemStack.STREAM_CODEC.decode(extraData);
 	}
 
 	@Override
@@ -90,7 +94,7 @@ public class ScheduleMenu extends GhostItemMenu<ItemStack> {
 private int targetIndex;
 
 		public InactiveItemHandlerSlot(ItemStackHandler itemHandler, int targetIndex, int index, int xPosition,
-			int yPosition) {
+									   int yPosition) {
 			super(itemHandler, index, xPosition, yPosition);
 			this.targetIndex = targetIndex;
 		}

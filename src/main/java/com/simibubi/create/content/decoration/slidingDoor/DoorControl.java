@@ -8,11 +8,18 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import io.netty.buffer.ByteBuf;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.lang.Lang;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
 
 import net.fabricmc.api.EnvType;
@@ -21,6 +28,8 @@ import net.fabricmc.api.Environment;
 public enum DoorControl {
 
 	ALL, NORTH, EAST, SOUTH, WEST, NONE;
+
+	public static final StreamCodec<ByteBuf, DoorControl> STREAM_CODEC = CatnipStreamCodecBuilders.ofEnum(DoorControl.class);
 
 	private static String[] valuesAsString() {
 		DoorControl[] values = values();

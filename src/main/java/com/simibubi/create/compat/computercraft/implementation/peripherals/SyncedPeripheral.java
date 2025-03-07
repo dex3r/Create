@@ -5,10 +5,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.compat.computercraft.AttachedComputerPacket;
 import com.simibubi.create.compat.computercraft.implementation.ComputerBehaviour;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import net.createmod.catnip.platform.CatnipServices;
 
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
@@ -38,7 +38,7 @@ public abstract class SyncedPeripheral<T extends SmartBlockEntity> implements IP
 		boolean hasAttachedComputer = computers.get() > 0;
 
 		blockEntity.getBehaviour(ComputerBehaviour.TYPE).setHasAttachedComputer(hasAttachedComputer);
-		AllPackets.getChannel().sendToClientsInCurrentServer(new AttachedComputerPacket(blockEntity.getBlockPos(), hasAttachedComputer));
+		CatnipServices.NETWORK.sendToAllClients(new AttachedComputerPacket(blockEntity.getBlockPos(), hasAttachedComputer));
 	}
 
 	@Override

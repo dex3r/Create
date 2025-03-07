@@ -1,5 +1,6 @@
 package com.simibubi.create.content.logistics.packagerLink;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
@@ -32,6 +33,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PackagerLinkBlock extends FaceAttachedHorizontalDirectionalBlock
 	implements IBE<PackagerLinkBlockEntity>, ProperWaterloggedBlock, IWrenchable {
+	public static final MapCodec<PackagerLinkBlock> CODEC = simpleCodec(PackagerLinkBlock::new);
 
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
@@ -118,7 +120,7 @@ public class PackagerLinkBlock extends FaceAttachedHorizontalDirectionalBlock
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState pState, BlockGetter pLevel, BlockPos pPos, PathComputationType pType) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 
@@ -137,4 +139,8 @@ public class PackagerLinkBlock extends FaceAttachedHorizontalDirectionalBlock
 		IBE.onRemove(pState, pLevel, pPos, pNewState);
 	}
 
+	@Override
+	protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
+		return CODEC;
+	}
 }

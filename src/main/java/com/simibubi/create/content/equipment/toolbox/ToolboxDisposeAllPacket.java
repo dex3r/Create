@@ -1,13 +1,18 @@
 package com.simibubi.create.content.equipment.toolbox;
 
+import net.minecraft.nbt.NbtUtils;
+
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import com.simibubi.create.AllPackets;
 
+import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.net.base.ServerboundPacketPayload;
+
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,47 +26,39 @@ import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 
 public class ToolboxDisposeAllPacket extends SimplePacketBase {
 
-	private BlockPos toolboxPos;
+public record ToolboxDisposeAllPacket(BlockPos toolboxPos) implements ServerboundPacketPayload {
+	public static final StreamCodec<ByteBuf, com.simibubi.create.content.equipment.toolbox.ToolboxDisposeAllPacket> STREAM_CODEC = BlockPos.STREAM_CODEC.map(
+			com.simibubi.create.content.equipment.toolbox.ToolboxDisposeAllPacket::new, com.simibubi.create.content.equipment.toolbox.ToolboxDisposeAllPacket::toolboxPos
+	);
 
-	public ToolboxDisposeAllPacket(BlockPos toolboxPos) {
-		this.toolboxPos = toolboxPos;
-	}
-
-	public ToolboxDisposeAllPacket(FriendlyByteBuf buffer) {
-		toolboxPos = buffer.readBlockPos();
+	@Override
+	public PacketTypeProvider getTypeProvider() {
+		return AllPackets.TOOLBOX_DISPOSE_ALL;
 	}
 
 	@Override
-	public void write(FriendlyByteBuf buffer) {
-		buffer.writeBlockPos(toolboxPos);
-	}
+	public void handle(ServerPlayer player) {
+		Level world = player.level();
+		BlockEntity blockEntity = world.getBlockEntity(toolboxPos);
 
-	@Override
-	public boolean handle(Context context) {
-		context.enqueueWork(() -> {
-			ServerPlayer player = context.getSender();
-			Level world = player.level();
-			BlockEntity blockEntity = world.getBlockEntity(toolboxPos);
-
-			double maxRange = ToolboxHandler.getMaxRange(player);
-			if (player.distanceToSqr(toolboxPos.getX() + 0.5, toolboxPos.getY(), toolboxPos.getZ() + 0.5) > maxRange
+		double maxRange = ToolboxHandler.getMaxRange(player);
+		if (player.distanceToSqr(toolboxPos.getX() + 0.5, toolboxPos.getY(), toolboxPos.getZ() + 0.5) > maxRange
 				* maxRange)
-				return;
-			if (!(blockEntity instanceof ToolboxBlockEntity toolbox))
-				return;
+			return;
+		if (!(blockEntity instanceof ToolboxBlockEntity toolbox))
+			return;
 
-			CompoundTag compound = player.getCustomData()
+		CompoundTag compound = player.getPersistentData()
 				.getCompound("CreateToolboxData");
-			MutableBoolean sendData = new MutableBoolean(false);
+		MutableBoolean sendData = new MutableBoolean(false);
 
 			toolbox.inventory.inLimitedMode(inventory -> {
 				try (Transaction t = TransferUtil.getTransaction()) {
 					PlayerInventoryStorage playerInv = PlayerInventoryStorage.of(player);
 					for (int i = 0; i < 36; i++) {
 						String key = String.valueOf(i);
-						if (compound.contains(key) && NbtUtils.readBlockPos(compound.getCompound(key)
-										.getCompound("Pos"))
-								.equals(toolboxPos)) {
+						if (compound.contains(key) && NBTHelper.readBlockPos(compound.getCompound(key), "Pos")
+							.equals(toolboxPos)) {
 							ToolboxHandler.unequip(player, i, true);
 							sendData.setTrue();
 						}
@@ -81,10 +78,7 @@ public class ToolboxDisposeAllPacket extends SimplePacketBase {
 				}
 			});
 
-			if (sendData.booleanValue())
-				ToolboxHandler.syncData(player);
-		});
-		return true;
+		if (sendData.booleanValue())
+			ToolboxHandler.syncData(player);
 	}
-
 }

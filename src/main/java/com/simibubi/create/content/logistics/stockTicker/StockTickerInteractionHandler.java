@@ -3,6 +3,9 @@ package com.simibubi.create.content.logistics.stockTicker;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllEntityTypes;
@@ -81,7 +84,7 @@ public class StockTickerInteractionHandler {
 				stbe.behaviour.mayAdministrate(player) && Create.LOGISTICS.isLockable(stbe.behaviour.freqId);
 			boolean isCurrentlyLocked = Create.LOGISTICS.isLocked(stbe.behaviour.freqId);
 
-			NetworkHooks.openScreen(sp, stbe.new RequestMenuProvider(), buf -> {
+			sp.openMenu(stbe.new RequestMenuProvider(), buf -> {
 				buf.writeBoolean(showLockOption);
 				buf.writeBoolean(isCurrentlyLocked);
 				buf.writeBlockPos(targetPos);

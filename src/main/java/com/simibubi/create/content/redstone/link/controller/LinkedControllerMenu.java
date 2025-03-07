@@ -1,9 +1,11 @@
 package com.simibubi.create.content.redstone.link.controller;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllMenuTypes;
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
+import com.simibubi.create.foundation.item.ItemHelper;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
@@ -15,7 +17,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler
 
 public class LinkedControllerMenu extends GhostItemMenu<ItemStack> {
 
-	public LinkedControllerMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	public LinkedControllerMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id, inv, extraData);
 	}
 
@@ -28,8 +30,8 @@ public class LinkedControllerMenu extends GhostItemMenu<ItemStack> {
 	}
 
 	@Override
-	protected ItemStack createOnClient(FriendlyByteBuf extraData) {
-		return extraData.readItem();
+	protected ItemStack createOnClient(RegistryFriendlyByteBuf extraData) {
+		return ItemStack.STREAM_CODEC.decode(extraData);
 	}
 
 	@Override
@@ -56,8 +58,7 @@ public class LinkedControllerMenu extends GhostItemMenu<ItemStack> {
 
 	@Override
 	protected void saveData(ItemStack contentHolder) {
-		contentHolder.getOrCreateTag()
-			.put("Items", ghostInventory.serializeNBT());
+		contentHolder.set(AllDataComponents.LINKED_CONTROLLER_ITEMS, ItemHelper.containerContentsFromHandler(ghostInventory));
 	}
 
 	@Override

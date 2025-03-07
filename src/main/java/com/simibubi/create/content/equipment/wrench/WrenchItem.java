@@ -2,6 +2,8 @@ package com.simibubi.create.content.equipment.wrench;
 
 import javax.annotation.Nonnull;
 
+import net.minecraft.world.phys.EntityHitResult;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllItems;
@@ -28,6 +30,12 @@ public class WrenchItem extends Item {
 
 	public WrenchItem(Properties properties) {
 		super(properties);
+	}
+
+	@Override
+	@OnlyIn(Dist.CLIENT)
+	public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+		consumer.accept(SimpleCustomRenderer.create(this, new WrenchItemRenderer()));
 	}
 
 	@Nonnull

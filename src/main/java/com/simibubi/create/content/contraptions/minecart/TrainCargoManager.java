@@ -3,6 +3,13 @@ package com.simibubi.create.content.contraptions.minecart;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorageWrapper;
@@ -12,6 +19,7 @@ import com.simibubi.create.content.contraptions.MountedStorageManager;
 import com.simibubi.create.foundation.utility.fabric.ListeningStorageView;
 import com.simibubi.create.foundation.utility.fabric.ProcessingIterator;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -42,14 +50,14 @@ public class TrainCargoManager extends MountedStorageManager {
 	}
 
 	@Override
-	public void write(CompoundTag nbt, boolean clientPacket) {
-		super.write(nbt, clientPacket);
+	public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(nbt, registries, clientPacket);
 		nbt.putInt("TicksSinceLastExchange", ticksSinceLastExchange);
 	}
 
 	@Override
-	public void read(CompoundTag nbt, boolean clientPacket, @Nullable Contraption contraption) {
-		super.read(nbt, clientPacket, contraption);
+	public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket, @Nullable Contraption contraption) {
+		super.read(nbt, registries, clientPacket, contraption);
 		ticksSinceLastExchange = nbt.getInt("TicksSinceLastExchange");
 	}
 

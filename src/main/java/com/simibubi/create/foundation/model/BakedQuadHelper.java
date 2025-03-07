@@ -15,7 +15,7 @@ import net.fabricmc.fabric.api.renderer.v1.mesh.QuadView;
 public final class BakedQuadHelper {
 
 	public static final VertexFormat FORMAT = DefaultVertexFormat.BLOCK;
-	public static final int VERTEX_STRIDE = FORMAT.getIntegerSize();
+	public static final int VERTEX_STRIDE = FORMAT.getVertexSize() / 4;
 
 	public static final int X_OFFSET = 0;
 	public static final int Y_OFFSET = 1;

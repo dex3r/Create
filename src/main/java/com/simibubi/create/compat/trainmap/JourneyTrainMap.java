@@ -8,8 +8,8 @@ import com.simibubi.create.foundation.gui.RemovedGuiUtils;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import journeymap.client.api.display.Context.UI;
-import journeymap.client.api.util.UIState;
+import journeymap.api.v2.client.display.Context;
+import journeymap.api.v2.client.util.UIState;
 import journeymap.client.ui.fullscreen.Fullscreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -46,7 +46,7 @@ public class JourneyTrainMap {
 		UIState state = screen.getUiState();
 		if (state == null)
 			return;
-		if (state.ui != UI.Fullscreen)
+		if (state.ui != Context.UI.Fullscreen)
 			return;
 		if (!state.active)
 			return;

@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.logistics.filter.FilterScreenPacket.Option;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -17,14 +16,13 @@ import com.simibubi.create.foundation.item.TooltipHelper;
 
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.lang.FontHelper.Palette;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-
-import io.github.fabricators_of_create.porting_lib.util.PlayerEntityHelper;
 
 public abstract class AbstractFilterScreen<F extends AbstractFilterMenu> extends AbstractSimiContainerScreen<F> {
 
@@ -89,7 +87,7 @@ public abstract class AbstractFilterScreen<F extends AbstractFilterMenu> extends
 	@Override
 	protected void containerTick() {
 		if (!ItemStack.matches(menu.player.getMainHandItem(), menu.contentHolder))
-			PlayerEntityHelper.closeScreen(menu.player);
+			menu.player.closeContainer();
 
 		super.containerTick();
 
@@ -142,8 +140,7 @@ public abstract class AbstractFilterScreen<F extends AbstractFilterMenu> extends
 	protected void contentsCleared() {}
 
 	protected void sendOptionUpdate(Option option) {
-		AllPackets.getChannel()
-			.sendToServer(new FilterScreenPacket(option));
+		CatnipServices.NETWORK.sendToServer(new FilterScreenPacket(option));
 	}
 
 	@Override

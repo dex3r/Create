@@ -14,6 +14,7 @@ import com.simibubi.create.content.trains.TrainHUD;
 import com.simibubi.create.content.trains.entity.TrainRelocator;
 import com.simibubi.create.content.trains.track.CurvedTrackInteraction;
 
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
@@ -108,20 +109,26 @@ public class InputEvents {
 				: InteractionResult.PASS;
 	}
 
-	public static boolean onPick(Minecraft mc, HitResult hit) {
-		if (mc.screen != null)
-			return false;
-
-		return ToolboxHandlerClient.onPickItem();
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> {
+			if (ChainPackageInteractionHandler.onUse())
+				event.setCanceled(true);
+		});
 	}
 
-	public static void register() {
-		KeyInputCallback.EVENT.register(InputEvents::onKeyInput);
-		MouseInputEvents.BEFORE_SCROLL.register(InputEvents::onMouseScrolled);
-		MouseInputEvents.BEFORE_BUTTON.register(InputEvents::onMouseInput);
-		InteractEvents.USE.register(InputEvents::onUse);
-		InteractEvents.ATTACK.register(InputEvents::onAttack);
-		InteractEvents.PICK.register(InputEvents::onPick);
-	}
+public static boolean onPick(Minecraft mc, HitResult hit) {
+	if (mc.screen != null)
+		return false;
+
+	return ToolboxHandlerClient.onPickItem();
+}
+
+public static void register() {
+	KeyInputCallback.EVENT.register(InputEvents::onKeyInput);
+	MouseInputEvents.BEFORE_SCROLL.register(InputEvents::onMouseScrolled);
+	MouseInputEvents.BEFORE_BUTTON.register(InputEvents::onMouseInput);
+	InteractEvents.USE.register(InputEvents::onUse);
+	InteractEvents.ATTACK.register(InputEvents::onAttack);
+	InteractEvents.PICK.register(InputEvents::onPick);
+}
 
 }

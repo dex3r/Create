@@ -4,6 +4,8 @@ import static com.simibubi.create.content.contraptions.mounted.CartAssemblerBloc
 
 import java.util.Queue;
 
+import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.simibubi.create.AllBlocks;
@@ -19,6 +21,7 @@ import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
@@ -126,8 +129,8 @@ public class MountedContraption extends Contraption {
 	}
 
 	@Override
-	public CompoundTag writeNBT(boolean spawnPacket) {
-		CompoundTag tag = super.writeNBT(spawnPacket);
+	public CompoundTag writeNBT(HolderLookup.Provider registries, boolean spawnPacket) {
+		CompoundTag tag = super.writeNBT(registries, spawnPacket);
 		NBTHelper.writeEnum(tag, "RotationMode", rotationMode);
 		return tag;
 	}
@@ -157,5 +160,6 @@ public class MountedContraption extends Contraption {
 		if (cart instanceof Container container)
 			storage.attachExternal(InventoryStorage.of(container, null));
 	}
+
 
 }

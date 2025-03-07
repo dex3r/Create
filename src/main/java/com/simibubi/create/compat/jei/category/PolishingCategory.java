@@ -2,6 +2,7 @@ package com.simibubi.create.compat.jei.category;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.equipment.sandPaper.SandPaperPolishingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
@@ -14,7 +15,7 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -56,10 +57,8 @@ public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRe
 		if (matchingStacks.length == 0)
 			return;
 
-
-		CompoundTag tag = renderedSandpaper.getOrCreateTag();
-		tag.put("Polishing", NBTSerializer.serializeNBTCompound(matchingStacks[0]));
-		tag.putBoolean("JEI", true);
+		renderedSandpaper.set(AllDataComponents.SAND_PAPER_POLISHING, matchingStacks[0]);
+		renderedSandpaper.set(AllDataComponents.SAND_PAPER_JEI, Unit.INSTANCE);
 		GuiGameElement.of(renderedSandpaper)
 				.<GuiGameElement.GuiRenderBuilder>at(getBackground().getWidth() / 2 - 16, 0, 0)
 				.scale(2)

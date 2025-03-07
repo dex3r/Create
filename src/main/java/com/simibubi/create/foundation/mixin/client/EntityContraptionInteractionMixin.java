@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomRunningEffectsBlock;
+
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.spongepowered.asm.mixin.Final;
@@ -162,9 +164,9 @@ public abstract class EntityContraptionInteractionMixin {
 				Vec3 speed = self.getDeltaMovement();
 				level.addParticle(
 					new BlockParticleOption(ParticleTypes.BLOCK, state).setSourcePos(particlePos),
-					self.getX() + ((double) random.nextFloat() - 0.5D) * (double) dimensions.width,
+					self.getX() + ((double) random.nextFloat() - 0.5D) * (double) dimensions.width(),
 					self.getY() + 0.1D,
-					self.getZ() + ((double) random.nextFloat() - 0.5D) * (double) dimensions.height,
+					self.getZ() + ((double) random.nextFloat() - 0.5D) * (double) dimensions.height(),
 					speed.x * -4.0D, 1.5D, speed.z * -4.0D
 				);
 			}

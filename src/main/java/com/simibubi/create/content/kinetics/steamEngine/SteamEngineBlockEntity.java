@@ -17,10 +17,10 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
-import com.tterrag.registrate.fabric.EnvExecutor;
 
-import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -131,7 +131,7 @@ public class SteamEngineBlockEntity extends SmartBlockEntity implements IHaveGog
 		if (!level.isClientSide)
 			return;
 
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::spawnParticles);
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> this::spawnParticles);
 	}
 
 	@Override

@@ -36,7 +36,6 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.Create;
 import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorageWrapper;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageWrapper;
@@ -66,6 +65,9 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import net.createmod.catnip.codecs.stream.CatnipLargerStreamCodecs;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.Pair;
@@ -74,9 +76,15 @@ import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -100,6 +108,17 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 
 public class Train {
+	public static final StreamCodec<RegistryFriendlyByteBuf, Train> STREAM_CODEC = CatnipLargerStreamCodecs.composite(
+			UUIDUtil.STREAM_CODEC, train -> train.id,
+			CatnipStreamCodecBuilders.nullable(UUIDUtil.STREAM_CODEC), train -> train.owner,
+			CatnipStreamCodecBuilders.list(Carriage.STREAM_CODEC), train -> train.carriages,
+			CatnipStreamCodecBuilders.list(ByteBufCodecs.VAR_INT), train -> train.carriageSpacing,
+			ByteBufCodecs.BOOL, train -> train.doubleEnded,
+			ComponentSerialization.STREAM_CODEC, train -> train.name,
+			TrainIconType.STREAM_CODEC, train -> train.icon,
+			ByteBufCodecs.INT, train -> train.mapColorIndex,
+			Train::new
+	);
 
 	public double speed = 0;
 	public double targetSpeed = 0;
@@ -158,17 +177,26 @@ public class Train {
 	// advancements
 	public Player backwardsDriver;
 
+	private Train(UUID id, UUID owner, List<Carriage> carriages, List<Integer> carriageSpacing, boolean doubleEnded, Component name, TrainIconType icon, int mapColorIndex) {
+		this(id, owner, null, carriages, carriageSpacing, doubleEnded, name, icon, mapColorIndex);
+	}
+
+	public Train(UUID id, UUID owner, TrackGraph graph, List<Carriage> carriages, List<Integer> carriageSpacing, boolean doubleEnded, int mapColorIndex) {
+		this(id, owner, graph, carriages, carriageSpacing, doubleEnded, CreateLang.translateDirect("train.unnamed"), TrainIconType.getDefault(), mapColorIndex);
+	}
+
 	public Train(UUID id, UUID owner, TrackGraph graph, List<Carriage> carriages, List<Integer> carriageSpacing,
-		boolean doubleEnded) {
+		boolean doubleEnded, Component name, TrainIconType icon, int mapColorIndex) {
 
 		this.id = id;
 		this.owner = owner;
 		this.graph = graph;
 		this.carriages = carriages;
 		this.carriageSpacing = carriageSpacing;
-		this.icon = TrainIconType.getDefault();
+		this.icon = icon;
+		this.mapColorIndex = mapColorIndex;
 		this.stress = new double[carriageSpacing.size()];
-		this.name = CreateLang.translateDirect("train.unnamed");
+		this.name = name;
 		this.status = new TrainStatus(this);
 		this.doubleEnded = doubleEnded;
 
@@ -783,7 +811,7 @@ public class Train {
 		}
 
 		Create.RAILWAYS.removeTrain(id);
-		AllPackets.getChannel().sendToClientsInCurrentServer(new TrainPacket(this, false));
+		CatnipServices.NETWORK.sendToAllClients(new RemoveTrainPacket(this));
 		return true;
 	}
 
@@ -1137,14 +1165,14 @@ public class Train {
 			: AllConfigs.server().trains.trainAcceleration.getF()) / 400;
 	}
 
-	public CompoundTag write(DimensionPalette dimensions) {
+	public CompoundTag write(DimensionPalette dimensions, HolderLookup.Provider registries) {
 		CompoundTag tag = new CompoundTag();
 		tag.putUUID("Id", id);
 		if (owner != null)
 			tag.putUUID("Owner", owner);
 		if (graph != null)
 			tag.putUUID("Graph", graph.id);
-		tag.put("Carriages", NBTHelper.writeCompoundList(carriages, c -> c.write(dimensions)));
+		tag.put("Carriages", NBTHelper.writeCompoundList(carriages, c -> c.write(dimensions, registries)));
 		tag.putIntArray("CarriageSpacing", carriageSpacing);
 		tag.putBoolean("DoubleEnded", doubleEnded);
 		tag.putDouble("Speed", speed);
@@ -1155,7 +1183,7 @@ public class Train {
 		tag.putDouble("TargetSpeed", targetSpeed);
 		tag.putString("IconType", icon.id.toString());
 		tag.putInt("MapColorIndex", mapColorIndex);
-		tag.putString("Name", Component.Serializer.toJson(name));
+		tag.putString("Name", Component.Serializer.toJson(name, registries));
 		if (currentStation != null)
 			tag.putUUID("Station", currentStation);
 		tag.putBoolean("Backwards", currentlyBackwards);
@@ -1180,35 +1208,35 @@ public class Train {
 		}));
 		tag.put("MigratingPoints", NBTHelper.writeCompoundList(migratingPoints, tm -> tm.write(dimensions)));
 
-		tag.put("Runtime", runtime.write());
+		tag.put("Runtime", runtime.write(registries));
 		tag.put("Navigation", navigation.write(dimensions));
 
 		return tag;
 	}
 
-	public static Train read(CompoundTag tag, Map<UUID, TrackGraph> trackNetworks, DimensionPalette dimensions) {
+	public static Train read(CompoundTag tag, HolderLookup.Provider registries, Map<UUID, TrackGraph> trackNetworks, DimensionPalette dimensions) {
 		UUID id = tag.getUUID("Id");
 		UUID owner = tag.contains("Owner") ? tag.getUUID("Owner") : null;
 		UUID graphId = tag.contains("Graph") ? tag.getUUID("Graph") : null;
 		TrackGraph graph = graphId == null ? null : trackNetworks.get(graphId);
 		List<Carriage> carriages = new ArrayList<>();
 		NBTHelper.iterateCompoundList(tag.getList("Carriages", Tag.TAG_COMPOUND),
-			c -> carriages.add(Carriage.read(c, graph, dimensions)));
+			c -> carriages.add(Carriage.read(c, registries, graph, dimensions)));
 		List<Integer> carriageSpacing = new ArrayList<>();
 		for (int i : tag.getIntArray("CarriageSpacing"))
 			carriageSpacing.add(i);
 		boolean doubleEnded = tag.getBoolean("DoubleEnded");
+		int mapColorIndex = tag.getInt("MapColorIndex");
 
-		Train train = new Train(id, owner, graph, carriages, carriageSpacing, doubleEnded);
+		Train train = new Train(id, owner, graph, carriages, carriageSpacing, doubleEnded, mapColorIndex);
 
 		train.speed = tag.getDouble("Speed");
 		train.throttle = tag.getDouble("Throttle");
 		if (tag.contains("SpeedBeforeStall"))
 			train.speedBeforeStall = tag.getDouble("SpeedBeforeStall");
 		train.targetSpeed = tag.getDouble("TargetSpeed");
-		train.icon = TrainIconType.byId(new ResourceLocation(tag.getString("IconType")));
-		train.mapColorIndex = tag.getInt("MapColorIndex");
-		train.name = Component.Serializer.fromJson(tag.getString("Name"));
+		train.icon = TrainIconType.byId(ResourceLocation.parse(tag.getString("IconType")));
+		train.name = Component.Serializer.fromJson(tag.getString("Name"), registries);
 		train.currentStation = tag.contains("Station") ? tag.getUUID("Station") : null;
 		train.currentlyBackwards = tag.getBoolean("Backwards");
 		train.derailed = tag.getBoolean("Derailed");
@@ -1224,7 +1252,7 @@ public class Train {
 		NBTHelper.iterateCompoundList(tag.getList("MigratingPoints", Tag.TAG_COMPOUND),
 			c -> train.migratingPoints.add(TrainMigration.read(c, dimensions)));
 
-		train.runtime.read(tag.getCompound("Runtime"));
+		train.runtime.read(registries, tag.getCompound("Runtime"));
 		train.navigation.read(tag.getCompound("Navigation"), graph, dimensions);
 
 		if (train.getCurrentStation() != null)

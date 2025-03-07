@@ -1,0 +1,23 @@
+{
+  "type": "create:milling",
+  "ingredients": [
+    {
+      "item": "minecraft:poppy"
+    }
+  ],
+  "processing_time": 50,
+  "results": [
+    {
+      "count": 2,
+      "item": {
+        "id": "minecraft:red_dye"
+      }
+    },
+    {
+      "chance": 0.05,
+      "item": {
+        "id": "minecraft:green_dye"
+      }
+    }
+  ]
+}

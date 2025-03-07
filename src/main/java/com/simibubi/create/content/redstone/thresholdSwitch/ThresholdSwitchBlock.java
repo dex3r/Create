@@ -8,6 +8,11 @@ import com.simibubi.create.foundation.utility.AdventureUtil;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
 import net.createmod.catnip.gui.ScreenOpener;
+import net.createmod.catnip.platform.CatnipServices;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,8 +20,9 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -83,15 +89,11 @@ public class ThresholdSwitchBlock extends DirectedDirectionalBlock implements IB
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
-		if (AdventureUtil.isAdventure(player))
-			return InteractionResult.PASS;
-		if (player != null && AllItems.WRENCH.isIn(player.getItemInHand(handIn)))
-			return InteractionResult.PASS;
-		EnvExecutor.runWhenOn(EnvType.CLIENT,
-			() -> () -> withBlockEntityDo(worldIn, pos, be -> this.displayScreen(be, player)));
-		return InteractionResult.SUCCESS;
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (player != null && AllItems.WRENCH.isIn(stack) || AdventureUtil.isAdventure(player))
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> withBlockEntityDo(level, pos, be -> this.displayScreen(be, player)));
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	@Environment(value = EnvType.CLIENT)

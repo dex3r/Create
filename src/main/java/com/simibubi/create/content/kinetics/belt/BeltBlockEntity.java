@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -34,6 +35,7 @@ import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -79,6 +81,20 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 		itemHandler = null;
 		casing = CasingType.NONE;
 		color = Optional.empty();
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.BELT.get(),
+				(be, context) -> {
+						if (!BeltBlock.canTransportObjects(be.getBlockState()))
+							return null;
+						if (!be.isRemoved() && be.itemHandler == null)
+							be.initializeItemHandler();
+						return be.itemHandler;
+				}
+		);
 	}
 
 	@Override
@@ -190,7 +206,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		if (controller != null)
 			compound.put("Controller", NbtUtils.writeBlockPos(controller));
 		compound.putBoolean("IsController", isController());
@@ -199,17 +215,16 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 		NBTHelper.writeEnum(compound, "Casing", casing);
 		compound.putBoolean("Covered", covered);
 
-		if (color.isPresent())
-			NBTHelper.writeEnum(compound, "Dye", color.get());
+		color.ifPresent(dyeColor -> NBTHelper.writeEnum(compound, "Dye", dyeColor));
 
 		if (isController())
-			compound.put("Inventory", getInventory().write());
-		super.write(compound, clientPacket);
+			compound.put("Inventory", getInventory().write(registries));
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 
 		if (compound.getBoolean("IsController"))
 			controller = worldPosition;
@@ -219,14 +234,14 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 
 		if (!wasMoved) {
 			if (!isController())
-				controller = NbtUtils.readBlockPos(compound.getCompound("Controller"));
+				controller = NBTHelper.readBlockPos(compound, "Controller");
 			trackerUpdateTag = compound;
 			index = compound.getInt("Index");
 			beltLength = compound.getInt("Length");
 		}
 
 		if (isController())
-			getInventory().read(compound.getCompound("Inventory"));
+			getInventory().read(compound.getCompound("Inventory"), registries);
 
 		CasingType casingBefore = casing;
 		boolean coverBefore = covered;

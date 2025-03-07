@@ -73,6 +73,10 @@ public class CreateRegistrateTags {
 		prov.tag(AllBlockTags.FAN_TRANSPARENT.tag)
 			.add(Blocks.IRON_BARS)
 			.add(Blocks.MANGROVE_ROOTS)
+			.add(Blocks.COPPER_GRATE, Blocks.EXPOSED_COPPER_GRATE, Blocks.WEATHERED_COPPER_GRATE,
+				Blocks.OXIDIZED_COPPER_GRATE, Blocks.WAXED_COPPER_GRATE, Blocks.WAXED_EXPOSED_COPPER_GRATE,
+				Blocks.WAXED_WEATHERED_COPPER_GRATE, Blocks.WAXED_OXIDIZED_COPPER_GRATE
+			)
 			.addTag(BlockTags.CAMPFIRES)
 			.addTag(BlockTags.FENCES)
 			.addTag(BlockTags.LEAVES);
@@ -180,13 +184,6 @@ public class CreateRegistrateTags {
 		prov.tag(AllItemTags.SLEEPERS.tag)
 			.add(Items.STONE_SLAB, Items.SMOOTH_STONE_SLAB, Items.ANDESITE_SLAB);
 
-		prov.tag(AllItemTags.STRIPPED_LOGS.tag)
-			.addTag(AllItemTags.VANILLA_STRIPPED_LOGS.tag)
-			.addTag(AllItemTags.MODDED_STRIPPED_LOGS.tag);
-
-		prov.tag(AllItemTags.STRIPPED_WOOD.tag)
-			.addTag(AllItemTags.VANILLA_STRIPPED_WOOD.tag)
-			.addTag(AllItemTags.MODDED_STRIPPED_WOOD.tag);
 		prov.tag(AllItemTags.DEPLOYABLE_DRINK.tag)
 			.add(Items.MILK_BUCKET, Items.POTION);
 
@@ -197,16 +194,6 @@ public class CreateRegistrateTags {
 		prov.tag(AllItemTags.CONTRAPTION_CONTROLLED.tag)
 			.add(Items.BELL, Items.CAMPFIRE, Items.SOUL_CAMPFIRE, Items.DISPENSER, Items.DROPPER);
 
-		prov.tag(AllItemTags.VANILLA_STRIPPED_LOGS.tag)
-			.add(Items.STRIPPED_ACACIA_LOG, Items.STRIPPED_BIRCH_LOG, Items.STRIPPED_CRIMSON_STEM,
-				Items.STRIPPED_DARK_OAK_LOG, Items.STRIPPED_JUNGLE_LOG, Items.STRIPPED_MANGROVE_LOG,
-				Items.STRIPPED_OAK_LOG, Items.STRIPPED_SPRUCE_LOG, Items.STRIPPED_WARPED_STEM, Items.STRIPPED_CHERRY_LOG, Items.STRIPPED_BAMBOO_BLOCK);
-
-		prov.tag(AllItemTags.VANILLA_STRIPPED_WOOD.tag)
-			.add(Items.STRIPPED_ACACIA_WOOD, Items.STRIPPED_BIRCH_WOOD, Items.STRIPPED_CRIMSON_HYPHAE,
-				Items.STRIPPED_DARK_OAK_WOOD, Items.STRIPPED_JUNGLE_WOOD, Items.STRIPPED_MANGROVE_WOOD,
-				Items.STRIPPED_OAK_WOOD, Items.STRIPPED_SPRUCE_WOOD, Items.STRIPPED_WARPED_HYPHAE, Items.STRIPPED_CHERRY_WOOD);
-
 		prov.tag(ItemTags.BEACON_PAYMENT_ITEMS)
 			.addTag(AllItemTags.CREATE_INGOTS.tag);
 
@@ -215,9 +202,9 @@ public class CreateRegistrateTags {
 
 		prov.tag(AllItemTags.OBSIDIAN_DUST.tag).add(AllItems.POWDERED_OBSIDIAN.get());
 
-		// COMPAT
+		prov.tag(net.neoforged.neoforge.common.Tags.Items.ENCHANTABLES).addTag(AllItemTags.PRESSURIZED_AIR_SOURCES.tag);
 
-		genStrippedWoodItemTags(prov);
+		// COMPAT
 
 		// fabric: Trinkets compat is used instead
 		//prov.tag(AllItemTags.CURIOS_HEAD.tag)
@@ -258,57 +245,6 @@ public class CreateRegistrateTags {
 		return toReturn;
 	}
 
-	private static void genStrippedWoodItemTags(CreateTagsProvider<Item> prov) {
-		TagAppender<Item> logAppender = prov.tag(AllItemTags.MODDED_STRIPPED_LOGS.tag);
-		TagAppender<Item> woodAppender = prov.tag(AllItemTags.MODDED_STRIPPED_WOOD.tag);
-		StrippedWoodHelper helper = new StrippedWoodHelper(logAppender, woodAppender);
-
-		helper.add(Mods.ARS_N, "blue_archwood", "purple_archwood", "green_archwood", "red_archwood");
-		helper.add(Mods.BTN, "livingwood", "dreamwood");
-		helper.add(Mods.FA, "mysterywood");
-		helper.add(Mods.HEX, "akashic");
-		helper.add(Mods.ID, "menril");
-		helper.add(Mods.BYG, "aspen", "baobab", "enchanted", "cika", "cypress", "ebony", "ether",
-			"fir", "green_enchanted", "holly", "jacaranda", "lament", "mahogany", "mangrove", "maple", "nightshade",
-			"palm", "palo_verde", "pine", "rainbow_eucalyptus", "redwood", "skyris", "willow", "witch_hazel",
-			"zelkova");
-		helper.add(Mods.SG, "netherwood");
-		helper.add(Mods.TF, "twilight_oak", "canopy", "mangrove", "dark", "time", "transformation", "mining",
-			"sorting");
-		helper.add(Mods.TIC, "greenheart", "skyroot", "bloodshroom");
-		helper.add(Mods.AP, "twisted");
-		helper.add(Mods.Q, "azalea", "blossom");
-		helper.add(Mods.ECO, "coconut", "walnut", "azalea");
-		helper.add(Mods.BOP, "fir", "redwood", "mahogany", "jacaranda", "palm", "willow", "dead",
-			"magic", "umbran", "hellbark");
-		helper.add(Mods.BSK, "bluebright", "starlit", "frostbright", "lunar", "dusk", "maple");
-		helper.add(Mods.ENV, "willow", "wisteria");
-		helper.add(Mods.ATM, "aspen", "kousa", "yucca", "morado");
-		helper.add(Mods.ATM_2, "rosewood", "grimwood");
-		helper.add(Mods.GOOD, "muddy_oak", "cypress");
-		helper.add(Mods.BMK, "blighted_balsa", "willow", "swamp_cypress", "ancient_oak");
-		helper.add(Mods.RU, "alpha", "ashen", "baobab", "blackwood", "brimwood", "cobalt", "cypress", "dead", "eucalyptus", "joshua",
-			"kapok", "larch", "magnolia", "maple", "mauve", "palm", "pine", "redwood", "socotra", "willow");
-		helper.add(Mods.ARS_E, "yellow_archwood");
-
-
-		TagGen.addOptional(logAppender, Mods.AUTUM, "maple");
-		TagGen.addOptional(logAppender, Mods.IX, "stripped_luminous_stem");
-		TagGen.addOptional(woodAppender, Mods.IX, "stripped_luminous_hyphae");
-		TagGen.addOptional(logAppender, Mods.BYG, "stripped_bulbis_stem");
-		TagGen.addOptional(woodAppender, Mods.BYG, "stripped_bulbis_wood");
-
-		TagGen.addOptional(logAppender, Mods.RU, "stripped_blue_bioshroom_stem");
-		TagGen.addOptional(woodAppender, Mods.RU, "stripped_blue_bioshroom_hyphae");
-		TagGen.addOptional(logAppender, Mods.RU, "stripped_green_bioshroom_stem");
-		TagGen.addOptional(woodAppender, Mods.RU, "stripped_green_bioshroom_hyphae");
-		TagGen.addOptional(logAppender, Mods.RU, "stripped_pink_bioshroom_stem");
-		TagGen.addOptional(woodAppender, Mods.RU, "stripped_pink_bioshroom_hyphae");
-		TagGen.addOptional(logAppender, Mods.RU, "stripped_yellow_bioshroom_stem");
-		TagGen.addOptional(woodAppender, Mods.RU, "stripped_yellow_bioshroom_hyphae");
-		TagGen.addOptional(logAppender, Mods.RU, "brimwood_log_magma");
-	}
-
 	private static void genFluidTags(RegistrateTagsProvider<Fluid> provIn) {
 		CreateTagsProvider<Fluid> prov = new CreateTagsProvider<>(provIn, Fluid::builtInRegistryHolder);
 
@@ -341,30 +277,14 @@ public class CreateRegistrateTags {
 		prov.tag(AllEntityTags.BLAZE_BURNER_CAPTURABLE.tag)
 			.add(EntityType.BLAZE);
 
+		prov.tag(AllEntityTags.IGNORE_SEAT.tag)
+			.addTag(net.neoforged.neoforge.common.Tags.EntityTypes.CAPTURING_NOT_SUPPORTED);
+
 		// VALIDATE
 
 		for (AllEntityTags tag : AllEntityTags.values()) {
 			if (tag.alwaysDatagen) {
 				prov.getOrCreateRawBuilder(tag.tag);
-			}
-		}
-	}
-
-	private static class StrippedWoodHelper {
-		protected final TagAppender<Item> logAppender;
-		protected final TagAppender<Item> woodAppender;
-
-		public StrippedWoodHelper(TagAppender<Item> logAppender, TagAppender<Item> woodAppender) {
-			this.logAppender = logAppender;
-			this.woodAppender = woodAppender;
-		}
-
-		public void add(Mods mod, String... woodTypes) {
-			for (String type : woodTypes) {
-				String strippedPre = mod.strippedIsSuffix ? "" : "stripped_";
-				String strippedPost = mod.strippedIsSuffix ? "_stripped" : "";
-				TagGen.addOptional(logAppender, mod, strippedPre + type + "_log" + strippedPost);
-				TagGen.addOptional(woodAppender, mod, strippedPre + type + (mod.omitWoodSuffix ? "" : "_wood") + strippedPost);
 			}
 		}
 	}

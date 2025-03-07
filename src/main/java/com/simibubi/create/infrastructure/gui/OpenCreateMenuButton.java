@@ -39,7 +39,7 @@ public class OpenCreateMenuButton extends Button {
 			.getModel(icon, Minecraft.getInstance().level, Minecraft.getInstance().player, 0);
 		if (bakedmodel == null)
 			return;
-		
+
 		graphics.renderItem(icon, getX() + 2, getY() + 2);
 	}
 

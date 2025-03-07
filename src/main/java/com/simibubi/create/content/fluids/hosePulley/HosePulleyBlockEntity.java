@@ -2,8 +2,11 @@ package com.simibubi.create.content.fluids.hosePulley;
 
 import java.util.List;
 
+import net.minecraft.core.Direction;
+
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.content.fluids.transfer.FluidDrainingBehaviour;
 import com.simibubi.create.content.fluids.transfer.FluidFillingBehaviour;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -14,8 +17,12 @@ import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
 
 import net.createmod.catnip.animation.LerpedFloat;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -151,21 +158,22 @@ public class HosePulleyBlockEntity extends KineticBlockEntity implements SidedSt
 	}
 
 	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		if (clientPacket)
 			offset.forceNextSync();
 		compound.put("Offset", offset.writeNBT());
-		compound.put("Tank", internalTank.writeToNBT(new CompoundTag()));
-		super.write(compound, clientPacket);
+		compound.put("Tank", internalTank.writeToNBT(registries, new CompoundTag()));
+		super.write(compound, registries, clientPacket);
 		if (clientPacket)
 			compound.putBoolean("Infinite", infinite);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		offset.readNBT(compound.getCompound("Offset"), clientPacket);
-		internalTank.readFromNBT(compound.getCompound("Tank"));
-		super.read(compound, clientPacket);
+
+		internalTank.readFromNBT(registries, compound.getCompound("Tank"));
+		super.read(compound, registries, clientPacket);
 		if (clientPacket)
 			infinite = compound.getBoolean("Infinite");
 	}

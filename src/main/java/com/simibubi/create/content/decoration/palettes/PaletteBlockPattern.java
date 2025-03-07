@@ -25,6 +25,9 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.resources.ResourceLocation;
@@ -230,7 +233,7 @@ public class PaletteBlockPattern {
 		ResourceLocation resLoc = texture.srcFactory.apply(variant);
 		ResourceLocation resLocTarget = texture.targetFactory.apply(variant);
 		return CTSpriteShifter.getCT(texture.type, resLoc,
-			new ResourceLocation(resLocTarget.getNamespace(), resLocTarget.getPath() + "_connected"));
+			ResourceLocation.fromNamespaceAndPath(resLocTarget.getNamespace(), resLocTarget.getPath() + "_connected"));
 	}
 
 	@FunctionalInterface

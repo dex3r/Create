@@ -3,9 +3,20 @@ package com.simibubi.create.content.fluids;
 import java.lang.ref.WeakReference;
 import java.util.function.Predicate;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import org.jetbrains.annotations.Nullable;
+
+import com.simibubi.create.foundation.ICapabilityProvider;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import net.createmod.catnip.math.BlockFace;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;

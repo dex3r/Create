@@ -2,13 +2,8 @@ package com.simibubi.create.content.kinetics.mechanicalArm;
 
 import java.util.Optional;
 
-import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.Create;
@@ -42,13 +37,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.RecordItem;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
@@ -61,10 +56,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 
 public class AllArmInteractionPointTypes {
 	static {
@@ -91,6 +89,7 @@ public class AllArmInteractionPointTypes {
 		Registry.register(CreateBuiltInRegistries.ARM_INTERACTION_POINT_TYPE, Create.asResource(name), type);
 	}
 
+	@Internal
 	public static void init() {
 	}
 
@@ -515,7 +514,7 @@ public class AllArmInteractionPointTypes {
 			BlockEntity blockEntity = level.getBlockEntity(pos);
 			if (!(blockEntity instanceof CampfireBlockEntity campfireBE))
 				return stack;
-			Optional<CampfireCookingRecipe> recipe = campfireBE.getCookableRecipe(stack);
+			Optional<RecipeHolder<CampfireCookingRecipe>> recipe = campfireBE.getCookableRecipe(stack);
 			if (recipe.isEmpty())
 				return stack;
 			boolean hasSpace = false;
@@ -527,8 +526,8 @@ public class AllArmInteractionPointTypes {
 			}
 			if (!hasSpace)
 				return stack;
-			ItemStack inserted = ItemHandlerHelper.copyStackWithSize(stack, 1);
-			TransactionCallback.onSuccess(ctx, () -> campfireBE.placeFood(null, inserted, recipe.get().getCookingTime()));
+			ItemStack inserted = stack.copyWithCount(1);
+			TransactionCallback.onSuccess(ctx, () -> campfireBE.placeFood(null, inserted, recipe.get().value().getCookingTime()));
 			ItemStack remainder = stack.copy();
 			remainder.shrink(1);
 			return remainder;
@@ -591,13 +590,13 @@ public class AllArmInteractionPointTypes {
 
 		@Override
 		public ItemStack insert(ItemStack stack, TransactionContext ctx) {
-			if (!(stack.getItem() instanceof RecordItem))
+			if (stack.get(DataComponents.JUKEBOX_PLAYABLE) == null)
 				return stack;
 			if (cachedState.getOptionalValue(JukeboxBlock.HAS_RECORD).orElse(true))
 				return stack;
 			if (!(level.getBlockEntity(pos) instanceof JukeboxBlockEntity jukeboxBE))
 				return stack;
-			if (!jukeboxBE.getFirstItem().isEmpty())
+			if (!jukeboxBE.getTheItem().isEmpty())
 				return stack;
 			Storage<ItemVariant> storage = ItemStorage.SIDED.find(level, pos, Direction.UP);
 			if (storage == null)

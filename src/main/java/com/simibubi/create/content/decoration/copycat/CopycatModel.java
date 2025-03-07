@@ -8,6 +8,18 @@ import javax.annotation.Nullable;
 import com.simibubi.create.AllBlocks;
 
 import net.createmod.catnip.data.Iterate;
+
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
+import net.fabricmc.fabric.api.renderer.v1.material.MaterialFinder;
+import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
+
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext.QuadTransform;
+import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;

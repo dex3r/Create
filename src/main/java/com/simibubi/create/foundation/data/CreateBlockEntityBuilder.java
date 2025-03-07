@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.api.registry.CreateRegistries;
@@ -19,6 +21,7 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -29,7 +32,7 @@ public class CreateBlockEntityBuilder<T extends BlockEntity, P> extends BlockEnt
 
 	@Nullable
 	private NonNullSupplier<SimpleBlockEntityVisualizer.Factory<T>> visualFactory;
-	private Predicate<T> renderNormally;
+	private Predicate<@NotNull T> renderNormally;
 
 	private Collection<NonNullSupplier<? extends Collection<NonNullSupplier<? extends Block>>>> deferredValidBlocks =
 		new ArrayList<>();
@@ -59,7 +62,7 @@ public class CreateBlockEntityBuilder<T extends BlockEntity, P> extends BlockEnt
 		return super.createEntry();
 	}
 
-	public CreateBlockEntityBuilder<T, P> displaySource(RegistryEntry<? extends DisplaySource> source) {
+	public CreateBlockEntityBuilder<T, P> displaySource(RegistryEntry<DisplaySource, ? extends DisplaySource> source) {
 		this.onRegisterAfter(
 			CreateRegistries.DISPLAY_SOURCE,
 			type -> DisplaySource.BY_BLOCK_ENTITY.add(type, source.get())
@@ -67,7 +70,7 @@ public class CreateBlockEntityBuilder<T extends BlockEntity, P> extends BlockEnt
 		return this;
 	}
 
-	public CreateBlockEntityBuilder<T, P> displayTarget(RegistryEntry<? extends DisplayTarget> target) {
+	public CreateBlockEntityBuilder<T, P> displayTarget(RegistryEntry<DisplayTarget, ? extends DisplayTarget> target) {
 		this.onRegisterAfter(
 			CreateRegistries.DISPLAY_TARGET,
 			type -> DisplayTarget.BY_BLOCK_ENTITY.register(type, target.get())
@@ -88,9 +91,9 @@ public class CreateBlockEntityBuilder<T extends BlockEntity, P> extends BlockEnt
 
 	public CreateBlockEntityBuilder<T, P> visual(
 		NonNullSupplier<SimpleBlockEntityVisualizer.Factory<T>> visualFactory,
-		Predicate<T> renderNormally) {
+		Predicate<@NotNull T> renderNormally) {
 		if (this.visualFactory == null) {
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::registerVisualizer);
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> this::registerVisualizer);
 		}
 
 		this.visualFactory = visualFactory;
@@ -101,12 +104,14 @@ public class CreateBlockEntityBuilder<T extends BlockEntity, P> extends BlockEnt
 
 	protected void registerVisualizer() {
 		this.onRegister((entry) -> {
-			Objects.requireNonNull(this.visualFactory);
-			Predicate<T> renderNormally = this.renderNormally;
-			SimpleBlockEntityVisualizer.builder(this.getEntry())
-				.factory(this.visualFactory.get())
-				.skipVanillaRender(be -> !renderNormally.test(be))
-				.apply();
+			var visualFactory = this.visualFactory;
+			if (visualFactory != null) {
+				Predicate<@NotNull T> renderNormally = this.renderNormally;
+				SimpleBlockEntityVisualizer.builder(getEntry())
+					.factory(visualFactory.get())
+					.skipVanillaRender(be -> !renderNormally.test(be))
+					.apply();
+			}
 		});
 	}
 }

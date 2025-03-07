@@ -25,7 +25,7 @@ public class CreateMixinPlugin implements IMixinConfigPlugin {
 			return Mods.FTBCHUNKS.isLoaded();
 		}
 
-		if (targetClassName.equals("journeymap/client/ui/fullscreen/Fullscreen") && !Mods.JOURNEYMAP.isLoaded())
+		if (mixinClassName.equals("compat/journeymap") && !Mods.JOURNEYMAP.isLoaded())
 			return false;
 		return true;
 	}

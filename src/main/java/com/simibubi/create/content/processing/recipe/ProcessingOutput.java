@@ -2,26 +2,24 @@ package com.simibubi.create.content.processing.recipe;
 
 import java.util.Random;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.simibubi.create.Create;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.Pair;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.TagParser;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 
 public class ProcessingOutput {
 
 	public static final ProcessingOutput EMPTY = new ProcessingOutput(ItemStack.EMPTY, 1);
+
+	public static final StreamCodec<RegistryFriendlyByteBuf, ProcessingOutput> STREAM_CODEC = StreamCodec.of(
+			(b, i) -> i.write(b), ProcessingOutput::read
+	);
 
 	private static final Random r = new Random();
 	private final ItemStack stack;
@@ -34,14 +32,33 @@ public class ProcessingOutput {
 		this.chance = chance;
 	}
 
+	public ProcessingOutput(ItemStack stack, int count, float chance) {
+		stack.setCount(count);
+
+		this.stack = stack;
+		this.chance = chance;
+	}
+
 	public ProcessingOutput(Pair<ResourceLocation, Integer> item, float chance) {
 		this.stack = ItemStack.EMPTY;
 		this.compatDatagenOutput = item;
 		this.chance = chance;
 	}
 
+	private static ProcessingOutput fromCodec(Either<ItemStack, Pair<ResourceLocation, Integer>> item,
+											  int count, float chance) {
+		return item.map(
+				stack -> new ProcessingOutput(stack, count, chance),
+				compat -> new ProcessingOutput(compat, chance)
+		);
+	}
+
 	public ItemStack getStack() {
 		return stack;
+	}
+
+	private Either<ItemStack, Pair<ResourceLocation, Integer>> getCodecStack() {
+		return compatDatagenOutput != null ? Either.right(compatDatagenOutput) : Either.left(getStack());
 	}
 
 	public float getChance() {
@@ -60,52 +77,33 @@ public class ProcessingOutput {
 		return out;
 	}
 
-	public JsonElement serialize() {
-		JsonObject json = new JsonObject();
-		ResourceLocation resourceLocation = compatDatagenOutput == null ? CatnipServices.REGISTRIES.getKeyOrThrow(stack
-			.getItem()) : compatDatagenOutput.getFirst();
-		json.addProperty("item", resourceLocation.toString());
-		int count = compatDatagenOutput == null ? stack.getCount() : compatDatagenOutput.getSecond();
-		if (count != 1)
-			json.addProperty("count", count);
-		if (stack.hasTag())
-			json.add("nbt", JsonParser.parseString(stack.getTag()
-				.toString()));
-		if (chance != 1)
-			json.addProperty("chance", chance);
-		return json;
-	}
+	private static final Codec<Pair<ResourceLocation, Integer>> COMPAT_CODEC = ResourceLocation.CODEC.comapFlatMap(
+		loc -> DataResult.error(() -> "Compat cannot be deserialized"),
+		Pair::getFirst
+	);
 
-	public static ProcessingOutput deserialize(JsonElement je) {
-		if (!je.isJsonObject())
-			throw new JsonSyntaxException("ProcessingOutput must be a json object");
+	private static final Codec<Either<ItemStack, Pair<ResourceLocation, Integer>>> ITEM_CODEC = Codec.either(
+		ItemStack.SINGLE_ITEM_CODEC,
+		COMPAT_CODEC
+	);
 
-		JsonObject json = je.getAsJsonObject();
-		String itemId = GsonHelper.getAsString(json, "item");
-		int count = GsonHelper.getAsInt(json, "count", 1);
-		float chance = GsonHelper.isValidNode(json, "chance") ? GsonHelper.getAsFloat(json, "chance") : 1;
-		ItemStack itemstack = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(itemId)), count);
+	public static final Codec<ProcessingOutput> CODEC = RecordCodecBuilder.create(i -> i.group(
+		ITEM_CODEC.fieldOf("item").forGetter(ProcessingOutput::getCodecStack),
+		Codec.INT.optionalFieldOf("count", 1).forGetter(s -> {
+			if (s.compatDatagenOutput != null)
+				return s.compatDatagenOutput.getSecond();
+			return s.getStack().getCount();
+		}),
+		Codec.FLOAT.optionalFieldOf("chance", 1F).forGetter(s -> s.chance)
+	).apply(i, ProcessingOutput::fromCodec));
 
-		if (GsonHelper.isValidNode(json, "nbt")) {
-			try {
-				JsonElement element = json.get("nbt");
-				itemstack.setTag(TagParser.parseTag(
-					element.isJsonObject() ? Create.GSON.toJson(element) : GsonHelper.convertToString(element, "nbt")));
-			} catch (CommandSyntaxException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return new ProcessingOutput(itemstack, chance);
-	}
-
-	public void write(FriendlyByteBuf buf) {
-		buf.writeItem(getStack());
+	public void write(RegistryFriendlyByteBuf buf) {
+		ItemStack.STREAM_CODEC.encode(buf, getStack());
 		buf.writeFloat(getChance());
 	}
 
-	public static ProcessingOutput read(FriendlyByteBuf buf) {
-		return new ProcessingOutput(buf.readItem(), buf.readFloat());
+	public static ProcessingOutput read(RegistryFriendlyByteBuf buf) {
+		return new ProcessingOutput(ItemStack.STREAM_CODEC.decode(buf), buf.readFloat());
 	}
 
 }

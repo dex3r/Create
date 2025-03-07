@@ -11,7 +11,7 @@ import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItems;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -59,7 +59,7 @@ public class ModelSwapper implements AfterBake {
 
 	public static List<ModelResourceLocation> getAllBlockStateModelLocations(Block block) {
 		List<ModelResourceLocation> models = new ArrayList<>();
-		ResourceLocation blockRl = CatnipServices.REGISTRIES.getKeyOrThrow(block);
+		ResourceLocation blockRl = RegisteredObjectsHelper.getKeyOrThrow(block);
 		block.getStateDefinition()
 			.getPossibleStates()
 			.forEach(state -> {
@@ -69,7 +69,7 @@ public class ModelSwapper implements AfterBake {
 	}
 
 	public static ModelResourceLocation getItemModelLocation(Item item) {
-		return new ModelResourceLocation(CatnipServices.REGISTRIES.getKeyOrThrow(item), "inventory");
+		return new ModelResourceLocation(RegisteredObjectsHelper.getKeyOrThrow(item), "inventory");
 	}
 
 }

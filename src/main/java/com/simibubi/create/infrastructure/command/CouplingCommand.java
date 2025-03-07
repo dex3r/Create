@@ -9,6 +9,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.simibubi.create.AllAttachmentTypes;
 import com.simibubi.create.content.contraptions.minecart.CouplingHandler;
 import com.simibubi.create.content.contraptions.minecart.capability.CapabilityMinecartController;
 import com.simibubi.create.content.contraptions.minecart.capability.MinecartController;
@@ -123,7 +124,7 @@ public class CouplingCommand {
 							}
 
 							for (boolean bool : Iterate.trueAndFalse) {
-								UUID coupledCart = cart1Controller.getCoupledCart(bool);
+								UUID coupledCart = cart1Capability.getCoupledCart(bool);
 								if (coupledCart == null)
 									continue;
 
@@ -135,7 +136,7 @@ public class CouplingCommand {
 								if (cart2Controller == null)
 									return 0;
 
-								cart1Controller.removeConnection(bool);
+								cart1Capability.removeConnection(bool);
 								cart2Controller.removeConnection(!bool);
 								return Command.SINGLE_SUCCESS;
 							}
@@ -157,7 +158,7 @@ public class CouplingCommand {
 						MinecartController controller = ((AbstractMinecart) cart).create$getController();
 
 						int couplings =
-							(controller.isConnectedToCoupling() ? 1 : 0) + (controller.isLeadingCoupling() ? 1 : 0);
+							(capability.isConnectedToCoupling() ? 1 : 0) + (capability.isLeadingCoupling() ? 1 : 0);
 						if (couplings == 0) {
 							ctx.getSource()
 								.sendSuccess(() -> {
@@ -166,7 +167,7 @@ public class CouplingCommand {
 							return 0;
 						}
 
-						controller.decouple();
+						capability.decouple();
 
 						ctx.getSource()
 							.sendSuccess(() ->

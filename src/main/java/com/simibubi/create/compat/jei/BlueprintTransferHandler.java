@@ -6,7 +6,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.equipment.blueprint.BlueprintAssignCompleteRecipePacket;
 import com.simibubi.create.content.equipment.blueprint.BlueprintMenu;
 
@@ -15,17 +14,19 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class BlueprintTransferHandler implements IRecipeTransferHandler<BlueprintMenu, CraftingRecipe> {
+public class BlueprintTransferHandler implements IRecipeTransferHandler<BlueprintMenu, RecipeHolder<CraftingRecipe>> {
 
 	@Override
-	public Class<BlueprintMenu> getContainerClass() {
+	public Class<? extends BlueprintMenu> getContainerClass() {
 		return BlueprintMenu.class;
 	}
 
@@ -35,16 +36,16 @@ public class BlueprintTransferHandler implements IRecipeTransferHandler<Blueprin
 	}
 
 	@Override
-	public RecipeType<CraftingRecipe> getRecipeType() {
+	public RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
 		return RecipeTypes.CRAFTING;
 	}
 
 	@Override
-	public @Nullable IRecipeTransferError transferRecipe(BlueprintMenu menu, CraftingRecipe craftingRecipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+	public @Nullable IRecipeTransferError transferRecipe(BlueprintMenu menu, RecipeHolder<CraftingRecipe> craftingRecipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
 		if (!doTransfer)
 			return null;
 
-		AllPackets.getChannel().sendToServer(new BlueprintAssignCompleteRecipePacket(craftingRecipe.getId()));
+		CatnipServices.NETWORK.sendToServer(new BlueprintAssignCompleteRecipePacket(craftingRecipe.id()));
 		return null;
 	}
 

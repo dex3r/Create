@@ -1,25 +1,15 @@
 package com.simibubi.create.foundation.fluid;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.simibubi.create.Create;
+import javax.annotation.Nullable;
+
 import com.simibubi.create.content.fluids.tank.CreativeFluidTankBlockEntity;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.fluids.transfer.GenericItemFilling;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 
 import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.platform.CatnipServices;
-import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.TagParser;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -115,45 +105,12 @@ public class FluidHelper {
 		return fluid;
 	}
 
-	public static JsonElement serializeFluidStack(FluidStack stack) {
-		JsonObject json = new JsonObject();
-		json.addProperty("fluid", CatnipServices.REGISTRIES.getKeyOrThrow(stack.getFluid())
-			.toString());
-		json.addProperty("amount", stack.getAmount());
-		if (stack.hasTag())
-			json.addProperty("nbt", stack.getTag()
-				.toString());
-		return json;
-	}
-
-	public static FluidStack deserializeFluidStack(JsonObject json) {
-		ResourceLocation id = new ResourceLocation(GsonHelper.getAsString(json, "fluid"));
-		Fluid fluid = BuiltInRegistries.FLUID.get(id);
-		if (fluid == null)
-			throw new JsonSyntaxException("Unknown fluid '" + id + "'");
-		if (fluid == Fluids.EMPTY)
-			throw new JsonSyntaxException("Invalid empty fluid '" + id + "'");
-		int amount = GsonHelper.getAsInt(json, "amount");
-		if (!json.has("nbt"))
-			return new FluidStack(fluid, amount);
-
-		try {
-			JsonElement element = json.get("nbt");
-			CompoundTag nbt = TagParser.parseTag(
-					element.isJsonObject() ? Create.GSON.toJson(element) : GsonHelper.convertToString(element, "nbt"));
-			return new FluidStack(FluidVariant.of(fluid, nbt), amount, nbt);
-		} catch (CommandSyntaxException e) {
-			throw new JsonSyntaxException("Failed to read NBT", e);
-		}
-	}
-
 	public static boolean tryEmptyItemIntoBE(Level worldIn, Player player, InteractionHand handIn, ItemStack heldItem,
 		SmartBlockEntity be, Direction side) {
 		if (!GenericItemEmptying.canItemBeEmptied(worldIn, heldItem))
 			return false;
 
 		Pair<FluidStack, ItemStack> emptyingResult = GenericItemEmptying.emptyItem(worldIn, heldItem, true);
-
 		Storage<FluidVariant> tank = FluidStorage.SIDED.find(worldIn, be.getBlockPos(), null, be, side);
 		FluidStack fluidStack = emptyingResult.getFirst();
 
@@ -190,7 +147,7 @@ public class FluidHelper {
 
 		Storage<FluidVariant> tank = FluidStorage.SIDED.find(world, be.getBlockPos(), null, be, side);
 
-		if (tank == null)
+		if (capability == null)
 			return false;
 
 		try (Transaction t = TransferUtil.getTransaction()) {
@@ -212,7 +169,7 @@ public class FluidHelper {
 
 				FluidStack copy = fluid.copy();
 				copy.setAmount(requiredAmountForItem);
-				tank.extract(copy.getType(), copy.getAmount(), t);
+				capability.extract(copy.getType(), copy.getAmount(), t);
 				t.commit();
 
 				if (!player.isCreative())
@@ -260,7 +217,7 @@ public class FluidHelper {
 //				boolean canMoveToItem = (undecided || lockedExchange == FluidExchange.TANK_TO_ITEM) && itemCapacity > 0;
 //
 //				// Incompatible Liquids
-//				if (!tankEmpty && !itemEmpty && !fluidInItem.isFluidEqual(fluidInTank))
+//				if (!tankEmpty && !itemEmpty && !FluidStack.isSameFluidSameComponents(fluidInItem, fluidInTank))
 //					continue;
 //
 //				// Transfer liquid to tank

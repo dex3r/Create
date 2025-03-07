@@ -1,0 +1,34 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "environmental"
+    }
+  ],
+  "type": "create:milling",
+  "ingredients": [
+    {
+      "type": "neoforge:compound",
+      "ingredients": [
+        {
+          "item": "environmental:cartwheel"
+        }
+      ]
+    }
+  ],
+  "processing_time": 50,
+  "results": [
+    {
+      "count": 2,
+      "item": {
+        "id": "minecraft:pink_dye"
+      }
+    },
+    {
+      "chance": 0.1,
+      "item": {
+        "id": "minecraft:orange_dye"
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "item": "minecraft:nether_wart_block"
+    }
+  ],
+  "processing_time": 150,
+  "results": [
+    {
+      "chance": 0.25,
+      "item": {
+        "id": "minecraft:nether_wart"
+      }
+    }
+  ]
+}

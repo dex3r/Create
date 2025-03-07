@@ -7,9 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import com.simibubi.create.AllBogeyStyles;
 import com.simibubi.create.foundation.blockEntity.CachedRenderBBBlockEntity;
 
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -63,19 +64,19 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 	}
 
 	@Override
-	protected void saveAdditional(@NotNull CompoundTag pTag) {
+	protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
 		CompoundTag data = this.getBogeyData();
-		if (data != null) pTag.put(BOGEY_DATA_KEY, data); // Now contains style
-		super.saveAdditional(pTag);
+		if (data != null) tag.put(BOGEY_DATA_KEY, data); // Now contains style
+		super.saveAdditional(tag, registries);
 	}
 
 	@Override
-	public void load(CompoundTag pTag) {
-		if (pTag.contains(BOGEY_DATA_KEY))
-			this.bogeyData = pTag.getCompound(BOGEY_DATA_KEY);
+	protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+		if (tag.contains(BOGEY_DATA_KEY))
+			this.bogeyData = tag.getCompound(BOGEY_DATA_KEY);
 		else
 			this.bogeyData = this.createBogeyData();
-		super.load(pTag);
+		super.loadAdditional(tag, registries);
 	}
 
 	private CompoundTag createBogeyData() {

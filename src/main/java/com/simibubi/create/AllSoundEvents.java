@@ -35,14 +35,13 @@ public class AllSoundEvents {
 	public static final Map<ResourceLocation, SoundEntry> ALL = new HashMap<>();
 
 	public static final SoundEntry
-
-	SCHEMATICANNON_LAUNCH_BLOCK = create("schematicannon_launch_block").subtitle("Schematicannon fires")
-		.playExisting(SoundEvents.GENERIC_EXPLODE, .1f, 1.1f)
-		.category(SoundSource.BLOCKS)
-		.build(),
+		SCHEMATICANNON_LAUNCH_BLOCK = create("schematicannon_launch_block").subtitle("Schematicannon fires")
+			.playExisting(SoundEvents.GENERIC_EXPLODE.value(), .1f, 1.1f)
+			.category(SoundSource.BLOCKS)
+			.build(),
 
 		SCHEMATICANNON_FINISH = create("schematicannon_finish").subtitle("Schematicannon dings")
-			.playExisting(SoundEvents.NOTE_BLOCK_BELL, 1, .7f)
+			.playExisting(SoundEvents.NOTE_BLOCK_BELL::value, 1, .7f)
 			.category(SoundSource.BLOCKS)
 			.build(),
 
@@ -61,7 +60,7 @@ public class AllSoundEvents {
 			.playExisting(SoundEvents.WOOL_BREAK, .0425f, .75f)
 			.category(SoundSource.BLOCKS)
 			.build(),
-			
+
 		PACKAGER = create("packager").subtitle("Packager packages")
 			.playExisting(SoundEvents.SHULKER_OPEN, 0.5f, 0.75f)
 			.category(SoundSource.BLOCKS)
@@ -110,12 +109,12 @@ public class AllSoundEvents {
 			.build(),
 
 		SCROLL_VALUE = create("scroll_value").subtitle("Scroll-input clicks")
-			.playExisting(SoundEvents.NOTE_BLOCK_HAT, .124f, 1f)
+			.playExisting(SoundEvents.NOTE_BLOCK_HAT::value, .124f, 1f)
 			.category(SoundSource.PLAYERS)
 			.build(),
 
 		CONFIRM = create("confirm").subtitle("Affirmative ding")
-			.playExisting(SoundEvents.NOTE_BLOCK_BELL, 0.5f, 0.8f)
+			.playExisting(SoundEvents.NOTE_BLOCK_BELL::value, 0.5f, 0.8f)
 			.category(SoundSource.PLAYERS)
 			.build(),
 
@@ -124,7 +123,7 @@ public class AllSoundEvents {
 			.build(),
 
 		DENY = create("deny").subtitle("Declining boop")
-			.playExisting(SoundEvents.NOTE_BLOCK_BASS, 1f, 0.5f)
+			.playExisting(SoundEvents.NOTE_BLOCK_BASS::value, 1f, 0.5f)
 			.category(SoundSource.PLAYERS)
 			.build(),
 
@@ -155,7 +154,7 @@ public class AllSoundEvents {
 			.addVariant("frogport_catch_3")
 			.category(SoundSource.BLOCKS)
 			.build(),
-			
+
 		STOCK_LINK = create("stock_link").subtitle("Stock link reacts")
 			.category(SoundSource.BLOCKS)
 			.build(),
@@ -211,7 +210,7 @@ public class AllSoundEvents {
 			.build(),
 
 		COPPER_ARMOR_EQUIP = create("copper_armor_equip").subtitle("Diving equipment clinks")
-			.playExisting(SoundEvents.ARMOR_EQUIP_GOLD, 1f, 1f)
+			.playExisting(SoundEvents.ARMOR_EQUIP_GOLD.value(), 1f, 1f)
 			.category(SoundSource.PLAYERS)
 			.build(),
 
@@ -453,8 +452,7 @@ public class AllSoundEvents {
 
 	}
 
-	public record ConfiguredSoundEvent(Supplier<SoundEvent> event, float volume, float pitch) {
-	}
+	public record ConfiguredSoundEvent(Supplier<SoundEvent> event, float volume, float pitch) {}
 
 	public static class SoundEntryBuilder {
 
@@ -552,6 +550,8 @@ public class AllSoundEvents {
 
 		public abstract void write(JsonObject json);
 
+		public abstract Holder<SoundEvent> getMainEventHolder();
+
 		public abstract SoundEvent getMainEvent();
 
 		public String getSubtitleKey() {
@@ -643,13 +643,17 @@ public class AllSoundEvents {
 		}
 
 		@Override
+		public Holder<SoundEvent> getMainEventHolder() {
+			return compiledEvents.getFirst().event();
+		}
+
+		@Override
 		public SoundEvent getMainEvent() {
-			return compiledEvents.get(0)
-				.event();
+			return compiledEvents.getFirst().event();
 		}
 
 		protected ResourceLocation getIdOf(int i) {
-			return new ResourceLocation(id.getNamespace(), i == 0 ? id.getPath() : id.getPath() + "_compounded_" + i);
+			return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), i == 0 ? id.getPath() : id.getPath() + "_compounded_" + i);
 		}
 
 		@Override
@@ -714,6 +718,11 @@ public class AllSoundEvents {
 		@Override
 		public void register() {
 			Registry.register(BuiltInRegistries.SOUND_EVENT, event.getLocation(), event);
+		}
+
+		@Override
+		public Holder<SoundEvent> getMainEventHolder() {
+			return event;
 		}
 
 		@Override

@@ -3,7 +3,6 @@ package com.simibubi.create.content.trains.station;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.trains.entity.Carriage;
@@ -16,6 +15,7 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.MutableComponent;
@@ -65,16 +65,14 @@ public class AssemblyScreen extends AbstractStationScreen {
 		toggleAssemblyButton.active = false;
 		toggleAssemblyButton.setToolTip(CreateLang.translateDirect("station.assemble_train"));
 		toggleAssemblyButton.withCallback(() -> {
-			AllPackets.getChannel()
-				.sendToServer(StationEditPacket.tryAssemble(blockEntity.getBlockPos()));
+			CatnipServices.NETWORK.sendToServer(StationEditPacket.tryAssemble(blockEntity.getBlockPos()));
 		});
 
 		quitAssembly = new IconButton(x + 73, by, AllIcons.I_DISABLE);
 		quitAssembly.active = true;
 		quitAssembly.setToolTip(CreateLang.translateDirect("station.cancel"));
 		quitAssembly.withCallback(() -> {
-			AllPackets.getChannel()
-				.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), false, station.name, null));
+			CatnipServices.NETWORK.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), false, station.name, null));
 			minecraft.setScreen(new StationScreen(blockEntity, station));
 		});
 
@@ -92,8 +90,7 @@ public class AssemblyScreen extends AbstractStationScreen {
 		toggleAssemblyButton.active = blockEntity.bogeyCount > 0 || train != null;
 
 		if (train != null) {
-			AllPackets.getChannel()
-				.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), false, station.name, null));
+			CatnipServices.NETWORK.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), false, station.name, null));
 			minecraft.setScreen(new StationScreen(blockEntity, station));
 			for (Carriage carriage : train.carriages)
 				carriage.updateConductors();
@@ -108,12 +105,10 @@ public class AssemblyScreen extends AbstractStationScreen {
 			toggleAssemblyButton.setToolTip(CreateLang.translateDirect("station.assemble_train"));
 			toggleAssemblyButton.setIcon(AllGuiTextures.I_ASSEMBLE_TRAIN);
 			toggleAssemblyButton.withCallback(() -> {
-				AllPackets.getChannel()
-					.sendToServer(StationEditPacket.tryAssemble(blockEntity.getBlockPos()));
+				CatnipServices.NETWORK.sendToServer(StationEditPacket.tryAssemble(blockEntity.getBlockPos()));
 			});
 		} else {
-			AllPackets.getChannel()
-				.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), false, station.name, null));
+			CatnipServices.NETWORK.sendToServer(StationEditPacket.configure(blockEntity.getBlockPos(), false, station.name, null));
 			minecraft.setScreen(new StationScreen(blockEntity, station));
 		}
 	}
@@ -163,8 +158,7 @@ public class AssemblyScreen extends AbstractStationScreen {
 		if (train != null) {
 			ResourceLocation iconId = iconTypes.get(iconTypeScroll.getState());
 			train.icon = TrainIconType.byId(iconId);
-			AllPackets.getChannel()
-				.sendToServer(new TrainEditPacket(train.id, "", iconId, train.mapColorIndex));
+			CatnipServices.NETWORK.sendToServer(new TrainEditPacket.Serverbound(train.id, "", iconId, train.mapColorIndex));
 		}
 	}
 

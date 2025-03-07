@@ -2,12 +2,19 @@ package com.simibubi.create.content.equipment.clipboard;
 
 import javax.annotation.Nonnull;
 
+import com.simibubi.create.AllDataComponents;
+
 import com.simibubi.create.foundation.recipe.ItemCopyingRecipe.SupportsItemCopying;
 
 import net.createmod.catnip.gui.ScreenOpener;
+import net.createmod.catnip.platform.CatnipServices;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -49,7 +56,7 @@ public class ClipboardBlockItem extends BlockItem implements SupportsItemCopying
 			return false;
 		if (!(pLevel.getBlockEntity(pPos) instanceof ClipboardBlockEntity cbe))
 			return false;
-		cbe.dataContainer = ItemHandlerHelper.copyStackWithSize(pStack, 1);
+		cbe.dataContainer = pStack.copyWithCount(1);
 		cbe.notifyUpdate();
 		return true;
 	}
@@ -63,10 +70,8 @@ public class ClipboardBlockItem extends BlockItem implements SupportsItemCopying
 		player.getCooldowns()
 			.addCooldown(heldItem.getItem(), 10);
 		if (world.isClientSide)
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> openScreen(player, heldItem));
-		CompoundTag tag = heldItem.getOrCreateTag();
-		tag.putInt("Type", ClipboardOverrides.ClipboardType.EDITING.ordinal());
-		heldItem.setTag(tag);
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> openScreen(player, heldItem));
+		heldItem.set(AllDataComponents.CLIPBOARD_TYPE, ClipboardOverrides.ClipboardType.EDITING);
 
 		return InteractionResultHolder.success(heldItem);
 	}
@@ -78,7 +83,12 @@ public class ClipboardBlockItem extends BlockItem implements SupportsItemCopying
 	}
 
 	public void registerModelOverrides() {
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> ClipboardOverrides.registerModelOverridesClient(this));
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> ClipboardOverrides.registerModelOverridesClient(this));
+	}
+
+	@Override
+	public DataComponentType<?> getComponentType() {
+		return AllDataComponents.CLIPBOARD_PAGES;
 	}
 
 }

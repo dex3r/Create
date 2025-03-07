@@ -13,12 +13,12 @@ import com.simibubi.create.foundation.model.BakedModelHelper;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.StitchedSprite;
 import net.createmod.catnip.render.SuperBufferFactory;
 import net.createmod.catnip.render.SuperByteBuffer;
 import net.createmod.catnip.render.SuperByteBufferCache;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
@@ -39,9 +39,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public class WaterWheelRenderer<T extends WaterWheelBlockEntity> extends KineticBlockEntityRenderer<T> {
 	public static final SuperByteBufferCache.Compartment<ModelKey> WATER_WHEEL = new SuperByteBufferCache.Compartment<>();
 
-	public static final StitchedSprite OAK_PLANKS_TEMPLATE = new StitchedSprite(new ResourceLocation("block/oak_planks"));
-	public static final StitchedSprite OAK_LOG_TEMPLATE = new StitchedSprite(new ResourceLocation("block/oak_log"));
-	public static final StitchedSprite OAK_LOG_TOP_TEMPLATE = new StitchedSprite(new ResourceLocation("block/oak_log_top"));
+	public static final StitchedSprite OAK_PLANKS_TEMPLATE = new StitchedSprite(ResourceLocation.withDefaultNamespace("block/oak_planks"));
+	public static final StitchedSprite OAK_LOG_TEMPLATE = new StitchedSprite(ResourceLocation.withDefaultNamespace("block/oak_log"));
+	public static final StitchedSprite OAK_LOG_TOP_TEMPLATE = new StitchedSprite(ResourceLocation.withDefaultNamespace("block/oak_log_top"));
 
 	protected final boolean large;
 
@@ -85,7 +85,7 @@ public class WaterWheelRenderer<T extends WaterWheelBlockEntity> extends Kinetic
 
 	public static BakedModel generateModel(BakedModel template, BlockState planksBlockState) {
 		Block planksBlock = planksBlockState.getBlock();
-		ResourceLocation id = CatnipServices.REGISTRIES.getKeyOrThrow(planksBlock);
+		ResourceLocation id = RegisteredObjectsHelper.getKeyOrThrow(planksBlock);
 		String wood = plankStateToWoodName(planksBlockState);
 
 		if (wood == null)
@@ -105,7 +105,7 @@ public class WaterWheelRenderer<T extends WaterWheelBlockEntity> extends Kinetic
 	@Nullable
 	private static String plankStateToWoodName(BlockState planksBlockState) {
 		Block planksBlock = planksBlockState.getBlock();
-		ResourceLocation id = CatnipServices.REGISTRIES.getKeyOrThrow(planksBlock);
+		ResourceLocation id = RegisteredObjectsHelper.getKeyOrThrow(planksBlock);
 		String path = id.getPath();
 
 		if (path.endsWith("_planks")) // Covers most wood types
@@ -127,7 +127,7 @@ public class WaterWheelRenderer<T extends WaterWheelBlockEntity> extends Kinetic
 	private static BlockState getLogBlockState(String namespace, String wood) {
 		for (String location : LOG_LOCATIONS) {
 			Optional<BlockState> state =
-				BuiltInRegistries.BLOCK.getHolder(ResourceKey.create(Registries.BLOCK, new ResourceLocation(namespace, location.replace("x", wood))))
+				BuiltInRegistries.BLOCK.getHolder(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(namespace, location.replace("x", wood))))
 					.map(Holder::value)
 					.map(Block::defaultBlockState);
 			if (state.isPresent())

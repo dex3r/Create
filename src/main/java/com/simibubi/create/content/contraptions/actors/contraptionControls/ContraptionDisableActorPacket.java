@@ -1,69 +1,55 @@
 package com.simibubi.create.content.contraptions.actors.contraptionControls;
 
-import java.util.Iterator;
 import java.util.List;
 
+import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
-public class ContraptionDisableActorPacket extends SimplePacketBase {
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-	private int entityID;
-	private ItemStack filter;
-	private boolean enable;
+public record ContraptionDisableActorPacket(int entityId, ItemStack filter, boolean enable) implements ClientboundPacketPayload {
+	public static final StreamCodec<RegistryFriendlyByteBuf, com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionDisableActorPacket> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.INT, com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionDisableActorPacket::entityId,
+			ItemStack.OPTIONAL_STREAM_CODEC, com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionDisableActorPacket::filter,
+			ByteBufCodecs.BOOL, com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionDisableActorPacket::enable,
+	        com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionDisableActorPacket::new
+	);
 
-	public ContraptionDisableActorPacket(int entityID, ItemStack filter, boolean enable) {
-		this.entityID = entityID;
-		this.filter = filter;
-		this.enable = enable;
-	}
+	@Override
+	@OnlyIn(Dist.CLIENT)
+	public void handle(LocalPlayer player) {
+		Entity entityByID = player.clientLevel.getEntity(entityId);
+		if (!(entityByID instanceof AbstractContraptionEntity ace))
+			return;
 
-	public ContraptionDisableActorPacket(FriendlyByteBuf buffer) {
-		entityID = buffer.readInt();
-		enable = buffer.readBoolean();
-		filter = buffer.readItem();
+		Contraption contraption = ace.getContraption();
+		List<ItemStack> disabledActors = contraption.getDisabledActors();
+		if (filter.isEmpty())
+			disabledActors.clear();
+
+		if (!enable) {
+			disabledActors.add(filter);
+			contraption.setActorsActive(filter, false);
+			return;
+		}
+
+		disabledActors.removeIf(next -> ContraptionControlsMovement.isSameFilter(next, filter) || next.isEmpty());
+
+		contraption.setActorsActive(filter, true);
 	}
 
 	@Override
-	public void write(FriendlyByteBuf buffer) {
-		buffer.writeInt(entityID);
-		buffer.writeBoolean(enable);
-		buffer.writeItem(filter);
+	public PacketTypeProvider getTypeProvider() {
+		return AllPackets.CONTRAPTION_ACTOR_TOGGLE;
 	}
-
-	@Override
-	public boolean handle(Context context) {
-		context.enqueueWork(() -> {
-			Entity entityByID = Minecraft.getInstance().level.getEntity(entityID);
-			if (!(entityByID instanceof AbstractContraptionEntity ace))
-				return;
-
-			Contraption contraption = ace.getContraption();
-			List<ItemStack> disabledActors = contraption.getDisabledActors();
-			if (filter.isEmpty())
-				disabledActors.clear();
-
-			if (!enable) {
-				disabledActors.add(filter);
-				contraption.setActorsActive(filter, false);
-				return;
-			}
-
-			for (Iterator<ItemStack> iterator = disabledActors.iterator(); iterator.hasNext();) {
-				ItemStack next = iterator.next();
-				if (ContraptionControlsMovement.isSameFilter(next, filter) || next.isEmpty())
-					iterator.remove();
-			}
-
-			contraption.setActorsActive(filter, true);
-		});
-		return true;
-	}
-
 }

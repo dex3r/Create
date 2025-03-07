@@ -91,6 +91,11 @@ public class ContraptionRenderInfo {
 			public boolean supportsVisualization() {
 				return VisualizationManager.supportsVisualization(level);
 			}
+
+			@Override
+			public ModelData getModelData(BlockPos pos) {
+				return c.modelData.getOrDefault(pos, ModelData.EMPTY);
+			}
 		};
 
 		renderWorld.setBlockEntities(c.presentBlockEntities.values());

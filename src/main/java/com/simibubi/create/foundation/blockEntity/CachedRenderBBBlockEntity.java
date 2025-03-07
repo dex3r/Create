@@ -32,7 +32,7 @@ public abstract class CachedRenderBBBlockEntity extends SyncedBlockEntity implem
 	}
 
 	protected AABB createRenderBoundingBox() {
-		return CustomRenderBoundingBoxBlockEntity.super.getRenderBoundingBox();
+		return new AABB(getBlockPos());
 	}
 
 }

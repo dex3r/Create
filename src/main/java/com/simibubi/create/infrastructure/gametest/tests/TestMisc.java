@@ -3,6 +3,7 @@ package com.simibubi.create.infrastructure.gametest.tests;
 import static com.simibubi.create.infrastructure.gametest.CreateGameTestHelper.FIFTEEN_SECONDS;
 
 import com.simibubi.create.AllBlockEntityTypes;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.redstone.thresholdSwitch.ThresholdSwitchBlockEntity;
 import com.simibubi.create.content.schematics.SchematicExport;
 import com.simibubi.create.content.schematics.SchematicItem;
@@ -42,8 +43,8 @@ public class TestMisc {
 			SchematicItem.create(level, "schematicannon_gametest.nbt", "Deployer");
 		// deploy to pos
 		BlockPos anchor = helper.absolutePos(new BlockPos(1, 2, 1));
-		schematic.getOrCreateTag().putBoolean("Deployed", true);
-		schematic.getOrCreateTag().put("Anchor", NbtUtils.writeBlockPos(anchor));
+		schematic.set(AllDataComponents.SCHEMATIC_DEPLOYED, true);
+		schematic.set(AllDataComponents.SCHEMATIC_ANCHOR, anchor);
 		// setup cannon
 		BlockPos cannonPos = new BlockPos(3, 2, 6);
 		SchematicannonBlockEntity cannon = helper.getBlockEntity(AllBlockEntityTypes.SCHEMATICANNON.get(), cannonPos);

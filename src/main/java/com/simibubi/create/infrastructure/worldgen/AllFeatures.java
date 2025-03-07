@@ -6,13 +6,15 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
-import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
+
+import org.jetbrains.annotations.ApiStatus.Internal;
 
 public class AllFeatures {
 	private static final LazyRegistrar<Feature<?>> REGISTER = LazyRegistrar.create(BuiltInRegistries.FEATURE, Create.ID);
 
-	public static final RegistryObject<LayeredOreFeature> LAYERED_ORE = REGISTER.register("layered_ore", () -> new LayeredOreFeature());
+	public static final DeferredHolder<Feature<?>, LayeredOreFeature> LAYERED_ORE = REGISTER.register("layered_ore", () -> new LayeredOreFeature());
 
+	@Internal
 	public static void register() {
 		REGISTER.register();
 	}

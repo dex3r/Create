@@ -9,6 +9,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.SidedFilteringBehaviour;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -35,8 +36,7 @@ public class ValueSettingsInputHandler {
 
 		MutableBoolean cancelled = new MutableBoolean(false);
 		if (world.isClientSide)
-			EnvExecutor.runWhenOn(EnvType.CLIENT,
-				() -> () -> CreateClient.VALUE_SETTINGS_HANDLER.cancelIfWarmupAlreadyStarted(pos, cancelled));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> CreateClient.VALUE_SETTINGS_HANDLER.cancelIfWarmupAlreadyStarted(pos, cancelled));
 
 		if (cancelled.booleanValue())
 			return InteractionResult.FAIL;
@@ -83,7 +83,7 @@ public class ValueSettingsInputHandler {
 
 			if (world.isClientSide) {
 				BehaviourType<?> type = behaviour.getType();
-				EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> CreateClient.VALUE_SETTINGS_HANDLER
+				CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> CreateClient.VALUE_SETTINGS_HANDLER
 					.startInteractionWith(pos, type, hand, ray.getDirection()));
 			}
 

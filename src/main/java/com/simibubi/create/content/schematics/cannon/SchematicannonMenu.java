@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.gui.menu.MenuBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -17,7 +18,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler
 
 public class SchematicannonMenu extends MenuBase<SchematicannonBlockEntity> {
 
-	public SchematicannonMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf buffer) {
+	public SchematicannonMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf buffer) {
 		super(type, id, inv, buffer);
 	}
 
@@ -30,11 +31,11 @@ public class SchematicannonMenu extends MenuBase<SchematicannonBlockEntity> {
 	}
 
 	@Override
-	protected SchematicannonBlockEntity createOnClient(FriendlyByteBuf extraData) {
+	protected SchematicannonBlockEntity createOnClient(RegistryFriendlyByteBuf extraData) {
 		ClientLevel world = Minecraft.getInstance().level;
 		BlockEntity blockEntity = world.getBlockEntity(extraData.readBlockPos());
 		if (blockEntity instanceof SchematicannonBlockEntity schematicannon) {
-			schematicannon.readClient(extraData.readNbt());
+			schematicannon.readClient(extraData.readNbt(), extraData.registryAccess());
 			return schematicannon;
 		}
 		return null;

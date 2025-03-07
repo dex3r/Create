@@ -24,15 +24,16 @@ import com.simibubi.create.foundation.recipe.RecipeApplier;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 
 public class BeltDeployerCallbacks {
 
@@ -83,17 +84,17 @@ public class BeltDeployerCallbacks {
 		if (held.isEmpty())
 			return ProcessingResult.HOLD;
 
-		Recipe<?> recipe = blockEntity.getRecipe(s.stack);
+		RecipeHolder<? extends Recipe<?>> recipeHolder = blockEntity.getRecipe(s.stack);
 		boolean shouldSandwich = Mods.SANDWICHABLE.isLoaded() && SequencedSandwiching.shouldSandwich(s.stack, held, blockEntity.getLevel());
-		if (recipe == null && !shouldSandwich) {
+		if (recipeHolder == null)
 			return ProcessingResult.PASS;
-		}
 
 		if (blockEntity.state == State.RETRACTING && blockEntity.timer == 1000) {
-			if (recipe != null)
-				activate(s, i, blockEntity, recipe);
-			else
+			if (recipeHolder != null) {
+				activate(s, i, blockEntity, recipeHolder.value());
+			} else {
 				SequencedSandwiching.activateSandwich(s, i, blockEntity);
+			}
 			return ProcessingResult.HOLD;
 		}
 
@@ -110,7 +111,7 @@ public class BeltDeployerCallbacks {
 		DeployerBlockEntity blockEntity, Recipe<?> recipe) {
 
 		List<TransportedItemStack> collect =
-			RecipeApplier.applyRecipeOn(blockEntity.getLevel(), ItemHandlerHelper.copyStackWithSize(transported.stack, 1), recipe)
+			RecipeApplier.applyRecipeOn(blockEntity.getLevel(), transported.stack.copyWithCount(1), recipe)
 				.stream()
 				.map(stack -> {
 					TransportedItemStack copy = transported.copy();
@@ -127,7 +128,7 @@ public class BeltDeployerCallbacks {
 				.collect(Collectors.toList());
 
 		blockEntity.award(AllAdvancements.DEPLOYER);
-		
+
 		transported.clearFanProcessingData();
 
 		TransportedItemStack left = transported.copy();
@@ -144,16 +145,17 @@ public class BeltDeployerCallbacks {
 		}
 
 		ItemStack heldItem = blockEntity.player.getMainHandItem();
-		boolean unbreakable = heldItem.hasTag() && (
-				heldItem.getTag().getBoolean("Unbreakable") ||
-				heldItem.getTag().getString("Modifier").equals("forbidden_arcanus:eternal")); // Forbidden Arcanus Compat, See Creators-of-Create#6220
+		// https://github.com/stal111/Forbidden-Arcanus/blob/6a0ae16061dfa1e97c0d27007869c6b23e9ef43a/src/main/java/com/stal111/forbidden_arcanus/core/init/ModDataComponents.java#L27
+		// FIXME 1.21: Re-enable Forbidden Arcanus compat
+		boolean unbreakable = heldItem.has(DataComponents.UNBREAKABLE); //||
+				//heldItem.getTag().getString("Modifier").equals("forbidden_arcanus:eternal"); // Forbidden Arcanus Compat, See Creators-of-Create#6220
 		boolean keepHeld =
 			recipe instanceof ItemApplicationRecipe && ((ItemApplicationRecipe) recipe).shouldKeepHeldItem();
 
 		if (!unbreakable && !keepHeld) {
 			if (heldItem.isDamageableItem())
 				heldItem.hurtAndBreak(1, blockEntity.player,
-					s -> s.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+						LivingEntity.getSlotForHand(InteractionHand.MAIN_HAND));
 			else
 				heldItem.shrink(1);
 		}

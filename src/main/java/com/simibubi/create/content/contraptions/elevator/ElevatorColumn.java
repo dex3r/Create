@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
-
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.foundation.utility.BlockHelper;
 

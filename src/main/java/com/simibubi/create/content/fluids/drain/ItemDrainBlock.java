@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -43,31 +44,27 @@ public class ItemDrainBlock extends Block implements IWrenchable, IBE<ItemDrainB
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-								 BlockHitResult hit) {
-		ItemStack heldItem = player.getItemInHand(handIn);
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+								 if (stack.getItem() instanceof BlockItem && stack.getCapability(Capabilities.FluidHandler.ITEM) == null)
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-		if (heldItem.getItem() instanceof BlockItem
-			&& ContainerItemContext.withConstant(heldItem).find(FluidStorage.ITEM) == null)
-			return InteractionResult.PASS;
-
-		return onBlockEntityUse(worldIn, pos, be -> {
-			if (!heldItem.isEmpty()) {
+		return onBlockEntityUseItemOn(level, pos, be -> {
+			if (!stack.isEmpty()) {
 				be.internalTank.allowInsertion();
-				InteractionResult tryExchange = tryExchange(worldIn, player, handIn, heldItem, be, Direction.DOWN); // up prohibits insertion
+				ItemInteractionResult tryExchange = tryExchange(level, player, hand, stack, be, Direction.DOWN); // up prohibits insertion
 				be.internalTank.forbidInsertion();
 				if (tryExchange.consumesAction())
 					return tryExchange;
 			}
 
 			ItemStack heldItemStack = be.getHeldItemStack();
-			if (!worldIn.isClientSide && !heldItemStack.isEmpty()) {
+			if (!level.isClientSide && !heldItemStack.isEmpty()) {
 				player.getInventory()
 					.placeItemBackInInventory(heldItemStack);
 				be.heldItem = null;
 				be.notifyUpdate();
 			}
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		});
 	}
 
@@ -95,13 +92,13 @@ public class ItemDrainBlock extends Block implements IWrenchable, IBE<ItemDrainB
 			itemEntity.discard();
 	}
 
-	protected InteractionResult tryExchange(Level worldIn, Player player, InteractionHand handIn, ItemStack heldItem,
+	protected ItemInteractionResult tryExchange(Level worldIn, Player player, InteractionHand handIn, ItemStack heldItem,
 											ItemDrainBlockEntity be, Direction side) {
 		if (FluidHelper.tryEmptyItemIntoBE(worldIn, player, handIn, heldItem, be, side))
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		if (GenericItemEmptying.canItemBeEmptied(worldIn, heldItem))
-			return InteractionResult.SUCCESS;
-		return InteractionResult.PASS;
+			return ItemInteractionResult.SUCCESS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	@Override
@@ -149,7 +146,7 @@ public class ItemDrainBlock extends Block implements IWrenchable, IBE<ItemDrainB
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

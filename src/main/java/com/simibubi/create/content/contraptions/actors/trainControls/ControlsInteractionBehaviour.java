@@ -39,8 +39,7 @@ public class ControlsInteractionBehaviour extends MovingInteractionBehaviour {
 
 		contraptionEntity.setControllingPlayer(player.getUUID());
 		if (player.level().isClientSide)
-			EnvExecutor.runWhenOn(EnvType.CLIENT,
-				() -> () -> ControlsHandler.startControlling(contraptionEntity, localPos));
+			ControlsHandler.startControlling(contraptionEntity, localPos);
 		return true;
 	}
 

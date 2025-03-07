@@ -38,6 +38,6 @@ public class TestCommandMixin {
 		CreateTestFunction function = CreateTestFunction.NAMES_TO_FUNCTIONS.get(name);
 		if (function == null)
 			throw new IllegalStateException("Structure block has CreateTestFunction attached, but test [" + name + "] doesn't exist");
-		return function;
+		return function.testFunction;
 	}
 }

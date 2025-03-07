@@ -47,6 +47,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -100,7 +101,7 @@ import io.github.fabricators_of_create.porting_lib.util.TagUtil;
 
 public class BeltBlock extends HorizontalKineticBlock
 	implements IBE<BeltBlockEntity>, SpecialBlockItemRequirement, TransformableBlock, ProperWaterloggedBlock,
-		BlockPickInteractionAware, ReducedDestroyEffects, MultiPosDestructionHandler {
+	BlockPickInteractionAware, ReducedDestroyEffects, MultiPosDestructionHandler {
 
 	public static final Property<BeltSlope> SLOPE = EnumProperty.create("slope", BeltSlope.class);
 	public static final Property<BeltPart> PART = EnumProperty.create("part", BeltPart.class);
@@ -257,50 +258,47 @@ public class BeltBlock extends HorizontalKineticBlock
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand handIn,
-								 BlockHitResult hit) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (player.isShiftKeyDown() || !player.mayBuild())
-			return InteractionResult.PASS;
-		ItemStack heldItem = player.getItemInHand(handIn);
-
-		boolean isWrench = AllItems.WRENCH.isIn(heldItem);
-		boolean isConnector = AllItems.BELT_CONNECTOR.isIn(heldItem);
-		boolean isShaft = AllBlocks.SHAFT.isIn(heldItem);
-		boolean isDye = heldItem.is(Tags.Items.DYES);
-		boolean hasWater = GenericItemEmptying.emptyItem(world, heldItem, true)
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		boolean isWrench = AllItems.WRENCH.isIn(stack);
+		boolean isConnector = AllItems.BELT_CONNECTOR.isIn(stack);
+		boolean isShaft = AllBlocks.SHAFT.isIn(stack);
+		boolean isDye = stack.is(Tags.Items.DYES);
+		boolean hasWater = GenericItemEmptying.emptyItem(level, stack, true)
 			.getFirst()
 			.getFluid()
 			.isSame(Fluids.WATER);
-		boolean isHand = heldItem.isEmpty() && handIn == InteractionHand.MAIN_HAND;
+		boolean isHand = stack.isEmpty() && hand == InteractionHand.MAIN_HAND;
 
 		if (isDye || hasWater)
-			return onBlockEntityUse(world, pos,
-				be -> be.applyColor(TagUtil.getColorFromStack(heldItem)) ? InteractionResult.SUCCESS : InteractionResult.PASS);
+			return onBlockEntityUseItemOn(level, pos,
+				be -> be.applyColor(TagUtil.getColorFromStack(heldItem)) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION);
 
 		if (isConnector)
-			return BeltSlicer.useConnector(state, world, pos, player, handIn, hit, new Feedback());
+			return BeltSlicer.useConnector(state, level, pos, player, hand, hitResult, new Feedback());
 		if (isWrench)
-			return BeltSlicer.useWrench(state, world, pos, player, handIn, hit, new Feedback());
+			return BeltSlicer.useWrench(state, level, pos, player, hand, hitResult, new Feedback());
 
-		BeltBlockEntity belt = BeltHelper.getSegmentBE(world, pos);
+		BeltBlockEntity belt = BeltHelper.getSegmentBE(level, pos);
 		if (belt == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-		if (PackageItem.isPackage(heldItem)) {
+		if (PackageItem.isPackage(stack)) {
 			Storage<ItemVariant> handler = belt.getItemStorage(null);
 			if (handler == null)
-				return InteractionResult.PASS;
-			long inserted = TransferUtil.insertItem(handler, heldItem);
-			heldItem.shrink((int) inserted);
-			return InteractionResult.SUCCESS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			long inserted = TransferUtil.insertItem(handler, stack);
+			stack.shrink((int) inserted);
+			return ItemInteractionResult.SUCCESS;
 		}
 
 		if (isHand) {
 			BeltBlockEntity controllerBelt = belt.getControllerBE();
 			if (controllerBelt == null)
-				return InteractionResult.PASS;
-			if (world.isClientSide)
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			if (level.isClientSide)
+				return ItemInteractionResult.SUCCESS;
 			MutableBoolean success = new MutableBoolean(false);
 			controllerBelt.getInventory()
 				.applyToEachWithin(belt.index + .5f, .55f, (transportedItemStack) -> {
@@ -310,46 +308,46 @@ public class BeltBlock extends HorizontalKineticBlock
 					return TransportedResult.removeItem();
 				});
 			if (success.isTrue())
-				world.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
-					1f + world.random.nextFloat());
+				level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
+					1f + level.random.nextFloat());
 		}
 
 		if (isShaft) {
 			if (state.getValue(PART) != BeltPart.MIDDLE)
-				return InteractionResult.PASS;
-			if (world.isClientSide)
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			if (level.isClientSide)
+				return ItemInteractionResult.SUCCESS;
 			if (!player.isCreative())
-				heldItem.shrink(1);
-			KineticBlockEntity.switchToBlockState(world, pos, state.setValue(PART, BeltPart.PULLEY));
-			return InteractionResult.SUCCESS;
+				stack.shrink(1);
+			KineticBlockEntity.switchToBlockState(level, pos, state.setValue(PART, BeltPart.PULLEY));
+			return ItemInteractionResult.SUCCESS;
 		}
 
-		if (AllBlocks.BRASS_CASING.isIn(heldItem)) {
-			withBlockEntityDo(world, pos, be -> be.setCasingType(CasingType.BRASS));
-			updateCoverProperty(world, pos, world.getBlockState(pos));
+		if (AllBlocks.BRASS_CASING.isIn(stack)) {
+			withBlockEntityDo(level, pos, be -> be.setCasingType(CasingType.BRASS));
+			updateCoverProperty(level, pos, level.getBlockState(pos));
 
 			SoundType soundType = AllBlocks.BRASS_CASING.getDefaultState()
-				.getSoundType();
-			world.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS,
+				.getSoundType(level, pos, player);
+			level.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS,
 				(soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
 
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		}
 
-		if (AllBlocks.ANDESITE_CASING.isIn(heldItem)) {
-			withBlockEntityDo(world, pos, be -> be.setCasingType(CasingType.ANDESITE));
-			updateCoverProperty(world, pos, world.getBlockState(pos));
+		if (AllBlocks.ANDESITE_CASING.isIn(stack)) {
+			withBlockEntityDo(level, pos, be -> be.setCasingType(CasingType.ANDESITE));
+			updateCoverProperty(level, pos, level.getBlockState(pos));
 
 			SoundType soundType = AllBlocks.ANDESITE_CASING.getDefaultState()
-				.getSoundType();
-			world.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS,
+				.getSoundType(level, pos, player);
+			level.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS,
 				(soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
 
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		}
 
-		return InteractionResult.PASS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	@Override
@@ -734,7 +732,7 @@ public class BeltBlock extends HorizontalKineticBlock
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

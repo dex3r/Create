@@ -175,7 +175,7 @@ public class BasinRenderer extends SmartBlockEntityRenderer<BasinBlockEntity> {
 				float partial = Mth.clamp(units / totalUnits, 0, 1);
 				xMax += partial * 12 / 16f;
 				FluidRenderer.renderFluidBox(renderedFluid.getFluid(), renderedFluid.getAmount(), xMin, yMin, zMin, xMax, yMax, zMax, buffer, ms, light,
-					false, false, renderedFluid.getTag());
+					false, false, renderedFluid.getComponentsPatch());
 
 				xMin = xMax;
 			}

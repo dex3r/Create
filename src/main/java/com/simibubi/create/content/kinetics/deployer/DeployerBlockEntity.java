@@ -10,11 +10,11 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.equipment.sandPaper.SandPaperItem;
-import com.simibubi.create.content.equipment.sandPaper.SandPaperPolishingRecipe.SandPaperInv;
 import com.simibubi.create.content.kinetics.base.IRotate.StressImpact;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessingBehaviour;
@@ -30,9 +30,17 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.nbt.NBTHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -42,11 +50,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ClipContext.Block;
 import net.minecraft.world.level.ClipContext.Fluid;
@@ -72,7 +82,7 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 
 	protected State state;
 	protected Mode mode;
-	protected ItemStack heldItem = ItemStack.EMPTY;
+	protected ItemStack heldItem;
 	protected DeployerFakePlayer player;
 	protected int timer;
 	protected float reach;
@@ -125,6 +135,18 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 			.startWithValue(0);
 	}
 
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.DEPLOYER.get(),
+				(be, context) ->  {
+					if (be.invHandler == null)
+						be.initHandler();
+					return be.invHandler;
+				}
+		);
+	}
+
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
@@ -161,7 +183,7 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 			Vec3 initialPos = VecHelper.getCenterOf(worldPosition.relative(getBlockState().getValue(FACING)));
 			player.setPos(initialPos.x, initialPos.y, initialPos.z);
 		}
-		invHandler = this.createHandler();
+		invHandler = createHandler();
 	}
 
 	protected void onExtract(ItemStack stack) {
@@ -380,7 +402,7 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		state = NBTHelper.readEnum(compound, "State", State.class);
 		mode = NBTHelper.readEnum(compound, "Mode", Mode.class);
 		timer = compound.getInt("Timer");
@@ -389,24 +411,25 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 			owner = compound.getUUID("Owner");
 
 		deferredInventoryList = compound.getList("Inventory", Tag.TAG_COMPOUND);
-		overflowItems = NBTHelper.readItemList(compound.getList("Overflow", Tag.TAG_COMPOUND));
-		if (compound.contains("HeldItem"))
-			heldItem = ItemStack.of(compound.getCompound("HeldItem"));
-		super.read(compound, clientPacket);
+		overflowItems = NBTHelper.readItemList(compound.getList("Overflow", Tag.TAG_COMPOUND), registries);
+		if (compound.contains("HeldItem")) {
+			heldItem = ItemStack.parseOptional(registries, compound.getCompound("HeldItem"));
+		}
+		super.read(compound, registries, clientPacket);
 
 		if (!clientPacket)
 			return;
 		fistBump = compound.getBoolean("Fistbump");
 		reach = compound.getFloat("Reach");
 		if (compound.contains("Particle")) {
-			ItemStack particleStack = ItemStack.of(compound.getCompound("Particle"));
+			ItemStack particleStack = ItemStack.parseOptional(registries, compound.getCompound("Particle"));
 			SandPaperItem.spawnParticles(VecHelper.getCenterOf(worldPosition)
 				.add(getMovementVector().scale(reach + 1)), particleStack, this.level);
 		}
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		NBTHelper.writeEnum(compound, "Mode", mode);
 		NBTHelper.writeEnum(compound, "State", state);
 		compound.putInt("Timer", timer);
@@ -419,13 +442,13 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 			player.getInventory()
 				.save(invNBT);
 			compound.put("Inventory", invNBT);
-			compound.put("HeldItem", NBTSerializer.serializeNBT(player.getMainHandItem()));
-			compound.put("Overflow", NBTHelper.writeItemList(overflowItems));
+			compound.put("HeldItem", player.getMainHandItem().saveOptional(registries));
+			compound.put("Overflow", NBTHelper.writeItemList(overflowItems, registries));
 		} else if (deferredInventoryList != null) {
 			compound.put("Inventory", deferredInventoryList);
 		}
 
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 
 		if (!clientPacket)
 			return;
@@ -433,17 +456,17 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 		compound.putFloat("Reach", reach);
 		if (player == null)
 			return;
-		compound.put("HeldItem", NBTSerializer.serializeNBT(player.getMainHandItem()));
+		compound.put("HeldItem", player.getMainHandItem().saveOptional(registries));
 		if (player.spawnedItemEffects != null) {
-			compound.put("Particle", NBTSerializer.serializeNBT(player.spawnedItemEffects));
+			compound.put("Particle", player.spawnedItemEffects.saveOptional(registries));
 			player.spawnedItemEffects = null;
 		}
 	}
 
 	@Override
-	public void writeSafe(CompoundTag tag) {
+	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
 		NBTHelper.writeEnum(tag, "Mode", mode);
-		super.writeSafe(tag);
+		super.writeSafe(tag, registries);
 	}
 
 	private DeployerItemHandler createHandler() {
@@ -564,24 +587,22 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 	}
 
 	ItemStackHandlerContainer recipeInv = new ItemStackHandlerContainer(2);
-	SandPaperInv sandpaperInv = new SandPaperInv(ItemStack.EMPTY);
 
 	@Nullable
-	public Recipe<? extends Container> getRecipe(ItemStack stack) {
+	public RecipeHolder<? extends Recipe<? extends RecipeInput>> getRecipe(ItemStack stack) {
 		if (player == null || level == null)
 			return null;
 
 		ItemStack heldItemMainhand = player.getMainHandItem();
 		if (heldItemMainhand.getItem() instanceof SandPaperItem) {
-			sandpaperInv.setItem(0, stack);
-			Optional<? extends Recipe<? extends Container>> polishingRecipe = checkRecipe(AllRecipeTypes.SANDPAPER_POLISHING, sandpaperInv, level);
+			Optional<RecipeHolder<Recipe<RecipeInput>>> polishingRecipe = checkRecipe(AllRecipeTypes.SANDPAPER_POLISHING, new SingleRecipeInput(stack), level);
 			if (polishingRecipe.isPresent()) {
 				return polishingRecipe.get();
 			}
 		}
 
-		recipeInv.setItem(0, stack);
-		recipeInv.setItem(1, heldItemMainhand);
+		recipeInv.setStackInSlot(0, stack);
+		recipeInv.setStackInSlot(1, heldItemMainhand);
 
 		DeployerRecipeSearchEvent event = new DeployerRecipeSearchEvent(this, recipeInv);
 
@@ -594,7 +615,7 @@ public class DeployerBlockEntity extends KineticBlockEntity implements SidedStor
 		return event.getRecipe();
 	}
 
-	private Optional<? extends Recipe<? extends Container>> checkRecipe(AllRecipeTypes type, ItemStackHandlerContainer inv, Level level) {
+	private Optional<RecipeHolder<Recipe<RecipeInput>>> checkRecipe(AllRecipeTypes type, RecipeInput inv, Level level) {
 		return type.find(inv, level).filter(AllRecipeTypes.CAN_BE_AUTOMATED);
 	}
 

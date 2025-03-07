@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import com.simibubi.create.AllPackets;
+import com.mojang.datafixers.util.Pair;
 import com.simibubi.create.content.kinetics.belt.BeltBlockEntity;
 import com.simibubi.create.content.kinetics.belt.transport.ItemHandlerBeltSegment;
 import com.simibubi.create.content.logistics.funnel.BeltFunnelBlock;
@@ -19,29 +18,30 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import dev.engine_room.flywheel.lib.visualization.VisualizationHelper;
-import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
+import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class BeltTunnelBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity {
@@ -87,19 +87,19 @@ public class BeltTunnelBlockEntity extends SmartBlockEntity implements SidedStor
 	}
 
 	@Override
-	public void writeSafe(CompoundTag tag) {
+	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
 		writeFlapsAndSides(tag);
-		super.writeSafe(tag);
+		super.writeSafe(tag, registries);
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		writeFlapsAndSides(compound);
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		Set<Direction> newFlaps = new HashSet<>(6);
 		ListTag flapsNBT = compound.getList("Flaps", Tag.TAG_INT);
 		for (Tag inbt : flapsNBT)
@@ -121,9 +121,9 @@ public class BeltTunnelBlockEntity extends SmartBlockEntity implements SidedStor
 		// Backwards compat
 		if (!compound.contains("Sides") && compound.contains("Flaps"))
 			sides.addAll(flaps.keySet());
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 		if (clientPacket)
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> VisualizationHelper.queueUpdate(this));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> VisualizationHelper.queueUpdate(this));
 	}
 
 	private LerpedFloat createChasingFlap() {
@@ -194,7 +194,9 @@ public class BeltTunnelBlockEntity extends SmartBlockEntity implements SidedStor
 	}
 
 	private void sendFlaps() {
-		AllPackets.getChannel().sendToClientsTracking(new TunnelFlapPacket(this, flapsToSend), (ServerLevel) level, getBlockPos());
+		if (level instanceof ServerLevel serverLevel)
+			CatnipServices.NETWORK.sendToClientsTrackingChunk(serverLevel, new ChunkPos(worldPosition), new TunnelFlapPacket(this, flapsToSend));
+
 		flapsToSend.clear();
 	}
 

@@ -21,7 +21,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllTags.AllItemTags;
@@ -52,6 +51,7 @@ import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.ChatFormatting;
@@ -72,6 +72,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -120,7 +121,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 	int windowHeight;
 
 	public EditBox searchBox;
-	EditBox addressBox;
+	AddressEditBox addressBox;
 
 	int emptyTicks = 0;
 	int successTicks = 0;
@@ -377,8 +378,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 					.toLowerCase(Locale.ROOT)
 					.contains(value)
 					|| BuiltInRegistries.ITEM.getKey(stack.getItem())
-					.getPath()
-					.contains(value)) {
+						.getPath()
+						.contains(value)) {
 					displayedItemsInCategory.add(entry);
 					continue;
 				}
@@ -457,11 +458,11 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics graphics) {
-		PoseStack ms = graphics.pose();
+	public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		PoseStack ms = guiGraphics.pose();
 		ms.pushPose();
 		ms.translate(0, 0, -300);
-		super.renderBackground(graphics);
+		super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 		ms.popPose();
 	}
 
@@ -494,19 +495,21 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 				.style(ChatFormatting.ITALIC)
 				.component(), addressBox.getX(), addressBox.getY(), 0xff_CDBCA8, false);
 		}
-		
+
 		// Render keeper
 		int entitySizeOffset = 0;
 		LivingEntity keeper = stockKeeper.get();
 		if (keeper != null && keeper.isAlive()) {
 			ms.pushPose();
-			ms.translate(0, 0, -300);
+			ms.translate(0, 0, 50);
 			entitySizeOffset = (int) (Math.max(0, keeper.getBoundingBox()
 				.getXsize() - 1) * 50);
+			int entitySizeOffsetY = (int) (Math.max(0, keeper.getBoundingBox()
+				.getYsize() - 1) * 25);
 			int entityX = x - 35 - entitySizeOffset;
-			int entityY = y + windowHeight - 17;
-			InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, entityX, entityY, 50, entityX - mouseX,
-				Mth.clamp(entityY - mouseY, -50, 10), keeper);
+			int entityY = y + windowHeight - 47 - entitySizeOffsetY;
+			InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, entityX - 100, entityY - 100, entityX + 100,
+				entityY + 100, 50, 0, mouseX, Mth.clamp(mouseY, entityY - 50, entityY + 10), keeper);
 			ms.popPose();
 		}
 
@@ -514,8 +517,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		if (keeperBE != null && !keeperBE.isRemoved()) {
 			ms.pushPose();
 			int entityX = x - 35;
-			int entityY = y + windowHeight - 23;
-			ms.translate(entityX, entityY, -100);
+			int entityY = y + windowHeight - 43;
+			ms.translate(entityX, entityY, -0);
 			ms.mulPose(Axis.XP.rotationDegrees(-22.5f));
 			ms.mulPose(Axis.YP.rotationDegrees(-45));
 			ms.scale(48, -48, 48);
@@ -782,7 +785,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 
 			if (recipeHovered) {
 				ArrayList<Component> lines =
-					new ArrayList<>(entry.stack.getTooltipLines(minecraft.player, TooltipFlag.NORMAL));
+					new ArrayList<>(entry.stack.getTooltipLines(TooltipContext.of(minecraft.level), minecraft.player, TooltipFlag.NORMAL));
 				if (lines.size() > 0)
 					lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
 						.copy()));
@@ -920,7 +923,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 	@Nullable
 	private BigItemStack getOrderForItem(ItemStack stack) {
 		for (BigItemStack entry : itemsToOrder)
-			if (ItemHandlerHelper.canItemStacksStack(stack, entry.stack))
+			if (ItemStack.isSameItemSameComponents(stack, entry.stack))
 				return entry;
 		return null;
 	}
@@ -1066,8 +1069,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		if (isAdmin && itemScroll.getChaseTarget() == 0 && lmb && pMouseX > lockX && pMouseX <= lockX + 15
 			&& pMouseY > lockY && pMouseY <= lockY + 15) {
 			isLocked = !isLocked;
-			AllPackets.getChannel()
-				.sendToServer(new StockKeeperLockPacket(blockEntity.getBlockPos(), isLocked));
+			CatnipServices.NETWORK.sendToServer(new StockKeeperLockPacket(blockEntity.getBlockPos(), isLocked));
 			playUiSound(SoundEvents.UI_BUTTON_CLICK.value(), 1, 1);
 			return true;
 		}
@@ -1171,8 +1173,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-		if (addressBox.mouseScrolled(mouseX, mouseY, delta))
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+		if (addressBox.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
 			return true;
 
 		Couple<Integer> hoveredSlot = getHoveredSlot((int) mouseX, (int) mouseY);
@@ -1180,7 +1182,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 
 		if (noHover || hoveredSlot.getFirst() >= 0 && !hasShiftDown() && getMaxScroll() != 0) {
 			int maxScroll = getMaxScroll();
-			int direction = (int) (Math.ceil(Math.abs(delta)) * -Math.signum(delta));
+			int direction = (int) (Math.ceil(Math.abs(scrollY)) * -Math.signum(scrollY));
 			float newTarget = Mth.clamp(Math.round(itemScroll.getChaseTarget() + direction), 0, maxScroll);
 			itemScroll.chase(newTarget, 0.5, Chaser.EXP);
 			return true;
@@ -1193,8 +1195,8 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 			: displayedItems.get(hoveredSlot.getFirst())
 			.get(hoveredSlot.getSecond());
 
-		boolean remove = delta < 0;
-		int transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown() ? 10 : 1);
+		boolean remove = scrollY < 0;
+		int transfer = Mth.ceil(Math.abs(scrollY)) * (hasControlDown() ? 10 : 1);
 
 		if (recipeClicked && entry instanceof CraftableBigItemStack cbis) {
 			requestCraftable(cbis, remove ? -transfer : transfer);
@@ -1330,11 +1332,10 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 
 	@Override
 	public void removed() {
-		SimpleChannel channel = AllPackets.getChannel();
 		BlockPos pos = blockEntity.getBlockPos();
-		channel.sendToServer(new PackageOrderRequestPacket(pos, new PackageOrder(Collections.emptyList()),
+		CatnipServices.NETWORK.sendToServer(new PackageOrderRequestPacket(pos, new PackageOrder(Collections.emptyList()),
 			addressBox.getValue(), false, PackageOrder.empty()));
-		channel.sendToServer(new StockKeeperCategoryHidingPacket(pos, new ArrayList<>(hiddenCategories)));
+		CatnipServices.NETWORK.sendToServer(new StockKeeperCategoryHidingPacket(pos, new ArrayList<>(hiddenCategories)));
 		super.removed();
 	}
 
@@ -1358,8 +1359,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 			if (recipesToOrder.get(0).recipe instanceof CraftingRecipe cr)
 				craftingRequest = new PackageOrder(FactoryPanelScreen.convertRecipeToPackageOrderContext(cr, itemsToOrder));
 
-		AllPackets.getChannel()
-			.sendToServer(new PackageOrderRequestPacket(blockEntity.getBlockPos(), new PackageOrder(itemsToOrder),
+		CatnipServices.NETWORK.sendToServer(new PackageOrderRequestPacket(blockEntity.getBlockPos(), new PackageOrder(itemsToOrder),
 				addressBox.getValue(), encodeRequester, craftingRequest));
 
 		itemsToOrder = new ArrayList<>();
@@ -1517,7 +1517,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 					if (asBis.count > 0)
 						valid.add(asBis);
 					for (ItemStack visitedStack : visited) {
-						if (!ItemHandlerHelper.canItemStacksStack(visitedStack, entry.stack))
+						if (!ItemStack.isSameItemSameComponents(visitedStack, entry.stack))
 							continue;
 						visitedStack.grow(1);
 						continue Entries;
@@ -1549,7 +1549,7 @@ public class StockKeeperRequestScreen extends AbstractSimiContainerScreen<StockK
 		for (ItemStack visitedItem : visited) {
 			for (List<BigItemStack> list : validEntriesByIngredient) {
 				for (BigItemStack entry : list) {
-					if (!ItemHandlerHelper.canItemStacksStack(entry.stack, visitedItem))
+					if (!ItemStack.isSameItemSameComponents(entry.stack, visitedItem))
 						continue;
 					entry.count = entry.count / visitedItem.getCount();
 				}

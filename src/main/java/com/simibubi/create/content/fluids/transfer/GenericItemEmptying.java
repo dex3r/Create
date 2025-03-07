@@ -10,6 +10,8 @@ import net.createmod.catnip.data.Pair;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
@@ -25,14 +27,11 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandle
 
 public class GenericItemEmptying {
 
-	private static final Container WRAPPER = new ItemStackHandlerContainer(1);
-
 	public static boolean canItemBeEmptied(Level world, ItemStack stack) {
 		if (PotionFluidHandler.isPotionItem(stack))
 			return true;
 
-		WRAPPER.setItem(0, stack);
-		if (AllRecipeTypes.EMPTYING.find(WRAPPER, world)
+		if (AllRecipeTypes.EMPTYING.find(new SingleRecipeInput(stack), world)
 			.isPresent())
 			return true;
 
@@ -46,10 +45,9 @@ public class GenericItemEmptying {
 		if (PotionFluidHandler.isPotionItem(stack))
 			return PotionFluidHandler.emptyPotion(stack, simulate);
 
-		WRAPPER.setItem(0, stack);
-		Optional<Recipe<Container>> recipe = AllRecipeTypes.EMPTYING.find(WRAPPER, world);
+		Optional<RecipeHolder<Recipe<SingleRecipeInput>>> recipe = AllRecipeTypes.EMPTYING.find(new SingleRecipeInput(stack), world);
 		if (recipe.isPresent()) {
-			EmptyingRecipe emptyingRecipe = (EmptyingRecipe) recipe.get();
+			EmptyingRecipe emptyingRecipe = (EmptyingRecipe) recipe.get().value();
 			List<ItemStack> results = emptyingRecipe.rollResults();
 			if (!simulate)
 				stack.shrink(1);

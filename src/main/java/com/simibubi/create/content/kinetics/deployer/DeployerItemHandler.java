@@ -7,6 +7,13 @@ import java.util.function.Supplier;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 
+import net.minecraft.core.component.DataComponents;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -57,7 +64,7 @@ public class DeployerItemHandler extends SnapshotParticipant<Unit> implements St
 			return maxInsert;
 		}
 
-		if (!ItemHandlerHelper.canItemStacksStack(held, stack))
+		if (!ItemStack.isSameItemSameComponents(held, stack))
 			return 0;
 
 		int space = held.getMaxStackSize() - held.getCount();
@@ -196,7 +203,7 @@ public class DeployerItemHandler extends SnapshotParticipant<Unit> implements St
 				return 0;
 			int toExtract = (int) Math.min(maxAmount, stack.getCount());
 			updateSnapshots(transaction);
-			ItemStack newStack = ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - toExtract);
+			ItemStack newStack = io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - toExtract);
 			heldSetter.accept(newStack);
 			return toExtract;
 		}

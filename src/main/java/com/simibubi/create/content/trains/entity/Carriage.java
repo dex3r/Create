@@ -17,6 +17,9 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.apache.commons.lang3.mutable.MutableDouble;
 
 import com.simibubi.create.content.contraptions.Contraption;
@@ -29,14 +32,20 @@ import com.simibubi.create.content.trains.graph.TrackNodeLocation;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -54,6 +63,12 @@ import net.fabricmc.api.Environment;
 import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
 
 public class Carriage {
+	public static final StreamCodec<RegistryFriendlyByteBuf, Carriage> STREAM_CODEC = StreamCodec.composite(
+			CarriageBogey.STREAM_CODEC, carriage -> carriage.bogeys.getFirst(),
+			CatnipStreamCodecBuilders.nullable(CarriageBogey.STREAM_CODEC), carriage -> carriage.bogeys.getSecond(),
+			ByteBufCodecs.VAR_INT, carriage -> carriage.bogeySpacing,
+			Carriage::new
+	);
 
 	public static final AtomicInteger netIdGenerator = new AtomicInteger();
 
@@ -450,7 +465,7 @@ public class Carriage {
 		}
 	}
 
-	public CompoundTag write(DimensionPalette dimensions) {
+	public CompoundTag write(DimensionPalette dimensions, HolderLookup.Provider registries) {
 		CompoundTag tag = new CompoundTag();
 		tag.put("FirstBogey", bogeys.getFirst()
 			.write(dimensions));
@@ -474,8 +489,11 @@ public class Carriage {
 				continue;
 			Map<UUID, Integer> mapping = contraption.getSeatMapping();
 			for (Entity passenger : entity.getPassengers())
-				if (mapping.containsKey(passenger.getUUID()))
-					passengerMap.put(mapping.get(passenger.getUUID()), NBTSerializer.serializeNBTCompound(passenger));
+				if (mapping.containsKey(passenger.getUUID())) {
+					CompoundTag data = new CompoundTag();
+					if (passenger.saveAsPassenger(data))
+						passengerMap.put(mapping.get(passenger.getUUID()), data);
+				}
 		}
 
 		tag.put("Entity", serialisedEntity.copy());
@@ -487,7 +505,7 @@ public class Carriage {
 
 		tag.put("EntityPositioning", NBTHelper.writeCompoundList(entities.entrySet(), e -> {
 			CompoundTag c = e.getValue()
-				.write();
+				.write(registries);
 			c.putInt("Dim", dimensions.encode(e.getKey()));
 			return c;
 		}));
@@ -496,13 +514,14 @@ public class Carriage {
 	}
 
 	private void serialize(Entity entity) {
-		serialisedEntity = NBTSerializer.serializeNBTCompound(entity);
+		serialisedEntity = new CompoundTag();
+		entity.saveAsPassenger(serialisedEntity);
 		serialisedEntity.remove("Passengers");
 		serialisedEntity.getCompound("Contraption")
 			.remove("Passengers");
 	}
 
-	public static Carriage read(CompoundTag tag, TrackGraph graph, DimensionPalette dimensions) {
+	public static Carriage read(CompoundTag tag, HolderLookup.Provider registries, TrackGraph graph, DimensionPalette dimensions) {
 		CarriageBogey bogey1 = CarriageBogey.read(tag.getCompound("FirstBogey"), graph, dimensions);
 		CarriageBogey bogey2 =
 			tag.contains("SecondBogey") ? CarriageBogey.read(tag.getCompound("SecondBogey"), graph, dimensions) : null;
@@ -516,7 +535,7 @@ public class Carriage {
 
 		NBTHelper.iterateCompoundList(tag.getList("EntityPositioning", Tag.TAG_COMPOUND),
 			c -> carriage.getDimensional(dimensions.decode(c.getInt("Dim")))
-				.read(c));
+				.read(c, registries));
 
 		CompoundTag passengersTag = tag.getCompound("Passengers");
 		passengersTag.getAllKeys()
@@ -633,11 +652,11 @@ public class Carriage {
 			return pivot;
 		}
 
-		public CompoundTag write() {
+		public CompoundTag write(HolderLookup.Provider registries) {
 			CompoundTag tag = new CompoundTag();
 			tag.putFloat("Cutoff", cutoff);
 			tag.putInt("DiscardTicks", discardTicks);
-			storage.write(tag, false);
+			storage.write(tag, registries, false);
 			if (pivot != null)
 				tag.put("Pivot", pivot.write(null));
 			if (positionAnchor != null)
@@ -647,10 +666,10 @@ public class Carriage {
 			return tag;
 		}
 
-		public void read(CompoundTag tag) {
+		public void read(CompoundTag tag, HolderLookup.Provider registries) {
 			cutoff = tag.getFloat("Cutoff");
 			discardTicks = tag.getInt("DiscardTicks");
-			storage.read(tag, false, null);
+			storage.read(tag, registries, false, null);
 			if (tag.contains("Pivot"))
 				pivot = TrackNodeLocation.read(tag.getCompound("Pivot"), null);
 			if (positionAnchor != null)
@@ -753,7 +772,9 @@ public class Carriage {
 					continue;
 				}
 
-				serialisedPassengers.put(seat, NBTSerializer.serializeNBTCompound(passenger));
+				CompoundTag passengerData = new CompoundTag();
+				passenger.saveAsPassenger(passengerData);
+				serialisedPassengers.put(seat, passengerData);
 				passenger.discard();
 			}
 
@@ -801,7 +822,7 @@ public class Carriage {
 			cc.portalCutoffMax = maxAllowedLocalCoord();
 			if (!entity.level().isClientSide())
 				return;
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> invalidate(cce));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> invalidate(cce));
 		}
 
 		@Environment(EnvType.CLIENT)
@@ -848,7 +869,9 @@ public class Carriage {
 						continue;
 					}
 
-					serialisedPassengers.put(seat, NBTSerializer.serializeNBTCompound(passenger));
+					CompoundTag passengerData = new CompoundTag();
+					passenger.saveAsPassenger(passengerData);
+					serialisedPassengers.put(seat, passengerData);
 				}
 			}
 

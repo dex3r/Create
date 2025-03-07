@@ -5,7 +5,10 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import com.simibubi.create.AllPackets;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 import com.simibubi.create.content.logistics.filter.AttributeFilterScreen;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
@@ -14,6 +17,7 @@ import com.simibubi.create.foundation.gui.menu.GhostItemSubmitPacket;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.ingredients.ITypedIngredient;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.world.inventory.Slot;
@@ -87,7 +91,7 @@ public class GhostIngredientHandler<T extends GhostItemMenu<?>>
 				return;
 
 			// sync new filter contents with server
-			AllPackets.getChannel().sendToServer(new GhostItemSubmitPacket(stack, slotIndex));
+			CatnipServices.NETWORK.sendToServer(new GhostItemSubmitPacket(stack, slotIndex));
 		}
 	}
 }

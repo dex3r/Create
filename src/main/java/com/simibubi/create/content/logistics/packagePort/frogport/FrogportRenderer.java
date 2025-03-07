@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class FrogportRenderer extends SmartBlockEntityRenderer<FrogportBlockEntity> {
 
@@ -153,7 +154,7 @@ public class FrogportRenderer extends SmartBlockEntityRenderer<FrogportBlockEnti
 		if (scale < 0.45)
 			return;
 		ResourceLocation key = BuiltInRegistries.ITEM.getKey(blockEntity.animatedPackage.getItem());
-		if (key == null)
+		if (key == BuiltInRegistries.ITEM.getDefaultKey())
 			return;
 		SuperByteBuffer rigBuffer =
 			CachedBuffers.partial(AllPartialModels.PACKAGE_RIGGING.get(key), blockEntity.getBlockState());

@@ -2,10 +2,11 @@ package com.simibubi.create.content.fluids.transfer;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.compat.recipeViewerCommon.SequencedAssemblySubCategoryType;
+import com.simibubi.create.compat.jei.category.sequencedAssembly.SequencedAssemblySubCategory;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeParams;
 import com.simibubi.create.content.processing.sequenced.IAssemblyRecipe;
@@ -13,28 +14,24 @@ import com.simibubi.create.foundation.fluid.FluidIngredient;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.material.Fluid;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.fluids.FluidStack;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.util.FluidUtil;
-
-public class FillingRecipe extends ProcessingRecipe<Container> implements IAssemblyRecipe {
+public class FillingRecipe extends ProcessingRecipe<SingleRecipeInput> implements IAssemblyRecipe {
 
 	public FillingRecipe(ProcessingRecipeParams params) {
 		super(AllRecipeTypes.FILLING, params);
 	}
 
 	@Override
-	public boolean matches(Container inv, Level p_77569_2_) {
+	public boolean matches(SingleRecipeInput inv, Level p_77569_2_) {
 		return ingredients.get(0)
-				.test(inv.getItem(0));
+			.test(inv.getItem(0));
 	}
 
 	@Override
@@ -59,25 +56,23 @@ public class FillingRecipe extends ProcessingRecipe<Container> implements IAssem
 	}
 
 	@Override
-	public void addAssemblyIngredients(List<Ingredient> list) {
-}
+	public void addAssemblyIngredients(List<Ingredient> list) {}
+
 	@Override
 	public void addAssemblyFluidIngredients(List<FluidIngredient> list) {
 		list.add(getRequiredFluid());
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public Component getDescriptionForAssembly() {
 		List<FluidStack> matchingFluidStacks = fluidIngredients.get(0)
 			.getMatchingFluidStacks();
 		if (matchingFluidStacks.size() == 0) {
-			return Component.literal("Invalid");
-		}
-		Fluid fluid = matchingFluidStacks.get(0).getFluid();
-		String translationKey = FluidUtil.getTranslationKey(fluid);
+            return Component.literal("Invalid");
+        }
 		return CreateLang.translateDirect("recipe.assembly.spout_filling_fluid",
-			Component.translatable(translationKey).getString());
+			matchingFluidStacks.get(0).getHoverName().getString());
 	}
 
 	@Override
@@ -86,8 +81,8 @@ public class FillingRecipe extends ProcessingRecipe<Container> implements IAssem
 	}
 
 	@Override
-	public SequencedAssemblySubCategoryType getJEISubCategory() {
-		return SequencedAssemblySubCategoryType.SPOUTING;
+	public Supplier<Supplier<SequencedAssemblySubCategory>> getJEISubCategory() {
+		return () -> SequencedAssemblySubCategory.AssemblySpouting::new;
 	}
 
 }

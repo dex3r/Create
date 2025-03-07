@@ -215,7 +215,7 @@ public class ConnectivityHandler {
 					}
 					if (controller instanceof IMultiBlockEntityContainer.Fluid ifluidCon && ifluidCon.hasTank()) {
 						FluidStack otherFluid = ifluidCon.getFluid(0);
-						if (!fluid.isEmpty() && !otherFluid.isEmpty() && !fluid.isFluidEqual(otherFluid))
+						if (!fluid.isEmpty() && !otherFluid.isEmpty() && !FluidStack.isSameFluidSameComponents(fluid, otherFluid))
 							break Search;
 					}
 				}

@@ -101,7 +101,7 @@ public class ArrivalSoundQueue {
 		CompoundTag tag = tagIn.getCompound("SoundQueue");
 		offset = tag.getInt("Offset");
 		NBTHelper.iterateCompoundList(tag.getList("Sources", Tag.TAG_COMPOUND),
-			c -> add(c.getInt("Tick"), NbtUtils.readBlockPos(c.getCompound("Pos"))));
+			c -> add(c.getInt("Tick"), NBTHelper.readBlockPos(c, "Pos")));
 	}
 
 	public void add(int offset, BlockPos localPos) {

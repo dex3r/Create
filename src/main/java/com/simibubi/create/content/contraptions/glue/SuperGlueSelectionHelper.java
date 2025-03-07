@@ -11,6 +11,8 @@ import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -74,7 +76,7 @@ public class SuperGlueSelectionHelper {
 			ItemStack stack = items.get(slot);
 			if (stack.isEmpty())
 				continue;
-			if (stack.getTag() != null && stack.getTag().contains("Unbreakable"))
+			if (stack.has(DataComponents.UNBREAKABLE))
 				return true;
 			if (!stack.isDamageableItem())
 				continue;
@@ -83,9 +85,8 @@ public class SuperGlueSelectionHelper {
 
 			int charges = Math.min(requiredAmount, stack.getMaxDamage() - stack.getDamageValue());
 
-			if (!simulate)
-				stack.hurtAndBreak(charges, player, i == -1 ? SuperGlueItem::onBroken : $ -> {
-				});
+			if (!simulate && player.level() instanceof ServerLevel serverLevel)
+				stack.hurtAndBreak(charges, serverLevel, player, i == -1 ? $ -> SuperGlueItem.onBroken(player) : $ -> {});
 
 			requiredAmount -= charges;
 			if (requiredAmount <= 0)

@@ -9,6 +9,9 @@ import com.simibubi.create.foundation.fluid.FluidRenderer;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.render.CachedBuffers;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
+
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -55,7 +58,7 @@ public class SpoutRenderer extends SafeBlockEntityRenderer<SpoutBlockEntity> {
 			FluidRenderer.renderFluidBox(fluidStack.getFluid(), fluidStack.getAmount(),
 					min, min - yOffset, min,
 					max, min, max,
-					buffer, ms, light, false, true, fluidStack.getTag());
+					buffer, ms, light, false, true, fluidStack.getComponentsPatch());
 
 			ms.popPose();
 		}
@@ -70,7 +73,7 @@ public class SpoutRenderer extends SafeBlockEntityRenderer<SpoutBlockEntity> {
 			radius = (float) (Math.pow(((2 * processingProgress) - 1), 2) - 1);
 			AABB bb = new AABB(0.5, 0.0, 0.5, 0.5, -1.2, 0.5).inflate(radius / 32f);
 			FluidRenderer.renderFluidBox(fluidStack.getFluid(), fluidStack.getAmount(), (float) bb.minX, (float) bb.minY, (float) bb.minZ,
-				(float) bb.maxX, (float) bb.maxY, (float) bb.maxZ, buffer, ms, light, true, true, fluidStack.getTag());
+				(float) bb.maxX, (float) bb.maxY, (float) bb.maxZ, buffer, ms, light, true, true, fluidStack.getComponentsPatch());
 		}
 
 		float squeeze = radius;

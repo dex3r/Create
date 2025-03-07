@@ -2,19 +2,34 @@ package com.simibubi.create.content.fluids;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.simibubi.create.AllFluids;
 import com.simibubi.create.api.effect.OpenPipeEffectHandler;
 import com.simibubi.create.content.fluids.pipes.VanillaFluidTargets;
+import com.simibubi.create.foundation.ICapabilityProvider;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.mixin.accessor.FlowingFluidAccessor;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+
 import io.github.tropheusj.milk.Milk;
 import net.createmod.catnip.math.BlockFace;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -48,6 +63,8 @@ public class OpenEndedPipe extends FlowSource {
 	private OpenEndFluidHandler fluidHandler;
 	private BlockPos outputPos;
 	private boolean wasPulling;
+
+	private final ICapabilityProvider<IFluidHandler> fluidHandlerProvider = ICapabilityProvider.of(() -> fluidHandler);
 
 	public OpenEndedPipe(BlockFace face) {
 		super(face);
@@ -90,18 +107,19 @@ public class OpenEndedPipe extends FlowSource {
 		return true;
 	}
 
-	public CompoundTag serializeNBT() {
+	public CompoundTag serializeNBT(HolderLookup.Provider registries) {
 		CompoundTag compound = new CompoundTag();
-		fluidHandler.writeToNBT(compound);
+		fluidHandler.writeToNBT(registries, compound);
 		compound.putBoolean("Pulling", wasPulling);
 		compound.put("Location", location.serializeNBT());
 		return compound;
 	}
 
-	public static OpenEndedPipe fromNBT(CompoundTag compound, BlockPos blockEntityPos) {
+	public static OpenEndedPipe fromNBT(CompoundTag compound, HolderLookup.Provider registries, BlockPos blockEntityPos) {
 		BlockFace fromNBT = BlockFace.fromNBT(compound.getCompound("Location"));
 		OpenEndedPipe oep = new OpenEndedPipe(new BlockFace(blockEntityPos, fromNBT.getFace()));
-		oep.fluidHandler.readFromNBT(compound);
+
+		oep.fluidHandler.readFromNBT(registries, compound);
 		oep.wasPulling = compound.getBoolean("Pulling");
 		return oep;
 	}
@@ -245,7 +263,7 @@ public class OpenEndedPipe extends FlowSource {
 			FluidStack containedFluidStack = getFluid();
 			boolean hasBlockState = FluidHelper.hasBlockState(containedFluidStack.getFluid());
 
-			if (!containedFluidStack.isEmpty() && !containedFluidStack.canFill(resource))
+			if (!containedFluidStack.isEmpty() && !FluidStack.isSameFluidSameComponents(containedFluidStack, resource))
 				setFluid(FluidStack.EMPTY);
 			if (wasPulling)
 				wasPulling = false;
@@ -292,14 +310,14 @@ public class OpenEndedPipe extends FlowSource {
 			FluidStack drainedFromWorld = removeFluidFromSpace(transaction);
 			if (drainedFromWorld.isEmpty())
 				return 0;
-			if (!drainedFromWorld.canFill(extractedVariant))
+			if (!FluidStack.isSameFluidSameComponents(drainedFromWorld, filter))
 				return 0;
 
 			long remainder = drainedFromWorld.getAmount() - maxAmount;
 			drainedFromWorld.setAmount(maxAmount);
 
 			if (remainder > 0) {
-				if (!getFluid().isEmpty() && !getFluid().isFluidEqual(drainedFromWorld))
+				if (!getFluid().isEmpty() && !FluidStack.isSameFluidSameComponents(getFluid(), drainedFromWorld))
 					setFluid(FluidStack.EMPTY);
 				super.insert(drainedFromWorld.getType(), remainder, transaction);
 			}

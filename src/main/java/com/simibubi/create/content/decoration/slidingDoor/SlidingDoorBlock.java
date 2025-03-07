@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -44,13 +43,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class SlidingDoorBlock extends DoorBlock implements IWrenchable, IBE<SlidingDoorBlockEntity>, IHaveBigOutline {
 
 	public static final Supplier<BlockSetType> TRAIN_SET_TYPE =
-		() -> new BlockSetType("train", true, SoundType.NETHERITE_BLOCK, SoundEvents.IRON_DOOR_CLOSE,
+		() -> new BlockSetType("train", true, true, true,
+			BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.NETHERITE_BLOCK, SoundEvents.IRON_DOOR_CLOSE,
 			SoundEvents.IRON_DOOR_OPEN, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundEvents.IRON_TRAPDOOR_OPEN,
 			SoundEvents.METAL_PRESSURE_PLATE_CLICK_OFF, SoundEvents.METAL_PRESSURE_PLATE_CLICK_ON,
 			SoundEvents.STONE_BUTTON_CLICK_OFF, SoundEvents.STONE_BUTTON_CLICK_ON);
 
 	public static final Supplier<BlockSetType> GLASS_SET_TYPE =
-		() -> new BlockSetType("train", true, SoundType.NETHERITE_BLOCK, SoundEvents.IRON_DOOR_CLOSE,
+		() -> new BlockSetType("train", true, true, true,
+			BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.NETHERITE_BLOCK, SoundEvents.IRON_DOOR_CLOSE,
 			SoundEvents.IRON_DOOR_OPEN, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundEvents.IRON_TRAPDOOR_OPEN,
 			SoundEvents.METAL_PRESSURE_PLATE_CLICK_OFF, SoundEvents.METAL_PRESSURE_PLATE_CLICK_ON,
 			SoundEvents.STONE_BUTTON_CLICK_OFF, SoundEvents.STONE_BUTTON_CLICK_ON);
@@ -66,8 +67,8 @@ public class SlidingDoorBlock extends DoorBlock implements IWrenchable, IBE<Slid
 		return new SlidingDoorBlock(p_52737_, GLASS_SET_TYPE.get(), folds);
 	}
 
-	public SlidingDoorBlock(Properties p_52737_, BlockSetType type, boolean folds) {
-		super(p_52737_, type);
+	public SlidingDoorBlock(Properties properties, BlockSetType type, boolean folds) {
+		super(type, properties);
 		this.folds = folds;
 	}
 
@@ -213,26 +214,24 @@ public class SlidingDoorBlock extends DoorBlock implements IWrenchable, IBE<Slid
 	}
 
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-		BlockHitResult pHit) {
+	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+		state = state.cycle(OPEN);
+		if (state.getValue(OPEN))
+			state = state.setValue(VISIBLE, false);
+		level.setBlock(pos, state, 10);
+		level.gameEvent(player, isOpen(state) ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, pos);
 
-		pState = pState.cycle(OPEN);
-		if (pState.getValue(OPEN))
-			pState = pState.setValue(VISIBLE, false);
-		pLevel.setBlock(pPos, pState, 10);
-		pLevel.gameEvent(pPlayer, isOpen(pState) ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, pPos);
-
-		DoorHingeSide hinge = pState.getValue(HINGE);
-		Direction facing = pState.getValue(FACING);
+		DoorHingeSide hinge = state.getValue(HINGE);
+		Direction facing = state.getValue(FACING);
 		BlockPos otherPos =
-			pPos.relative(hinge == DoorHingeSide.LEFT ? facing.getClockWise() : facing.getCounterClockWise());
-		BlockState otherDoor = pLevel.getBlockState(otherPos);
-		if (isDoubleDoor(pState, hinge, facing, otherDoor))
-			use(otherDoor, pLevel, otherPos, pPlayer, pHand, pHit);
-		else if (pState.getValue(OPEN))
-			pLevel.gameEvent(pPlayer, GameEvent.BLOCK_OPEN, pPos);
+			pos.relative(hinge == DoorHingeSide.LEFT ? facing.getClockWise() : facing.getCounterClockWise());
+		BlockState otherDoor = level.getBlockState(otherPos);
+		if (isDoubleDoor(state, hinge, facing, otherDoor))
+			useWithoutItem(otherDoor, level, otherPos, player, hitResult);
+		else if (state.getValue(OPEN))
+			level.gameEvent(player, GameEvent.BLOCK_OPEN, pos);
 
-		return InteractionResult.sidedSuccess(pLevel.isClientSide);
+		return InteractionResult.sidedSuccess(level.isClientSide);
 	}
 
 	public void deferUpdate(LevelAccessor level, BlockPos pos) {

@@ -2,6 +2,9 @@ package com.simibubi.create.content.contraptions.actors.psi;
 
 import java.util.Optional;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
@@ -16,6 +19,7 @@ import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -88,7 +92,7 @@ public class PortableStorageInterfaceMovement implements MovementBehaviour {
 		if (!context.data.contains(_workingPos_))
 			return;
 
-		BlockPos pos = NbtUtils.readBlockPos(context.data.getCompound(_workingPos_));
+		BlockPos pos = NBTHelper.readBlockPos(context.data, _workingPos_);
 		Vec3 target = VecHelper.getCenterOf(pos);
 
 		if (!context.stall && !onCarriage

@@ -1,46 +1,32 @@
 package com.simibubi.create.content.contraptions.gantry;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import com.tterrag.registrate.fabric.EnvExecutor;
+import com.simibubi.create.AllPackets;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-import net.fabricmc.api.EnvType;
+public record GantryContraptionUpdatePacket(int entityID, double coord, double motion, double sequenceLimit) implements ClientboundPacketPayload {
+	public static final StreamCodec<ByteBuf, GantryContraptionUpdatePacket> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.INT, GantryContraptionUpdatePacket::entityID,
+			ByteBufCodecs.DOUBLE, GantryContraptionUpdatePacket::coord,
+			ByteBufCodecs.DOUBLE, GantryContraptionUpdatePacket::motion,
+			ByteBufCodecs.DOUBLE, GantryContraptionUpdatePacket::sequenceLimit,
+			GantryContraptionUpdatePacket::new
+	);
 
-public class GantryContraptionUpdatePacket extends SimplePacketBase {
-
-	int entityID;
-	double coord;
-	double motion;
-	double sequenceLimit;
-
-	public GantryContraptionUpdatePacket(int entityID, double coord, double motion, double sequenceLimit) {
-		this.entityID = entityID;
-		this.coord = coord;
-		this.motion = motion;
-		this.sequenceLimit = sequenceLimit;
-	}
-
-	public GantryContraptionUpdatePacket(FriendlyByteBuf buffer) {
-		entityID = buffer.readInt();
-		coord = buffer.readFloat();
-		motion = buffer.readFloat();
-		sequenceLimit = buffer.readFloat();
+	@Override
+	@OnlyIn(Dist.CLIENT)
+	public void handle(LocalPlayer player) {
+		GantryContraptionEntity.handlePacket(this);
 	}
 
 	@Override
-	public void write(FriendlyByteBuf buffer) {
-		buffer.writeInt(entityID);
-		buffer.writeFloat((float) coord);
-		buffer.writeFloat((float) motion);
-		buffer.writeFloat((float) sequenceLimit);
+	public PacketTypeProvider getTypeProvider() {
+		return AllPackets.GANTRY_UPDATE;
 	}
-
-	@Override
-	public boolean handle(Context context) {
-		context.enqueueWork(
-			() -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> GantryContraptionEntity.handlePacket(this)));
-		return true;
-	}
-
 }

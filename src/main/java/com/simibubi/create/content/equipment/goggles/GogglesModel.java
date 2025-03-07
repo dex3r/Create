@@ -3,6 +3,8 @@ package com.simibubi.create.content.equipment.goggles;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPartialModels;
 
+import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
+
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 

@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllStructureProcessorTypes;
 
 import net.createmod.catnip.nbt.NBTProcessors;
@@ -25,9 +26,7 @@ import io.github.fabricators_of_create.porting_lib.extensions.extensions.Structu
 
 public class SchematicProcessor extends StructureProcessor implements StructureProcessorExtensions {
 	public static final SchematicProcessor INSTANCE = new SchematicProcessor();
-	public static final Codec<SchematicProcessor> CODEC = Codec.unit(() -> {
-		return INSTANCE;
-	});
+	public static final MapCodec<SchematicProcessor> CODEC = MapCodec.unit(() -> INSTANCE);
 
 
 	@Nullable

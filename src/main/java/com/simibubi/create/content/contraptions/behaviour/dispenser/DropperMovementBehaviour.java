@@ -2,6 +2,9 @@ package com.simibubi.create.content.contraptions.behaviour.dispenser;
 
 import java.util.function.Predicate;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
@@ -81,7 +84,7 @@ public class DropperMovementBehaviour implements MovementBehaviour {
 
 	@Nullable
 	private static ItemStack tryTopOff(ItemStack stack, Storage<ItemVariant> from) {
-		Predicate<ItemStack> test = otherStack -> ItemStack.isSameItemSameTags(stack, otherStack);
+		Predicate<ItemStack> test = otherStack -> ItemStack.isSameItemSameComponents(stack, otherStack);
 		int needed = stack.getMaxStackSize() - stack.getCount();
 
 		ItemStack extracted = ItemHelper.extract(from, test, ItemHelper.ExtractionCountMode.UPTO, needed, false);

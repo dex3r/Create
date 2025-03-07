@@ -29,7 +29,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -343,7 +343,7 @@ public class TestFluids {
 		BlockPos farmland = new BlockPos(3, 2, 3);
 		BlockPos depot = new BlockPos(5, 2, 1);
 		helper.pullLever(2, 3, 2);
-		ItemStack waterBottle = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
+		ItemStack waterBottle = PotionContents.createItemStack(Items.POTION, Potions.WATER);
 
 		helper.succeedWhen(() -> {
 			// lava

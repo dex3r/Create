@@ -1,10 +1,13 @@
 package com.simibubi.create.content.redstone.analogLever;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.mixin.accessor.BlockBehaviourAccessor;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +15,6 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -34,13 +36,14 @@ import net.fabricmc.api.Environment;
 
 public class AnalogLeverBlock extends FaceAttachedHorizontalDirectionalBlock implements IBE<AnalogLeverBlockEntity> {
 
+	public static final MapCodec<AnalogLeverBlock> CODEC = simpleCodec(AnalogLeverBlock::new);
+
 	public AnalogLeverBlock(Properties p_i48402_1_) {
 		super(p_i48402_1_);
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
+	public InteractionResult useWithoutItem(BlockState state, Level worldIn, BlockPos pos, Player player, BlockHitResult hit) {
 		if (worldIn.isClientSide) {
 			addParticles(state, worldIn, pos, 1.0F);
 			return InteractionResult.SUCCESS;
@@ -110,10 +113,9 @@ public class AnalogLeverBlock extends FaceAttachedHorizontalDirectionalBlock imp
 		world.updateNeighborsAt(pos.relative(getConnectedDirection(state).getOpposite()), state.getBlock());
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
-		return Blocks.LEVER.getShape(state, worldIn, pos, context);
+	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+		return ((BlockBehaviourAccessor) Blocks.LEVER).create$getShape(state, worldIn, pos, context);
 	}
 
 	@Override
@@ -132,8 +134,12 @@ public class AnalogLeverBlock extends FaceAttachedHorizontalDirectionalBlock imp
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 
+	@Override
+	protected @NotNull MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
+		return CODEC;
+	}
 }

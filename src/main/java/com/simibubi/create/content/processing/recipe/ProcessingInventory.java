@@ -3,6 +3,13 @@ package com.simibubi.create.content.processing.recipe;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
@@ -54,8 +61,8 @@ public class ProcessingInventory extends ItemStackHandlerContainer {
 	}
 
 	@Override
-	public CompoundTag serializeNBT() {
-		CompoundTag nbt = super.serializeNBT();
+	public @NotNull CompoundTag serializeNBT(@NotNull HolderLookup.Provider registries) {
+		CompoundTag nbt = super.serializeNBT(registries);
 		nbt.putFloat("ProcessingTime", remainingTime);
 		nbt.putFloat("RecipeTime", recipeDuration);
 		nbt.putBoolean("AppliedRecipe", appliedRecipe);
@@ -63,11 +70,11 @@ public class ProcessingInventory extends ItemStackHandlerContainer {
 	}
 
 	@Override
-	public void deserializeNBT(CompoundTag nbt) {
+	public void deserializeNBT(@NotNull HolderLookup.Provider registries, CompoundTag nbt) {
 		remainingTime = nbt.getFloat("ProcessingTime");
 		recipeDuration = nbt.getFloat("RecipeTime");
 		appliedRecipe = nbt.getBoolean("AppliedRecipe");
-		super.deserializeNBT(nbt);
+		super.deserializeNBT(registries, nbt);
 		if(isEmpty())
 			appliedRecipe = false;
 	}

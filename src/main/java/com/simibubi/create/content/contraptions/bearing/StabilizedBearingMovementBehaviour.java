@@ -2,6 +2,9 @@ package com.simibubi.create.content.contraptions.bearing;
 
 import javax.annotation.Nullable;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.joml.Quaternionf;
 
 import com.mojang.math.Axis;

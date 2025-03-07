@@ -3,6 +3,7 @@ package com.simibubi.create.foundation.gui.menu;
 import com.simibubi.create.foundation.utility.IInteractionChecker;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -18,7 +19,7 @@ public abstract class MenuBase<T> extends AbstractContainerMenu {
 	public Inventory playerInventory;
 	public T contentHolder;
 
-	protected MenuBase(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	protected MenuBase(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id);
 		init(inv, createOnClient(extraData));
 	}
@@ -38,7 +39,7 @@ public abstract class MenuBase<T> extends AbstractContainerMenu {
 	}
 
 	@Environment(EnvType.CLIENT)
-	protected abstract T createOnClient(FriendlyByteBuf extraData);
+	protected abstract T createOnClient(RegistryFriendlyByteBuf extraData);
 
 	protected abstract void initAndReadInventory(T contentHolder);
 

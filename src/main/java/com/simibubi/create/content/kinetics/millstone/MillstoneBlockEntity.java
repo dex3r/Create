@@ -4,9 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.behaviour.DirectBeltInputBehaviour;
@@ -17,14 +15,28 @@ import com.simibubi.create.foundation.sound.SoundScapes;
 import com.simibubi.create.foundation.sound.SoundScapes.AmbienceGroup;
 
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -44,6 +56,9 @@ import io.github.fabricators_of_create.porting_lib.transfer.ViewOnlyWrappedStora
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerSlot;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class MillstoneBlockEntity extends KineticBlockEntity implements SidedStorageBlockEntity {
 
@@ -109,13 +124,14 @@ public class MillstoneBlockEntity extends KineticBlockEntity implements SidedSto
 			.isEmpty())
 			return;
 
-		if (lastRecipe == null || !lastRecipe.matches(inputInv, level)) {
-			Optional<MillingRecipe> recipe = AllRecipeTypes.MILLING.find(inputInv, level);
+		RecipeWrapper inventoryIn = new RecipeWrapper(inputInv);
+		if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level)) {
+			Optional<RecipeHolder<MillingRecipe>> recipe = AllRecipeTypes.MILLING.find(inventoryIn, level);
 			if (!recipe.isPresent()) {
 				timer = 100;
 				sendData();
 			} else {
-				lastRecipe = recipe.get();
+				lastRecipe = recipe.get().value();
 				timer = lastRecipe.getProcessingDuration();
 				sendData();
 			}
@@ -139,11 +155,13 @@ public class MillstoneBlockEntity extends KineticBlockEntity implements SidedSto
 	}
 
 	private void process() {
-		if (lastRecipe == null || !lastRecipe.matches(inputInv, level)) {
-			Optional<MillingRecipe> recipe = AllRecipeTypes.MILLING.find(inputInv, level);
+		RecipeWrapper inventoryIn = new RecipeWrapper(inputInv);
+
+		if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level)) {
+			Optional<RecipeHolder<MillingRecipe>> recipe = AllRecipeTypes.MILLING.find(inventoryIn, level);
 			if (!recipe.isPresent())
 				return;
-			lastRecipe = recipe.get();
+			lastRecipe = recipe.get().value();
 		}
 
 		try (Transaction t = TransferUtil.getTransaction()) {
@@ -175,19 +193,19 @@ public class MillstoneBlockEntity extends KineticBlockEntity implements SidedSto
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		compound.putInt("Timer", timer);
-		compound.put("InputInventory", inputInv.serializeNBT());
-		compound.put("OutputInventory", outputInv.serializeNBT());
-		super.write(compound, clientPacket);
+		compound.put("InputInventory", inputInv.serializeNBT(registries));
+		compound.put("OutputInventory", outputInv.serializeNBT(registries));
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		timer = compound.getInt("Timer");
-		inputInv.deserializeNBT(compound.getCompound("InputInventory"));
-		outputInv.deserializeNBT(compound.getCompound("OutputInventory"));
-		super.read(compound, clientPacket);
+		inputInv.deserializeNBT(registries, compound.getCompound("InputInventory"));
+		outputInv.deserializeNBT(registries, compound.getCompound("OutputInventory"));
+		super.read(compound, registries, clientPacket);
 	}
 
 	public int getProcessingSpeed() {
@@ -210,7 +228,7 @@ public class MillstoneBlockEntity extends KineticBlockEntity implements SidedSto
 			.isPresent();
 	}
 
-	private class MillstoneInventoryHandler extends CombinedStorage<ItemVariant, ItemStackHandler> {
+	private class MillstoneInventoryHandler extends CombinedStorage<ItemVariant, io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler> {
 
 		public MillstoneInventoryHandler() {
 			super(List.of(inputInv, outputInv));

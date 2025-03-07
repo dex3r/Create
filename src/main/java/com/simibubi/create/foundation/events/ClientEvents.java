@@ -1,14 +1,10 @@
 package com.simibubi.create.foundation.events;
 
-import java.util.List;
+import java.util.function.Supplier;
 
-import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.AllFluids;
-import com.simibubi.create.AllKeys;
-import com.simibubi.create.AllPackets;
-import com.simibubi.create.AllParticleTypes;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.Create;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.compat.trainmap.TrainMapEvents;
@@ -86,10 +82,10 @@ import com.simibubi.create.infrastructure.gui.OpenCreateMenuButton;
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererCallback;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.levelWrappers.WrappedClientLevel;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.StitchedSprite;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
-import net.createmod.ponder.foundation.PonderTooltipHandler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -150,11 +146,15 @@ import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCal
 import io.github.fabricators_of_create.porting_lib.event.common.AttackAirCallback;
 
 public class ClientEvents {
+	@SubscribeEvent
+	public static void onTickPre(ClientTickEvent.Pre event) {
+		onTick( true);
+	}
 
 	public static void onTickStart(Minecraft client) {
 		LinkedControllerClientHandler.tick();
 		ControlsHandler.tick();
-		AirCurrent.tickClientPlayerSounds();
+		AirCurrent.Client.tickClientPlayerSounds();
 		// fabric: fix #608
 		// This tracks the current held item. Because of event order differences from forge, it gets changed too
 		// quickly for the update packet to work properly. Move to here to fix.
@@ -182,7 +182,6 @@ public class ClientEvents {
 		CapabilityMinecartController.tick(world);
 		CouplingPhysics.tick(world);
 
-		PonderTooltipHandler.tick();
 		// ScreenOpener.tick();
 		ServerSpeedProvider.clientTick();
 		BeltConnectorHandler.tick();
@@ -308,7 +307,7 @@ public class ClientEvents {
 	public static void onRenderTick() {
 		if (!isGameActive())
 			return;
-		TurntableHandler.gameRenderTick();
+		TurntableHandler.gameRenderFrame();
 	}
 
 	public static boolean onMount(Entity vehicle, Entity passenger) {
@@ -394,7 +393,7 @@ public class ClientEvents {
 	public static void leftClickEmpty(LocalPlayer player) {
 		ItemStack stack = player.getMainHandItem();
 		if (stack.getItem() instanceof ZapperItem) {
-			AllPackets.getChannel().sendToServer(new LeftClickPacket());
+			CatnipServices.NETWORK.sendToServer(LeftClickPacket.INSTANCE);
 		}
 	}
 
@@ -473,5 +472,4 @@ public class ClientEvents {
 		// Flywheel Events
 		ReloadLevelRendererCallback.EVENT.register(ContraptionRenderInfoManager::onReloadLevelRenderer);
 	}
-
 }

@@ -18,7 +18,7 @@ public class LavaEffectHandler implements OpenPipeEffectHandler {
 
 		List<Entity> entities = level.getEntities((Entity) null, area, entity -> !entity.fireImmune());
 		for (Entity entity : entities) {
-			entity.setSecondsOnFire(3);
+			entity.igniteForSeconds(3);
 		}
 	}
 }

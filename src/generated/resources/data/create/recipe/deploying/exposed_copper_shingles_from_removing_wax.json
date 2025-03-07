@@ -1,0 +1,19 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "create:waxed_exposed_copper_shingles"
+    },
+    {
+      "tag": "minecraft:axes"
+    }
+  ],
+  "keep_held_item": true,
+  "results": [
+    {
+      "item": {
+        "id": "create:exposed_copper_shingles"
+      }
+    }
+  ]
+}

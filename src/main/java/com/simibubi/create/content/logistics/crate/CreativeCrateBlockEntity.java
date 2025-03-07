@@ -2,9 +2,12 @@ package com.simibubi.create.content.logistics.crate;
 
 import java.util.List;
 
+import net.minecraft.core.Direction;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
@@ -12,7 +15,6 @@ import com.simibubi.create.foundation.utility.CreateLang;
 
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,14 +25,13 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 
 public class CreativeCrateBlockEntity extends CrateBlockEntity implements SidedStorageBlockEntity {
+	FilteringBehaviour filtering;
+	BottomlessItemHandler inv;
 
 	public CreativeCrateBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		inv = new BottomlessItemHandler(filtering::getFilter);
 	}
-
-	FilteringBehaviour filtering;
-	private BottomlessItemHandler inv;
 
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {

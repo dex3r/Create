@@ -12,23 +12,26 @@ import java.util.zip.GZIPInputStream;
 
 import javax.annotation.Nonnull;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.schematics.client.SchematicEditScreen;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
 import net.createmod.catnip.gui.ScreenOpener;
-import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -58,39 +61,31 @@ public class SchematicItem extends Item {
 	public static ItemStack create(Level level, String schematic, String owner) {
 		ItemStack blueprint = AllItems.SCHEMATIC.asStack();
 
-		CompoundTag tag = new CompoundTag();
-		tag.putBoolean("Deployed", false);
-		tag.putString("Owner", owner);
-		tag.putString("File", schematic);
-		tag.put("Anchor", NbtUtils.writeBlockPos(BlockPos.ZERO));
-		tag.putString("Rotation", Rotation.NONE.name());
-		tag.putString("Mirror", Mirror.NONE.name());
-		blueprint.setTag(tag);
+		blueprint.set(AllDataComponents.SCHEMATIC_DEPLOYED, false);
+		blueprint.set(AllDataComponents.SCHEMATIC_OWNER, owner);
+		blueprint.set(AllDataComponents.SCHEMATIC_FILE, schematic);
+		blueprint.set(AllDataComponents.SCHEMATIC_ANCHOR, BlockPos.ZERO);
+		blueprint.set(AllDataComponents.SCHEMATIC_ROTATION, Rotation.NONE);
+		blueprint.set(AllDataComponents.SCHEMATIC_MIRROR, Mirror.NONE);
 
 		writeSize(level, blueprint);
 		return blueprint;
 	}
 
 	@Override
-	@Environment(value = EnvType.CLIENT)
-	public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-		if (stack.hasTag()) {
-			if (stack.getTag()
-				.contains("File")) {
-                tooltip.add(Component.literal(ChatFormatting.GOLD + stack.getTag()
-                    .getString("File")));
-            }
+	@Environment(EnvType.CLIENT)
+	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
+		if (stack.has(AllDataComponents.SCHEMATIC_FILE)) {
+			tooltip.add(Component.literal(ChatFormatting.GOLD + stack.get(AllDataComponents.SCHEMATIC_FILE)));
 		} else {
 			tooltip.add(CreateLang.translateDirect("schematic.invalid").withStyle(ChatFormatting.RED));
 		}
-		super.appendHoverText(stack, worldIn, tooltip, flagIn);
+		super.appendHoverText(stack, context, tooltip, flagIn);
 	}
 
 	public static void writeSize(Level level, ItemStack blueprint) {
-		CompoundTag tag = blueprint.getTag();
 		StructureTemplate t = loadSchematic(level, blueprint);
-		tag.put("Bounds", NBTHelper.writeVec3i(t.getSize()));
-		blueprint.setTag(tag);
+		blueprint.set(AllDataComponents.SCHEMATIC_BOUNDS, t.getSize());
 		SchematicInstances.clearHash(blueprint);
 	}
 
@@ -99,10 +94,9 @@ public class SchematicItem extends Item {
 	}
 
 	public static StructurePlaceSettings getSettings(ItemStack blueprint, boolean processNBT) {
-		CompoundTag tag = blueprint.getTag();
 		StructurePlaceSettings settings = new StructurePlaceSettings();
-		settings.setRotation(Rotation.valueOf(tag.getString("Rotation")));
-		settings.setMirror(Mirror.valueOf(tag.getString("Mirror")));
+		settings.setRotation(blueprint.getOrDefault(AllDataComponents.SCHEMATIC_ROTATION, Rotation.NONE));
+		settings.setMirror(blueprint.getOrDefault(AllDataComponents.SCHEMATIC_MIRROR, Mirror.NONE));
 		if (processNBT)
 			settings.addProcessor(SchematicProcessor.INSTANCE);
 		return settings;
@@ -110,12 +104,10 @@ public class SchematicItem extends Item {
 
 	public static StructureTemplate loadSchematic(Level level, ItemStack blueprint) {
 		StructureTemplate t = new StructureTemplate();
-		String owner = blueprint.getTag()
-			.getString("Owner");
-		String schematic = blueprint.getTag()
-			.getString("File");
+		String owner = blueprint.get(AllDataComponents.SCHEMATIC_OWNER);
+		String schematic = blueprint.get(AllDataComponents.SCHEMATIC_FILE);
 
-		if (!schematic.endsWith(".nbt"))
+		if (owner == null || schematic == null || !schematic.endsWith(".nbt"))
 			return t;
 
 		Path dir;
@@ -135,7 +127,7 @@ public class SchematicItem extends Item {
 
 		try (DataInputStream stream = new DataInputStream(new BufferedInputStream(
 				new GZIPInputStream(Files.newInputStream(path, StandardOpenOption.READ))))) {
-			CompoundTag nbt = NbtIo.read(stream, new NbtAccounter(0x20000000L));
+			CompoundTag nbt = NbtIo.read(stream, NbtAccounter.create(0x20000000L));
 			t.load(level.holderLookup(Registries.BLOCK), nbt);
 		} catch (IOException e) {
 			LOGGER.warn("Failed to read schematic", e);
@@ -162,12 +154,11 @@ public class SchematicItem extends Item {
 	private boolean onItemUse(Player player, InteractionHand hand) {
 		if (!player.isShiftKeyDown() || hand != InteractionHand.MAIN_HAND)
 			return false;
-		if (!player.getItemInHand(hand)
-			.hasTag())
+		if (!player.getItemInHand(hand).has(AllDataComponents.SCHEMATIC_FILE))
 			return false;
 		if (!player.level().isClientSide())
 			return true;
-		EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::displayBlueprintScreen);
+		CatnipServices.PLATFORM.executeOnClientOnly(() -> this::displayBlueprintScreen);
 		return true;
 	}
 

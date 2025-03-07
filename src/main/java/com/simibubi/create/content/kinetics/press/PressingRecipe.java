@@ -13,9 +13,13 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.Pro
 import com.simibubi.create.content.processing.sequenced.IAssemblyRecipe;
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
@@ -23,14 +27,14 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 @ParametersAreNonnullByDefault
-public class PressingRecipe extends ProcessingRecipe<Container> implements IAssemblyRecipe {
+public class PressingRecipe extends ProcessingRecipe<SingleRecipeInput> implements IAssemblyRecipe {
 
 	public PressingRecipe(ProcessingRecipeParams params) {
 		super(AllRecipeTypes.PRESSING, params);
 	}
 
 	@Override
-	public boolean matches(Container inv, Level worldIn) {
+	public boolean matches(SingleRecipeInput inv, Level worldIn) {
 		if (inv.isEmpty())
 			return false;
 		return ingredients.get(0)

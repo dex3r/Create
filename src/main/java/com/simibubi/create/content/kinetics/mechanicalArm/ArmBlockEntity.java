@@ -27,8 +27,10 @@ import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.nbt.NBTHelper;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -49,12 +51,9 @@ import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
 
 public class ArmBlockEntity extends KineticBlockEntity implements TransformableBlockEntity {
 
@@ -310,9 +309,9 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 				if (!armInteractionPoint.isValid())
 					continue;
 
-				ItemStack remainder = armInteractionPoint.insert(held, t);
-				if (ItemStack.matches(remainder, heldItem))
-					continue;
+			ItemStack remainder = armInteractionPoint.insert(held, true);
+			if (ItemStack.matches(remainder, heldItem))
+				continue;
 
 				selectIndex(false, i);
 				foundOutput = true;
@@ -530,48 +529,48 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
-		super.write(compound, clientPacket);
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(compound, registries, clientPacket);
 
 		writeInteractionPoints(compound);
 
 		NBTHelper.writeEnum(compound, "Phase", phase);
 		compound.putBoolean("Powered", redstoneLocked);
 		compound.putBoolean("Goggles", goggles);
-		compound.put("HeldItem", NBTSerializer.serializeNBT(heldItem));
+		compound.put("HeldItem", heldItem.saveOptional(registries));
 		compound.putInt("TargetPointIndex", chasedPointIndex);
 		compound.putFloat("MovementProgress", chasedPointProgress);
 	}
 
 	@Override
-	public void writeSafe(CompoundTag compound) {
-		super.writeSafe(compound);
+	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+		super.writeSafe(tag, registries);
 
-		writeInteractionPoints(compound);
+		writeInteractionPoints(tag);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		int previousIndex = chasedPointIndex;
 		Phase previousPhase = phase;
 		ListTag interactionPointTagBefore = interactionPointTag;
 
-		super.read(compound, clientPacket);
-		heldItem = ItemStack.of(compound.getCompound("HeldItem"));
-		phase = NBTHelper.readEnum(compound, "Phase", Phase.class);
-		chasedPointIndex = compound.getInt("TargetPointIndex");
-		chasedPointProgress = compound.getFloat("MovementProgress");
-		interactionPointTag = compound.getList("InteractionPoints", Tag.TAG_COMPOUND);
-		redstoneLocked = compound.getBoolean("Powered");
+		super.read(tag, registries, clientPacket);
+		heldItem = ItemStack.parseOptional(registries, tag.getCompound("HeldItem"));
+		phase = NBTHelper.readEnum(tag, "Phase", Phase.class);
+		chasedPointIndex = tag.getInt("TargetPointIndex");
+		chasedPointProgress = tag.getFloat("MovementProgress");
+		interactionPointTag = tag.getList("InteractionPoints", Tag.TAG_COMPOUND);
+		redstoneLocked = tag.getBoolean("Powered");
 
 		boolean hadGoggles = goggles;
-		goggles = compound.getBoolean("Goggles");
+		goggles = tag.getBoolean("Goggles");
 
 		if (!clientPacket)
 			return;
 
-		if (hadGoggles != goggles)
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> VisualizationHelper.queueUpdate(this));
+		if (hadGoggles != goggles && CatnipServices.PLATFORM.getEnv().isClient())
+			Client.queueUpdate(this);
 
 		boolean ceiling = isOnCeiling();
 		if (interactionPointTagBefore == null || interactionPointTagBefore.size() != interactionPointTag.size())
@@ -672,4 +671,9 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 		}
 	}
 
+	private static class Client {
+		private static void queueUpdate(BlockEntity be) {
+			VisualizationHelper.queueUpdate(be);
+		}
+	}
 }

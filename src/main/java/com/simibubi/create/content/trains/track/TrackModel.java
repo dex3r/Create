@@ -6,6 +6,12 @@ import java.util.function.UnaryOperator;
 import com.simibubi.create.foundation.model.BakedQuadHelper;
 
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
+
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
+
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;

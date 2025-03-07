@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
-import com.simibubi.create.Create;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.fluids.transfer.GenericItemFilling;
@@ -16,19 +15,13 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.item.ItemHelper;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -50,7 +43,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -94,29 +86,24 @@ public class BasinBlock extends Block implements IBE<BasinBlockEntity>, IWrencha
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-								 BlockHitResult hit) {
-		ItemStack heldItem = player.getItemInHand(handIn);
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+								 return onBlockEntityUseItemOn(level, pos, be -> {
+			if (!stack.isEmpty()) {
+				if (FluidHelper.tryEmptyItemIntoBE(level, player, hand, stack, be))
+					return ItemInteractionResult.SUCCESS;
+				if (FluidHelper.tryFillItemFromBE(level, player, hand, stack, be))
+					return ItemInteractionResult.SUCCESS;
 
-		return onBlockEntityUse(worldIn, pos, be -> {
-			if (!heldItem.isEmpty()) {
-				Direction direction = hit.getDirection();
-				if (FluidHelper.tryEmptyItemIntoBE(worldIn, player, handIn, heldItem, be, direction))
-					return InteractionResult.SUCCESS;
-				if (FluidHelper.tryFillItemFromBE(worldIn, player, handIn, heldItem, be, direction))
-					return InteractionResult.SUCCESS;
-
-				if (GenericItemEmptying.canItemBeEmptied(worldIn, heldItem)
-					|| GenericItemFilling.canItemBeFilled(worldIn, heldItem))
-					return InteractionResult.SUCCESS;
-				if (heldItem.getItem()
-					.equals(Items.SPONGE)) {
+				if (GenericItemEmptying.canItemBeEmptied(level, stack)
+					|| GenericItemFilling.canItemBeFilled(level, stack))
+					return ItemInteractionResult.SUCCESS;
+				if (stack.getItem().equals(Items.SPONGE)) {
 					Storage<FluidVariant> storage = be.getFluidStorage(direction);
 					if (storage != null && !TransferUtil.extractAnyFluid(storage, Long.MAX_VALUE).isEmpty()) {
-						return InteractionResult.SUCCESS;
+						return ItemInteractionResult.SUCCESS;
 					}
 				}
-				return InteractionResult.PASS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 			}
 
 			Storage<ItemVariant> inv = be.itemCapability;
@@ -124,11 +111,11 @@ public class BasinBlock extends Block implements IBE<BasinBlockEntity>, IWrencha
 			List<ItemStack> extracted = TransferUtil.extractAllAsStacks(inv);
 			if (extracted.size() > 0) {
 				extracted.forEach(s -> player.getInventory().placeItemBackInInventory(s));
-				worldIn.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
-						1f + Create.RANDOM.nextFloat());
+				level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
+					1f + level.getRandom().nextFloat());
 			}
 			be.onEmptied();
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		});
 	}
 
@@ -234,7 +221,7 @@ public class BasinBlock extends Block implements IBE<BasinBlockEntity>, IWrencha
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
 		return false;
 	}
 

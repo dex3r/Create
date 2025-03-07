@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.simibubi.create.CreateClient;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.ponder.PonderClient;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -18,7 +19,7 @@ public class ClearBufferCacheCommand {
 		return Commands.literal("clearRenderBuffers")
 			.requires(cs -> cs.hasPermission(0))
 			.executes(ctx -> {
-				EnvExecutor.runWhenOn(EnvType.CLIENT, () -> ClearBufferCacheCommand::execute);
+				CatnipServices.PLATFORM.executeOnClientOnly(() -> ClearBufferCacheCommand::execute);
 				ctx.getSource()
 					.sendSuccess(() -> Component.literal("Cleared rendering buffers."),true);
 				return 1;

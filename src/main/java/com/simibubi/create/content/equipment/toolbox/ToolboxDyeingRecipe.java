@@ -3,12 +3,16 @@ package com.simibubi.create.content.equipment.toolbox;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 
+import io.github.fabricators_of_create.porting_lib.util.TagUtil;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -19,17 +23,17 @@ import io.github.fabricators_of_create.porting_lib.util.TagUtil;
 
 public class ToolboxDyeingRecipe extends CustomRecipe {
 
-	public ToolboxDyeingRecipe(ResourceLocation rl, CraftingBookCategory category) {
-		super(rl, category);
+	public ToolboxDyeingRecipe(CraftingBookCategory category) {
+		super(category);
 	}
 
 	@Override
-	public boolean matches(CraftingContainer inventory, Level world) {
+	public boolean matches(CraftingInput input, Level level) {
 		int toolboxes = 0;
 		int dyes = 0;
 
-		for (int i = 0; i < inventory.getContainerSize(); ++i) {
-			ItemStack stack = inventory.getItem(i);
+		for (int i = 0; i < input.size(); ++i) {
+			ItemStack stack = input.getItem(i);
 			if (!stack.isEmpty()) {
 				if (Block.byItem(stack.getItem()) instanceof ToolboxBlock) {
 					++toolboxes;
@@ -49,12 +53,12 @@ public class ToolboxDyeingRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingContainer inventory, RegistryAccess pRegistryAccess) {
+	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack toolbox = ItemStack.EMPTY;
 		DyeColor color = DyeColor.BROWN;
 
-		for (int i = 0; i < inventory.getContainerSize(); ++i) {
-			ItemStack stack = inventory.getItem(i);
+		for (int i = 0; i < input.size(); ++i) {
+			ItemStack stack = input.getItem(i);
 			if (!stack.isEmpty()) {
 				if (Block.byItem(stack.getItem()) instanceof ToolboxBlock) {
 					toolbox = stack;
@@ -69,9 +73,8 @@ public class ToolboxDyeingRecipe extends CustomRecipe {
 
 		ItemStack dyedToolbox = AllBlocks.TOOLBOXES.get(color)
 			.asStack();
-		if (toolbox.hasTag()) {
-			dyedToolbox.setTag(toolbox.getTag()
-				.copy());
+		if (!toolbox.isComponentsPatchEmpty()) {
+			dyedToolbox.applyComponents(toolbox.getComponentsPatch());
 		}
 
 		return dyedToolbox;

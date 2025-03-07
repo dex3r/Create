@@ -10,6 +10,7 @@ import static com.simibubi.create.foundation.data.recipe.CompatMetals.SILVER;
 import static com.simibubi.create.foundation.data.recipe.CompatMetals.TIN;
 import static com.simibubi.create.foundation.data.recipe.CompatMetals.URANIUM;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import com.simibubi.create.AllBlocks;
@@ -18,6 +19,8 @@ import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.decoration.palettes.AllPaletteBlocks;
 import com.tterrag.registrate.util.entry.ItemEntry;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
@@ -38,9 +41,9 @@ public class WashingRecipeGen extends ProcessingRecipeGen {
 	WOOL = create("wool", b -> b.require(ItemTags.WOOL)
 		.output(Items.WHITE_WOOL)),
 
-		STAINED_GLASS = create("stained_glass", b -> b.require(Tags.Items.STAINED_GLASS)
+		STAINED_GLASS = create("stained_glass", b -> b.require(Tags.Items.GLASS_BLOCKS)
 			.output(Items.GLASS)),
-		STAINED_GLASS_PANE = create("stained_glass_pane", b -> b.require(Tags.Items.STAINED_GLASS_PANES)
+		STAINED_GLASS_PANE = create("stained_glass_pane", b -> b.require(Tags.Items.GLASS_PANES)
 			.output(Items.GLASS_PANE)),
 
 		GRAVEL = create(() -> Blocks.GRAVEL, b -> b.output(.25f, Items.FLINT)
@@ -161,8 +164,8 @@ public class WashingRecipeGen extends ProcessingRecipeGen {
 				.output(mod, output).whenModLoaded(mod.getId()));
 	}
 
-	public WashingRecipeGen(FabricDataOutput output) {
-		super(output);
+	public WashingRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override

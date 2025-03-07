@@ -3,6 +3,11 @@ package com.simibubi.create.content.decoration.copycat;
 import java.util.function.Supplier;
 
 import net.createmod.catnip.render.SpriteShiftEntry;
+
+import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
+import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;

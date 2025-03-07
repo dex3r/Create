@@ -14,6 +14,7 @@ import com.simibubi.create.foundation.utility.DynamicComponent;
 import net.createmod.catnip.data.Couple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -130,12 +131,12 @@ public class NixieTubeBlockEntity extends SmartBlockEntity {
 	//
 
 	@Override
-	protected void read(CompoundTag nbt, boolean clientPacket) {
-		super.read(nbt, clientPacket);
+	protected void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(nbt, registries, clientPacket);
 
 		if (nbt.contains("CustomText")) {
 			DynamicComponent component = customText.orElseGet(DynamicComponent::new);
-			component.read(level, worldPosition, nbt);
+			component.read(worldPosition, nbt, registries);
 
 			if (component.isValid()) {
 				customText = Optional.of(component);
@@ -153,13 +154,13 @@ public class NixieTubeBlockEntity extends SmartBlockEntity {
 	}
 
 	@Override
-	protected void write(CompoundTag nbt, boolean clientPacket) {
-		super.write(nbt, clientPacket);
+	protected void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(nbt, registries, clientPacket);
 
 		if (customText.isPresent()) {
 			nbt.putInt("CustomTextIndex", nixieIndex);
 			customText.get()
-				.write(nbt);
+				.write(nbt, registries);
 		} else
 			nbt.putInt("RedstoneStrength", redstoneStrength);
 	}

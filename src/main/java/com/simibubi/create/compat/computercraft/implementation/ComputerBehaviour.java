@@ -19,8 +19,8 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import dan200.computercraft.api.peripheral.IPeripheral;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
 public class ComputerBehaviour extends AbstractComputerBehaviour {
@@ -35,9 +35,10 @@ public class ComputerBehaviour extends AbstractComputerBehaviour {
 
 	IPeripheral peripheral;
 
-	public ComputerBehaviour(SmartBlockEntity te) {
-		super(te);
-		this.peripheral = getPeripheralFor(te);
+	public ComputerBehaviour(SmartBlockEntity be) {
+		super(be);
+		this.peripheral = getPeripheralFor(be);
+		this.be = be;
 	}
 
 	public static IPeripheral getPeripheralFor(SmartBlockEntity be) {

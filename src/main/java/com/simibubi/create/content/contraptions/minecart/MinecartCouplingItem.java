@@ -1,5 +1,7 @@
 package com.simibubi.create.content.contraptions.minecart;
 
+import net.createmod.catnip.platform.CatnipServices;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllItems;
@@ -8,6 +10,11 @@ import com.simibubi.create.foundation.utility.AdventureUtil;
 import com.tterrag.registrate.fabric.EnvExecutor;
 
 import net.createmod.catnip.data.Iterate;
+import net.minecraft.world.InteractionHand;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -62,7 +69,7 @@ public class MinecartCouplingItem extends Item {
 			return true;
 		}
 		if (world != null && world.isClientSide)
-			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> cartClicked(player, minecart));
+			CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> cartClicked(player, minecart));
 		return true;
 	}
 
@@ -89,7 +96,7 @@ public class MinecartCouplingItem extends Item {
 
 	@Environment(EnvType.CLIENT)
 	private static void cartClicked(Player player, AbstractMinecart interacted) {
-		CouplingHandlerClient.onCartClicked(player, (AbstractMinecart) interacted);
+		CouplingHandlerClient.onCartClicked(player, interacted);
 	}
 
 }

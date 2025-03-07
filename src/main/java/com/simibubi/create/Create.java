@@ -2,6 +2,17 @@ package com.simibubi.create;
 
 import java.util.Random;
 
+import com.simibubi.create.content.logistics.packagePort.AllPackagePortTargetTypes;
+
+import com.simibubi.create.content.logistics.packager.AllUnpackingHandlers;
+
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+
+import net.neoforged.neoforge.common.NeoForgeMod;
+
 import org.slf4j.Logger;
 
 import com.google.gson.Gson;
@@ -12,6 +23,7 @@ import com.simibubi.create.compat.Mods;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
 import com.simibubi.create.compat.trinkets.Trinkets;
 import com.simibubi.create.content.decoration.palettes.AllPaletteBlocks;
+import com.simibubi.create.content.equipment.armor.AllArmorMaterials;
 import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileBlockHitActions;
 import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileEntityHitActions;
 import com.simibubi.create.content.equipment.potatoCannon.AllPotatoProjectileRenderModes;
@@ -31,12 +43,12 @@ import com.simibubi.create.content.trains.track.AllPortalTracks;
 import com.simibubi.create.foundation.CreateNBTProcessors;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.advancement.AllTriggers;
-import com.simibubi.create.foundation.block.CopperRegistries;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.events.CommonEvents;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import com.simibubi.create.foundation.recipe.AllIngredients;
 import com.simibubi.create.foundation.ponder.FabricStructureProcessing;
 import com.simibubi.create.foundation.recipe.AllIngredients;
 import com.simibubi.create.impl.registry.CreateRegistriesImpl;
@@ -54,6 +66,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.Level;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import net.fabricmc.api.ModInitializer;
 
@@ -102,6 +119,7 @@ public class Create implements ModInitializer {
 		AllSoundEvents.prepare();
 		AllTags.init();
 		AllCreativeModeTabs.register();
+		AllArmorMaterials.register(modEventBus);
 		AllDisplaySources.register();
 		AllDisplayTargets.register();
 		AllBlocks.register();
@@ -111,7 +129,6 @@ public class Create implements ModInitializer {
 		AllMenuTypes.register();
 		AllEntityTypes.register();
 		AllBlockEntityTypes.register();
-		AllEnchantments.register();
 		AllRecipeTypes.register();
 
 		// fabric exclusive, squeeze this in here to register before stuff is used
@@ -120,12 +137,19 @@ public class Create implements ModInitializer {
 		AllParticleTypes.register();
 		AllStructureProcessorTypes.register();
 		AllEntityDataSerializers.register();
-		AllPackets.registerPackets();
+		AllPackets.register();
 		AllFeatures.register();
 		AllPlacementModifiers.register();
+		AllIngredients.register(modEventBus);
+		AllAttachmentTypes.register(modEventBus);
+		AllDataComponents.register(modEventBus);
+		AllMapDecorationTypes.register(modEventBus);
 		AllMountedStorageTypes.register();
 
 		AllConfigs.register();
+
+		// TODO - Make these use Registry.register and move them into the RegisterEvent
+		AllPackagePortTargetTypes.register(modEventBus);
 
 		AllSchematicStateFilters.registerDefaults();
 
@@ -176,9 +200,6 @@ public class Create implements ModInitializer {
 			AllUnpackingHandlers.registerDefaults();
 			AllFluids.registerFluidInteractions();
 			// --
-
-			AllAdvancements.register();
-			AllTriggers.register();
 //		});
 	}
 
@@ -190,6 +211,11 @@ public class Create implements ModInitializer {
 		AllPotatoProjectileRenderModes.init();
 		AllPotatoProjectileEntityHitActions.init();
 		AllPotatoProjectileBlockHitActions.init();
+
+		if (event.getRegistry() == BuiltInRegistries.TRIGGER_TYPES) {
+			AllAdvancements.register();
+			AllTriggers.register();
+		}
 	}
 
 	public static LangBuilder lang() {
@@ -197,7 +223,7 @@ public class Create implements ModInitializer {
 	}
 
 	public static ResourceLocation asResource(String path) {
-		return new ResourceLocation(ID, path);
+		return ResourceLocation.fromNamespaceAndPath(ID, path);
 	}
 
 	public static CreateRegistrate registrate() {

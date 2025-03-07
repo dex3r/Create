@@ -11,9 +11,9 @@ import com.simibubi.create.AllBlocks;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Iterate;
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -106,7 +106,7 @@ public class BezierConnection implements Iterable<BezierConnection.Segment> {
 	}
 
 	public BezierConnection(CompoundTag compound, BlockPos localTo) {
-		this(Couple.deserializeEach(compound.getList("Positions", Tag.TAG_COMPOUND), NbtUtils::readBlockPos)
+		this(Couple.deserializeEach(compound.getList("Positions", Tag.TAG_COMPOUND), t -> NBTHelper.readBlockPos(t, "Pos"))
 			.map(b -> b.offset(localTo)),
 			Couple.deserializeEach(compound.getList("Starts", Tag.TAG_COMPOUND), VecHelper::readNBTCompound)
 				.map(v -> v.add(Vec3.atLowerCornerOf(localTo))),
@@ -127,7 +127,11 @@ public class BezierConnection implements Iterable<BezierConnection.Segment> {
 		CompoundTag compound = new CompoundTag();
 		compound.putBoolean("Girder", hasGirder);
 		compound.putBoolean("Primary", primary);
-		compound.put("Positions", tePositions.serializeEach(NbtUtils::writeBlockPos));
+		compound.put("Positions", tePositions.serializeEach(t -> {
+			CompoundTag tag = new CompoundTag();
+			tag.put("Pos", NbtUtils.writeBlockPos(t));
+			return tag;
+		}));
 		compound.put("Starts", starts.serializeEach(VecHelper::writeNBTCompound));
 		compound.put("Axes", axes.serializeEach(VecHelper::writeNBTCompound));
 		compound.put("Normals", normals.serializeEach(VecHelper::writeNBTCompound));

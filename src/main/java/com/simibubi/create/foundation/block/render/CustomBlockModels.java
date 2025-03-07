@@ -39,6 +39,9 @@ public class CustomBlockModels {
 		finalModelFuncs.clear();
 		modelFuncs.asMap().forEach((location, funcList) -> {
 			Block block = BuiltInRegistries.BLOCK.get(location);
+			if (block == Blocks.AIR) {
+				return;
+			}
 
 			NonNullFunction<BakedModel, ? extends BakedModel> finalFunc = null;
 			for (NonNullFunction<BakedModel, ? extends BakedModel> func : funcList) {

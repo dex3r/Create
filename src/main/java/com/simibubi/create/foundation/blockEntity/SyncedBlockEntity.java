@@ -2,9 +2,13 @@ package com.simibubi.create.foundation.blockEntity;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomDataPacketHandlingBlockEntity;
+import io.github.fabricators_of_create.porting_lib.block.CustomUpdateTagHandlingBlockEntity;
+
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -29,8 +33,8 @@ public abstract class SyncedBlockEntity extends BlockEntity implements CustomDat
 	}
 
 	@Override
-	public CompoundTag getUpdateTag() {
-		return writeClient(new CompoundTag());
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+		return writeClient(new CompoundTag(), registries);
 	}
 
 	@Override
@@ -39,24 +43,24 @@ public abstract class SyncedBlockEntity extends BlockEntity implements CustomDat
 	}
 
 	@Override
-	public void handleUpdateTag(CompoundTag tag) {
-		readClient(tag);
+	public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+		readClient(tag, registries);
 	}
 
 	@Override
-	public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
-		CompoundTag tag = packet.getTag();
-		readClient(tag == null ? new CompoundTag() : tag);
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+		CompoundTag tag = pkt.getTag();
+		readClient(tag == null ? new CompoundTag() : tag, registries);
 	}
 
 	// Special handling for client update packets
-	public void readClient(CompoundTag tag) {
-		load(tag);
+	public void readClient(CompoundTag tag, HolderLookup.Provider registries) {
+		loadAdditional(tag, registries);
 	}
 
 	// Special handling for client update packets
-	public CompoundTag writeClient(CompoundTag tag) {
-		saveAdditional(tag);
+	public CompoundTag writeClient(CompoundTag tag, HolderLookup.Provider registries) {
+		saveAdditional(tag, registries);
 		return tag;
 	}
 
@@ -70,23 +74,8 @@ public abstract class SyncedBlockEntity extends BlockEntity implements CustomDat
 		sendData();
 	}
 
-//	public PacketDistributor.PacketTarget packetTarget() {
-//		return PacketDistributor.TRACKING_CHUNK.with(this::containedChunk);
-//	}
-
-	public LevelChunk containedChunk() {
-		return level.getChunkAt(worldPosition);
-	}
-
-	@Override
-	public void deserializeNBT(BlockState state, CompoundTag nbt) {
-		this.load(nbt);
-	}
-
-	@SuppressWarnings("deprecation")
 	public HolderGetter<Block> blockHolderGetter() {
-		return (HolderGetter<Block>) (level != null ? level.holderLookup(Registries.BLOCK)
-			: BuiltInRegistries.BLOCK.asLookup());
+		return level != null ? level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
 	}
 
 }

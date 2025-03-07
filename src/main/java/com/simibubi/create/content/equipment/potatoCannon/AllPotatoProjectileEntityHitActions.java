@@ -3,17 +3,18 @@ package com.simibubi.create.content.equipment.potatoCannon;
 import java.util.UUID;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.potatoCannon.PotatoProjectileEntityHitAction;
 import com.simibubi.create.api.registry.CreateBuiltInRegistries;
-import com.simibubi.create.foundation.mixin.accessor.SuspiciousStewItemAccessor;
-import com.simibubi.create.foundation.utility.CreateCodecs;
+import com.simibubi.create.foundation.codec.CreateCodecs;
 
 import net.createmod.catnip.data.WorldAttached;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -30,9 +31,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.monster.ZombieVillager;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.food.FoodProperties.PossibleEffect;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
+import net.minecraft.world.item.component.SuspiciousStewEffects.Entry;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -53,12 +57,12 @@ public class AllPotatoProjectileEntityHitActions {
 	public static void init() {
 	}
 
-	private static void register(String name, Codec<? extends PotatoProjectileEntityHitAction> codec) {
+	private static void register(String name, MapCodec<? extends PotatoProjectileEntityHitAction> codec) {
 		Registry.register(CreateBuiltInRegistries.POTATO_PROJECTILE_ENTITY_HIT_ACTION, Create.asResource(name), codec);
 	}
 
 	public record SetOnFire(int ticks) implements PotatoProjectileEntityHitAction {
-		public static final Codec<SetOnFire> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+		public static final MapCodec<SetOnFire> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			ExtraCodecs.POSITIVE_INT.fieldOf("ticks").forGetter(SetOnFire::ticks)
 		).apply(instance, SetOnFire::new));
 
@@ -74,15 +78,15 @@ public class AllPotatoProjectileEntityHitActions {
 		}
 
 		@Override
-		public Codec<? extends PotatoProjectileEntityHitAction> codec() {
+		public MapCodec<? extends PotatoProjectileEntityHitAction> codec() {
 			return CODEC;
 		}
 	}
 
-	public record PotionEffect(MobEffect effect, int level, int ticks,
+	public record PotionEffect(Holder<MobEffect> effect, int level, int ticks,
 							   boolean recoverable) implements PotatoProjectileEntityHitAction {
-		public static final Codec<PotionEffect> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			BuiltInRegistries.MOB_EFFECT.byNameCodec().fieldOf("effect").forGetter(PotionEffect::effect),
+		public static final MapCodec<PotionEffect> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+			BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("effect").forGetter(PotionEffect::effect),
 			ExtraCodecs.POSITIVE_INT.fieldOf("level").forGetter(PotionEffect::level),
 			ExtraCodecs.POSITIVE_INT.fieldOf("ticks").forGetter(PotionEffect::ticks),
 			Codec.BOOL.fieldOf("recoverable").forGetter(PotionEffect::recoverable)
@@ -99,15 +103,15 @@ public class AllPotatoProjectileEntityHitActions {
 		}
 
 		@Override
-		public Codec<? extends PotatoProjectileEntityHitAction> codec() {
+		public MapCodec<? extends PotatoProjectileEntityHitAction> codec() {
 			return CODEC;
 		}
 	}
 
 	public record FoodEffects(FoodProperties foodProperty,
 							  boolean recoverable) implements PotatoProjectileEntityHitAction {
-		public static final Codec<FoodEffects> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			CreateCodecs.FOOD_PROPERTIES.fieldOf("food_property").forGetter(FoodEffects::foodProperty),
+		public static final MapCodec<FoodEffects> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+			FoodProperties.DIRECT_CODEC.fieldOf("food_property").forGetter(FoodEffects::foodProperty),
 			Codec.BOOL.fieldOf("recoverable").forGetter(FoodEffects::recoverable)
 		).apply(instance, FoodEffects::new));
 
@@ -118,22 +122,22 @@ public class AllPotatoProjectileEntityHitActions {
 				return true;
 
 			if (entity instanceof LivingEntity livingEntity) {
-				for (Pair<MobEffectInstance, Float> effect : foodProperty.getEffects()) {
-					if (livingEntity.getRandom().nextFloat() < effect.getSecond())
-						applyEffect(livingEntity, new MobEffectInstance(effect.getFirst()));
+				for (PossibleEffect effect : foodProperty.effects()) {
+					if (livingEntity.getRandom().nextFloat() < effect.probability())
+						applyEffect(livingEntity, effect.effect());
 				}
 			}
 			return !recoverable;
 		}
 
 		@Override
-		public Codec<? extends PotatoProjectileEntityHitAction> codec() {
+		public MapCodec<? extends PotatoProjectileEntityHitAction> codec() {
 			return CODEC;
 		}
 	}
 
 	public record ChorusTeleport(double teleportDiameter) implements PotatoProjectileEntityHitAction {
-		public static final Codec<ChorusTeleport> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+		public static final MapCodec<ChorusTeleport> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			CreateCodecs.POSITIVE_DOUBLE.fieldOf("teleport_diameter").forGetter(ChorusTeleport::teleportDiameter)
 		).apply(instance, ChorusTeleport::new));
 
@@ -175,7 +179,7 @@ public class AllPotatoProjectileEntityHitActions {
 		}
 
 		@Override
-		public Codec<? extends PotatoProjectileEntityHitAction> codec() {
+		public MapCodec<? extends PotatoProjectileEntityHitAction> codec() {
 			return CODEC;
 		}
 	}
@@ -189,7 +193,7 @@ public class AllPotatoProjectileEntityHitActions {
 		private static final WorldAttached<FakePlayer> ZOMBIE_CONVERTERS =
 			new WorldAttached<>(w -> FakePlayer.get((ServerLevel) w, ZOMBIE_CONVERTER_NAME));
 
-		public static final Codec<CureZombieVillager> CODEC = Codec.unit(INSTANCE);
+		public static final MapCodec<CureZombieVillager> CODEC = MapCodec.unit(INSTANCE);
 
 		@Override
 		public boolean execute(ItemStack projectile, EntityHitResult ray, Type type) {
@@ -208,7 +212,7 @@ public class AllPotatoProjectileEntityHitActions {
 		}
 
 		@Override
-		public Codec<? extends PotatoProjectileEntityHitAction> codec() {
+		public MapCodec<? extends PotatoProjectileEntityHitAction> codec() {
 			return CODEC;
 		}
 	}
@@ -216,25 +220,28 @@ public class AllPotatoProjectileEntityHitActions {
 	public enum SuspiciousStew implements PotatoProjectileEntityHitAction {
 		INSTANCE;
 
-		public static final Codec<SuspiciousStew> CODEC = Codec.unit(INSTANCE);
+		public static final MapCodec<SuspiciousStew> CODEC = MapCodec.unit(INSTANCE);
 
 		@Override
 		public boolean execute(ItemStack projectile, EntityHitResult ray, Type type) {
-			if (ray.getEntity() instanceof LivingEntity livingEntity)
-				SuspiciousStewItemAccessor.create$listPotionEffects(projectile, livingEntity::addEffect);
+			if (ray.getEntity() instanceof LivingEntity livingEntity) {
+				SuspiciousStewEffects stew = projectile.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY);
+				for (Entry effect : stew.effects())
+					livingEntity.addEffect(effect.createEffectInstance());
+			}
 
 			return false;
 		}
 
 		@Override
-		public Codec<? extends PotatoProjectileEntityHitAction> codec() {
+		public MapCodec<? extends PotatoProjectileEntityHitAction> codec() {
 			return CODEC;
 		}
 	}
 
 	private static void applyEffect(LivingEntity entity, MobEffectInstance effect) {
-		if (effect.getEffect().isInstantenous()) {
-			effect.getEffect()
+		if (effect.getEffect().value().isInstantenous()) {
+			effect.getEffect().value()
 				.applyInstantenousEffect(null, null, entity, effect.getDuration(), 1.0);
 		} else {
 			entity.addEffect(effect);

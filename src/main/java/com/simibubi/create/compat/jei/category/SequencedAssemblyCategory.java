@@ -21,7 +21,7 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -75,14 +75,13 @@ public class SequencedAssemblyCategory extends CreateRecipeCategory<SequencedAss
 	}
 
 	private JeiSequencedAssemblySubCategory getSubCategory(SequencedRecipe<?> sequencedRecipe) {
-		return subCategories.computeIfAbsent(CatnipServices.REGISTRIES.getKeyOrThrow(sequencedRecipe.getRecipe()
+		return subCategories.computeIfAbsent(RegisteredObjectsHelper.getKeyOrThrow(sequencedRecipe.getRecipe()
 						.getSerializer()),
 			rl -> sequencedRecipe.getAsAssemblyRecipe()
 				.getJEISubCategory()
 				.jei()
 				.get()
 				.get());
-
 	}
 
 	final String[] romans = { "I", "II", "III", "IV", "V", "VI", "-" };

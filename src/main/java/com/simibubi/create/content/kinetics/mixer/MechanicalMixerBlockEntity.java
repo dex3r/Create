@@ -22,8 +22,13 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -31,10 +36,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -109,20 +114,20 @@ public class MechanicalMixerBlockEntity extends BasinOperatingBlockEntity {
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		running = compound.getBoolean("Running");
 		runningTicks = compound.getInt("Ticks");
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 
 		if (clientPacket && hasLevel())
 			getBasin().ifPresent(bte -> bte.setAreFluidsMoving(running && runningTicks <= 20));
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		compound.putBoolean("Running", running);
 		compound.putInt("Ticks", runningTicks);
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
@@ -241,7 +246,7 @@ public class MechanicalMixerBlockEntity extends BasinOperatingBlockEntity {
 
 		try (Transaction t = TransferUtil.getTransaction()) {
 			for (StorageView<ItemVariant> view : availableItems.nonEmptyViews()) {
-				List<MixingRecipe> list = PotionMixingRecipes.BY_ITEM.get(view.getResource().getItem());
+				List<MixingRecipe> list = PotionMixingRecipes.sortRecipesByItem(level).get(view.getResource().getItem());
 				if (list == null)
 					continue;
 				for (MixingRecipe mixingRecipe : list)
@@ -254,11 +259,12 @@ public class MechanicalMixerBlockEntity extends BasinOperatingBlockEntity {
 	}
 
 	@Override
-	protected <C extends Container> boolean matchStaticFilters(Recipe<C> r) {
+	protected boolean matchStaticFilters(RecipeHolder<? extends Recipe<?>> recipe) {
+		Recipe<?> r = recipe.value();
 		return ((r instanceof CraftingRecipe && !(r instanceof ShapedRecipe)
 				 && AllConfigs.server().recipes.allowShapelessInMixer.get() && r.getIngredients()
 				.size() > 1
-				 && !MechanicalPressBlockEntity.canCompress(r)) && !AllRecipeTypes.shouldIgnoreInAutomation(r)
+				 && !MechanicalPressBlockEntity.canCompress(r)) && !AllRecipeTypes.shouldIgnoreInAutomation(recipe)
 			|| r.getType() == AllRecipeTypes.MIXING.getType());
 	}
 

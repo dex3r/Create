@@ -20,9 +20,11 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -34,8 +36,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEvent.Context;
@@ -43,11 +45,14 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
+
+import org.jetbrains.annotations.NotNull;
 
 public class VirtualRenderWorld extends Level implements VisualizationLevel {
 	protected final Level level;
@@ -325,6 +330,31 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 		return level.enabledFeatures();
 	}
 
+	@Override
+	public PotionBrewing potionBrewing() {
+		return level.potionBrewing();
+	}
+
+	@Override
+	public void setDayTimeFraction(float v) {
+		level.setDayTimeFraction(v);
+	}
+
+	@Override
+	public void setDayTimePerTick(float v) {
+		level.setDayTimePerTick(v);
+	}
+
+	@Override
+	public float getDayTimeFraction() {
+		return level.getDayTimeFraction();
+	}
+
+	@Override
+	public float getDayTimePerTick() {
+		return level.getDayTimePerTick();
+	}
+
 	// ADDITIONAL OVERRRIDES
 
 	@Override
@@ -369,18 +399,23 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 	}
 
 	@Override
+	public TickRateManager tickRateManager() {
+		return level.tickRateManager();
+	}
+
+	@Override
 	@Nullable
-	public MapItemSavedData getMapData(String mapName) {
+	public MapItemSavedData getMapData(MapId mapId) {
 		return null;
 	}
 
 	@Override
-	public void setMapData(String mapId, MapItemSavedData data) {
-	}
+	public void setMapData(MapId mapId, MapItemSavedData mapItemSavedData) {}
 
+	@NotNull
 	@Override
-	public int getFreeMapId() {
-		return 0;
+	public MapId getFreeMapId() {
+		return new MapId(0);
 	}
 
 	@Override
@@ -392,7 +427,7 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 	}
 
 	@Override
-	public void gameEvent(GameEvent event, Vec3 position, Context context) {
+	public void gameEvent(Holder<GameEvent> gameEvent, Vec3 pos, Context context) {
 	}
 
 	@Override

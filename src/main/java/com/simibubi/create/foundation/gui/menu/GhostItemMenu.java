@@ -1,6 +1,7 @@
 package com.simibubi.create.foundation.gui.menu;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
@@ -15,7 +16,7 @@ public abstract class GhostItemMenu<T> extends MenuBase<T> implements IClearable
 
 	public ItemStackHandler ghostInventory;
 
-	protected GhostItemMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	protected GhostItemMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
 		super(type, id, inv, extraData);
 	}
 
@@ -65,7 +66,7 @@ public abstract class GhostItemMenu<T> extends MenuBase<T> implements IClearable
 			if (player.isCreative() && held.isEmpty()) {
 				ItemStack stackInSlot = ghostInventory.getStackInSlot(slot)
 						.copy();
-				stackInSlot.setCount(stackInSlot.getMaxStackSize());
+				stackInSlot.setCount(stackInSlot.getOrDefault(DataComponents.MAX_STACK_SIZE, 64));
 				setCarried(stackInSlot);
 				return;
 			}
@@ -94,7 +95,7 @@ public abstract class GhostItemMenu<T> extends MenuBase<T> implements IClearable
 			ItemStack stackToInsert = playerInventory.getItem(index);
 			for (int i = 0; i < ghostInventory.getSlotCount(); i++) {
 				ItemStack stack = ghostInventory.getStackInSlot(i);
-				if (!allowRepeats() && ItemHandlerHelper.canItemStacksStack(stack, stackToInsert))
+				if (!allowRepeats() && ItemStack.isSameItemSameComponents(stack, stackToInsert))
 					break;
 				if (stack.isEmpty()) {
 					ItemStack copy = stackToInsert.copy();

@@ -107,7 +107,7 @@ public class ScheduleItemEntityInteraction {
 				true);
 
 			player.getInventory()
-				.placeItemBackInInventory(train.runtime.returnSchedule());
+				.placeItemBackInInventory(train.runtime.returnSchedule(player.registryAccess()));
 		}
 
 		player.getCooldowns()

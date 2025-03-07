@@ -18,12 +18,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -83,21 +85,21 @@ public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
 		return (getSize() == 1 ? SMALL_OFFSETS : LARGE_OFFSETS).get(getAxis());
 	}
 
-	public InteractionResult applyMaterialIfValid(ItemStack stack) {
+	public ItemInteractionResult applyMaterialIfValid(ItemStack stack) {
 		if (!(stack.getItem()instanceof BlockItem blockItem))
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		BlockState material = blockItem.getBlock()
 			.defaultBlockState();
 		if (material == this.material)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (!material.is(BlockTags.PLANKS))
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (level.isClientSide() && !isVirtual())
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		this.material = material;
 		notifyUpdate();
 		level.levelEvent(2001, worldPosition, Block.getId(material));
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	protected Axis getAxis() {
@@ -183,8 +185,8 @@ public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 		flowScore = compound.getInt("FlowScore");
 
 		BlockState prevMaterial = material;
@@ -200,14 +202,14 @@ public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
 	}
 
 	@Override
-	public void writeSafe(CompoundTag tag) {
-		super.writeSafe(tag);
+	public void writeSafe(CompoundTag tag, Provider registries) {
+		super.writeSafe(tag, registries);
 		tag.put("Material", NbtUtils.writeBlockState(material));
 	}
-	
+
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
-		super.write(compound, clientPacket);
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.write(compound, registries, clientPacket);
 		compound.putInt("FlowScore", flowScore);
 		compound.put("Material", NbtUtils.writeBlockState(material));
 	}

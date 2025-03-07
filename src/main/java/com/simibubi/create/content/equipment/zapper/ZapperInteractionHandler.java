@@ -2,16 +2,13 @@ package com.simibubi.create.content.equipment.zapper;
 
 import java.util.Objects;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllTags.AllBlockTags;
 import com.simibubi.create.foundation.utility.BlockHelper;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -34,8 +31,6 @@ public class ZapperInteractionHandler {
 		ItemStack heldItem = player
 			.getMainHandItem();
 		if (heldItem.getItem() instanceof ZapperItem && trySelect(heldItem, player)) {
-//			event.setCancellationResult(InteractionResult.FAIL);
-//			event.setCanceled(true);
 			return InteractionResult.FAIL;
 		}
 		return InteractionResult.PASS;
@@ -81,23 +76,22 @@ public class ZapperInteractionHandler {
 		CompoundTag data = null;
 		BlockEntity blockEntity = player.level().getBlockEntity(pos);
 		if (blockEntity != null) {
-			data = blockEntity.saveWithFullMetadata();
+			data = blockEntity.saveWithFullMetadata(player.registryAccess());
 			data.remove("x");
 			data.remove("y");
 			data.remove("z");
 			data.remove("id");
 		}
-		CompoundTag tag = stack.getOrCreateTag();
-		if (tag.contains("BlockUsed") && NbtUtils.readBlockState(player.level().holderLookup(Registries.BLOCK), stack.getTag()
-			.getCompound("BlockUsed")) == newState && Objects.equals(data, tag.get("BlockData"))) {
+
+		if (stack.has(AllDataComponents.SHAPER_BLOCK_USED) && stack.get(AllDataComponents.SHAPER_BLOCK_USED) == newState && Objects.equals(data, stack.get(AllDataComponents.SHAPER_BLOCK_DATA))) {
 			return false;
 		}
 
-		tag.put("BlockUsed", NbtUtils.writeBlockState(newState));
+		stack.set(AllDataComponents.SHAPER_BLOCK_USED, newState);
 		if (data == null)
-			tag.remove("BlockData");
+			stack.remove(AllDataComponents.SHAPER_BLOCK_DATA);
 		else
-			tag.put("BlockData", data);
+			stack.set(AllDataComponents.SHAPER_BLOCK_DATA, data);
 
 		AllSoundEvents.CONFIRM.playOnServer(player.level(), player.blockPosition());
 		return true;

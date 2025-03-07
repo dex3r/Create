@@ -4,17 +4,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.logistics.item.filter.attribute.AllItemAttributeTypes;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
 import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttributeType;
 
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
@@ -25,12 +35,13 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 
-public class FluidContentsAttribute implements ItemAttribute {
-	private @Nullable Fluid fluid;
+public record FluidContentsAttribute(@Nullable Fluid fluid) implements ItemAttribute {
+	public static final MapCodec<FluidContentsAttribute> CODEC = BuiltInRegistries.FLUID.byNameCodec()
+			.xmap(FluidContentsAttribute::new, FluidContentsAttribute::fluid)
+			.fieldOf("value");
 
-	public FluidContentsAttribute(@Nullable Fluid fluid) {
-		this.fluid = fluid;
-	}
+	public static final StreamCodec<RegistryFriendlyByteBuf, FluidContentsAttribute> STREAM_CODEC = CatnipStreamCodecBuilders.nullable(CatnipStreamCodecs.FLUID)
+		.map(FluidContentsAttribute::new, FluidContentsAttribute::fluid);
 
 	private static List<Fluid> extractFluids(ItemStack stack) {
 		Storage<FluidVariant> storage = ContainerItemContext.withConstant(stack).find(FluidStorage.ITEM);
@@ -67,23 +78,6 @@ public class FluidContentsAttribute implements ItemAttribute {
 		return AllItemAttributeTypes.HAS_FLUID;
 	}
 
-	@Override
-	public void save(CompoundTag nbt) {
-		if (fluid == null)
-			return;
-		Optional<ResourceLocation> id = BuiltInRegistries.FLUID.getResourceKey(fluid).map(ResourceKey::location);
-		if (id.isEmpty())
-			return;
-		nbt.putString("fluidId", id.toString());
-	}
-
-	@Override
-	public void load(CompoundTag nbt) {
-		if (nbt.contains("fluidId")) {
-			fluid = BuiltInRegistries.FLUID.get(ResourceLocation.tryParse(nbt.getString("fluidId")));
-		}
-	}
-
 	public static class Type implements ItemAttributeType {
 		@Override
 		public @NotNull ItemAttribute createAttribute() {
@@ -99,6 +93,16 @@ public class FluidContentsAttribute implements ItemAttribute {
 			}
 
 			return list;
+		}
+
+		@Override
+		public MapCodec<? extends ItemAttribute> codec() {
+			return CODEC;
+		}
+
+		@Override
+		public StreamCodec<? super RegistryFriendlyByteBuf, ? extends ItemAttribute> streamCodec() {
+			return STREAM_CODEC;
 		}
 	}
 }

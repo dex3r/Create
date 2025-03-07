@@ -1,12 +1,16 @@
 package com.simibubi.create.content.logistics.chute;
 
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
@@ -48,10 +52,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -101,8 +107,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 
 	VersionedInventoryTrackerBehaviour invVersionTracker;
 
-	StorageProvider<ItemVariant> capAbove;
-	StorageProvider<ItemVariant> capBelow;
+	private final EnumMap<Direction, BlockCapabilityCache<IItemHandler, @Nullable Direction>> capCaches = new EnumMap<>(Direction.class);
 
 	public ChuteBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -110,7 +115,6 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		itemPosition = LerpedFloat.linear();
 		itemHandler = new ChuteItemHandler(this);
 		canPickUpItems = false;
-
 		bottomPullDistance = 0;
 		// airCurrent = new AirCurrent(this);
 		updateAirFlow = true;
@@ -347,13 +351,11 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	}
 
 	private void handleInputFromAbove() {
-		Storage<ItemVariant> storage = grabCapability(Direction.UP);
-		handleInput(storage, 1);
+		handleInput(grabCapability(Direction.UP), 1);
 	}
 
 	private void handleInputFromBelow() {
-		Storage<ItemVariant> storage = grabCapability(Direction.DOWN);
-		handleInput(storage, 0);
+		handleInput(grabCapability(Direction.DOWN), 0);
 	}
 
 	private void handleInput(@Nullable Storage<ItemVariant> inv, float startLocation) {
@@ -535,17 +537,31 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return true;
 	}
 
-	@Nullable
-	private Storage<ItemVariant> grabCapability(Direction side) {
+	private @Nullable IItemHandler grabCapability(@NotNull Direction side) {
+		BlockPos pos = this.worldPosition.relative(side);
 		if (level == null)
 			return null;
-		StorageProvider<ItemVariant> provider = side == Direction.UP ? capAbove : capBelow;
-		BlockEntity be = provider.findBlockEntity();
+		BlockEntity be = level.getBlockEntity(pos);
 		if (be instanceof ChuteBlockEntity) {
 			if (side != Direction.DOWN || !(be instanceof SmartChuteBlockEntity) || getItemMotion() > 0)
 				return null;
 		}
-		return provider.get(side.getOpposite());
+		if (capCaches.get(side) == null) {
+			if (level instanceof ServerLevel serverLevel) {
+				BlockCapabilityCache<IItemHandler, @Nullable Direction> cache = BlockCapabilityCache.create(
+						Capabilities.ItemHandler.BLOCK,
+						serverLevel,
+						pos,
+						side.getOpposite()
+				);
+				capCaches.put(side, cache);
+				return cache.getCapability();
+			} else {
+				return level.getCapability(Capabilities.ItemHandler.BLOCK, pos, side.getOpposite());
+			}
+		} else {
+			return capCaches.get(side).getCapability();
+		}
 	}
 
 	public void setItem(ItemStack stack) {
@@ -569,25 +585,24 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
-		compound.put("Item", NBTSerializer.serializeNBT(item));
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		compound.put("Item", item.saveOptional(registries));
 		compound.putFloat("ItemPosition", itemPosition.getValue());
 		compound.putFloat("Pull", pull);
 		compound.putFloat("Push", push);
 		compound.putFloat("BottomAirFlowDistance", bottomPullDistance);
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		ItemStack previousItem = item;
-		item = ItemStack.of(compound.getCompound("Item"));
-		itemHandler.update();
+		item = ItemStack.parseOptional(registries, compound.getCompound("Item"));
 		itemPosition.startWithValue(compound.getFloat("ItemPosition"));
 		pull = compound.getFloat("Pull");
 		push = compound.getFloat("Push");
 		bottomPullDistance = compound.getFloat("BottomAirFlowDistance");
-		super.read(compound, clientPacket);
+		super.read(compound, registries, clientPacket);
 //		if (clientPacket)
 //			airCurrent.rebuild();
 
@@ -782,9 +797,9 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return true;
 	}
 
-	@Nullable
+	@javax.annotation.Nullable
 	@Override
-	public Storage<ItemVariant> getItemStorage(@Nullable Direction face) {
+	public Storage<ItemVariant> getItemStorage(@javax.annotation.Nullable Direction face) {
 		return itemHandler;
 	}
 

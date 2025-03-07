@@ -10,8 +10,6 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.api.contraption.transformable.TransformableBlock;
@@ -26,6 +24,9 @@ import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.block.IBE;
 
 import net.createmod.catnip.data.Iterate;
+
+import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -52,7 +53,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.ticks.TickPriority;
 
-import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
+import javax.annotation.Nullable;
 
 public class EncasedPipeBlock extends Block
 	implements IWrenchable, SpecialBlockItemRequirement, IBE<FluidPipeBlockEntity>, BlockPickInteractionAware, EncasedBlock, TransformableBlock {

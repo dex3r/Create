@@ -396,7 +396,7 @@ public class FunnelScenes {
 			.placeNearTarget();
 		scene.idle(10);
 		scene.world().createItemOnBeltLike(brassFunnel.below()
-			.north(), Direction.SOUTH, ItemHandlerHelper.copyStackWithSize(itemStack, 64));
+			.north(), Direction.SOUTH, itemStack.copyWithCount(64));
 		scene.world().flapFunnel(brassFunnel, true);
 		scene.idle(60);
 

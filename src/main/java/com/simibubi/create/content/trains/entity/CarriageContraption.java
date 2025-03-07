@@ -29,6 +29,7 @@ import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -193,8 +194,8 @@ public class CarriageContraption extends Contraption {
 	}
 
 	@Override
-	public CompoundTag writeNBT(boolean spawnPacket) {
-		CompoundTag tag = super.writeNBT(spawnPacket);
+	public CompoundTag writeNBT(HolderLookup.Provider registries, boolean spawnPacket) {
+		CompoundTag tag = super.writeNBT(registries, spawnPacket);
 		NBTHelper.writeEnum(tag, "AssemblyDirection", getAssemblyDirection());
 		tag.putBoolean("FrontControls", forwardControls);
 		tag.putBoolean("BackControls", backwardControls);
@@ -223,7 +224,7 @@ public class CarriageContraption extends Contraption {
 			Couple.create(nbt.getBoolean("FrontBlazeConductor"), nbt.getBoolean("BackBlazeConductor"));
 		conductorSeats.clear();
 		NBTHelper.iterateCompoundList(nbt.getList("ConductorSeats", Tag.TAG_COMPOUND),
-			c -> conductorSeats.put(NbtUtils.readBlockPos(c.getCompound("Pos")),
+			c -> conductorSeats.put(NBTHelper.readBlockPos(c, "Pos"),
 				Couple.create(c.getBoolean("Forward"), c.getBoolean("Backward"))));
 		soundQueue.deserialize(nbt);
 		super.readNBT(world, nbt, spawnData);
@@ -327,11 +328,11 @@ public class CarriageContraption extends Contraption {
 	}
 
 	@Override
-	public void writeStorage(CompoundTag nbt, boolean spawnPacket) {
+	public void writeStorage(CompoundTag nbt, HolderLookup.Provider registries, boolean spawnPacket) {
 		if (!spawnPacket)
 			return;
 		if (storageProxy != null)
-			storageProxy.write(nbt, spawnPacket);
+			storageProxy.write(nbt, registries, spawnPacket);
 	}
 
 }

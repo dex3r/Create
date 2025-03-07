@@ -2,7 +2,13 @@ package com.simibubi.create.content.trains.display;
 
 import java.util.List;
 
+import io.github.fabricators_of_create.porting_lib.mixin.accessors.client.accessor.FontAccessor;
+
 import net.createmod.catnip.animation.AnimationTickHolder;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.font.GlyphInfo;
@@ -25,6 +31,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.FormattedCharSink;

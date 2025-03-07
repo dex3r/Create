@@ -2,7 +2,7 @@ package com.simibubi.create.content.fluids;
 
 import com.simibubi.create.Create;
 
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
@@ -43,7 +43,7 @@ public class FluidBottleItemHook extends Item {
 			return InteractionResult.PASS;
 
 		FluidState fluidState = world.getFluidState(blockpos);
-		if (fluidState.is(FluidTags.WATER) && CatnipServices.REGISTRIES.getKeyOrThrow(fluidState.getType())
+		if (fluidState.is(FluidTags.WATER) && RegisteredObjectsHelper.getKeyOrThrow(fluidState.getType())
 			.getNamespace()
 			.equals(Create.ID)) {
 			return InteractionResult.FAIL;

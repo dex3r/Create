@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.FluidTankBlock.Shape;
@@ -19,8 +20,18 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
+import net.createmod.catnip.nbt.NBTHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributeHandler;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
@@ -78,6 +89,18 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 		width = 1;
 		boiler = new BoilerData();
 //		refreshCapability(); // fabric: lazy init to prevent access too early
+	}
+
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.FluidHandler.BLOCK,
+				AllBlockEntityTypes.FLUID_TANK.get(),
+				(be, context) -> {
+					if (be.fluidCapability == null)
+						be.refreshCapability();
+					return be.fluidCapability;
+				}
+		);
 	}
 
 	protected SmartFluidTank createInventory() {
@@ -412,8 +435,8 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
 
 		BlockPos controllerBefore = controller;
 		int prevSize = width;
@@ -422,26 +445,24 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 
 		updateConnectivity = compound.contains("Uninitialized");
 		luminosity = compound.getInt("Luminosity");
-		controller = null;
-		lastKnownPos = null;
 
+		lastKnownPos = null;
 		if (compound.contains("LastKnownPos"))
-			lastKnownPos = NbtUtils.readBlockPos(compound.getCompound("LastKnownPos"));
+			lastKnownPos = NBTHelper.readBlockPos(compound, "LastKnownPos");
+
+		controller = null;
 		if (compound.contains("Controller"))
-			controller = NbtUtils.readBlockPos(compound.getCompound("Controller"));
+			controller = NBTHelper.readBlockPos(compound, "Controller");
 
 		if (isController()) {
 			window = compound.getBoolean("Window");
 			width = compound.getInt("Size");
 			height = compound.getInt("Height");
 			tankInventory.setCapacity(getTotalTankSize() * getCapacityMultiplier());
-			tankInventory.readFromNBT(compound.getCompound("TankContent"));
-			if (tankInventory.getSpace() < 0) {
-				try (Transaction t = TransferUtil.getTransaction()) {
-					tankInventory.extract(tankInventory.variant, -tankInventory.getSpace(), t);
-					t.commit();
-				}
-			}
+
+			tankInventory.readFromNBT(registries, compound.getCompound("TankContent"));
+			if (tankInventory.getSpace() < 0)
+				tankInventory.drain(-tankInventory.getSpace(), FluidAction.EXECUTE);
 		}
 
 		boiler.read(compound.getCompound("Boiler"), width * width * height);
@@ -484,7 +505,7 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 		if (updateConnectivity)
 			compound.putBoolean("Uninitialized", true);
 		compound.put("Boiler", boiler.write());
@@ -494,12 +515,12 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 			compound.put("Controller", NbtUtils.writeBlockPos(controller));
 		if (isController()) {
 			compound.putBoolean("Window", window);
-			compound.put("TankContent", tankInventory.writeToNBT(new CompoundTag()));
+			compound.put("TankContent", tankInventory.writeToNBT(registries, new CompoundTag()));
 			compound.putInt("Size", width);
 			compound.putInt("Height", height);
 		}
 		compound.putInt("Luminosity", luminosity);
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 
 		if (!clientPacket)
 			return;
@@ -508,11 +529,6 @@ public class FluidTankBlockEntity extends SmartBlockEntity implements IHaveGoggl
 		if (queuedSync)
 			compound.putBoolean("LazySync", true);
 		forceFluidLevelUpdate = false;
-	}
-
-	@Override
-	public void invalidate() {
-		super.invalidate();
 	}
 
 	@Override

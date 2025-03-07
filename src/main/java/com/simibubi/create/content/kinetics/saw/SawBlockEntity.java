@@ -10,10 +10,21 @@ import java.util.stream.Collectors;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.kinetics.base.BlockBreakingKineticBlockEntity;
@@ -34,6 +45,7 @@ import net.createmod.catnip.math.VecHelper;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
@@ -49,16 +61,17 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CactusBlock;
 import net.minecraft.world.level.block.ChorusPlantBlock;
 import net.minecraft.world.level.block.KelpBlock;
 import net.minecraft.world.level.block.KelpPlantBlock;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.StemGrownBlock;
 import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -83,7 +96,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 
 	private static final Object cuttingRecipesKey = new Object();
 	public static final Supplier<RecipeType<?>> woodcuttingRecipeType =
-		Suppliers.memoize(() -> BuiltInRegistries.RECIPE_TYPE.get(new ResourceLocation("druidcraft", "woodcutting")));
+		Suppliers.memoize(() -> BuiltInRegistries.RECIPE_TYPE.get(ResourceLocation.fromNamespaceAndPath("druidcraft", "woodcutting")));
 
 	public ProcessingInventory inventory;
 	private int recipeIndex;
@@ -99,6 +112,18 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		playEvent = ItemStack.EMPTY;
 	}
 
+	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(
+				Capabilities.ItemHandler.BLOCK,
+				AllBlockEntityTypes.SAW.get(),
+				(be, context) -> {
+					if (context != Direction.DOWN)
+						return be.inventory;
+					return null;
+				}
+		);
+	}
+
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
@@ -109,29 +134,29 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 	}
 
 	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
-		compound.put("Inventory", inventory.serializeNBT());
+	public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		compound.put("Inventory", inventory.serializeNBT(registries));
 		compound.putInt("RecipeIndex", recipeIndex);
-		super.write(compound, clientPacket);
+		super.write(compound, registries, clientPacket);
 
 		if (!clientPacket || playEvent.isEmpty())
 			return;
-		compound.put("PlayEvent", NBTSerializer.serializeNBT(playEvent));
+		compound.put("PlayEvent", playEvent.saveOptional(registries));
 		playEvent = ItemStack.EMPTY;
 	}
 
 	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		super.read(compound, clientPacket);
-		inventory.deserializeNBT(compound.getCompound("Inventory"));
+	protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+		super.read(compound, registries, clientPacket);
+		inventory.deserializeNBT(registries, compound.getCompound("Inventory"));
 		recipeIndex = compound.getInt("RecipeIndex");
 		if (compound.contains("PlayEvent"))
-			playEvent = ItemStack.of(compound.getCompound("PlayEvent"));
+			playEvent = ItemStack.parseOptional(registries, compound.getCompound("PlayEvent"));
 	}
 
 	@Override
 	protected AABB createRenderBoundingBox() {
-		return new AABB(worldPosition).inflate(.125f);
+		return new AABB(getBlockPos()).inflate(.125f);
 	}
 
 	@Override
@@ -345,13 +370,13 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 			return;
 		}
 
-		List<? extends Recipe<?>> recipes = getRecipes();
+		List<RecipeHolder<? extends Recipe<?>>> recipes = getRecipes();
 		if (recipes.isEmpty())
 			return;
 		if (recipeIndex >= recipes.size())
 			recipeIndex = 0;
 
-		Recipe<?> recipe = recipes.get(recipeIndex);
+		Recipe<?> recipe = recipes.get(recipeIndex).value();
 
 		int rolls = input.getCount();
 		inventory.clear();
@@ -375,17 +400,17 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		award(AllAdvancements.SAW_PROCESSING);
 	}
 
-	private List<? extends Recipe<?>> getRecipes() {
-		Optional<CuttingRecipe> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(level, inventory.getStackInSlot(0),
+	private List<RecipeHolder<? extends Recipe<?>>> getRecipes() {
+		Optional<RecipeHolder<CuttingRecipe>> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(level, inventory.getStackInSlot(0),
 			AllRecipeTypes.CUTTING.getType(), CuttingRecipe.class);
-		if (assemblyRecipe.isPresent() && filtering.test(assemblyRecipe.get()
+		if (assemblyRecipe.isPresent() && filtering.test(assemblyRecipe.get().value()
 			.getResultItem(level.registryAccess())))
 			return ImmutableList.of(assemblyRecipe.get());
 
-		Predicate<Recipe<?>> types = RecipeConditions.isOfType(AllRecipeTypes.CUTTING.getType(),
+		Predicate<RecipeHolder<? extends Recipe<?>>> types = RecipeConditions.isOfType(AllRecipeTypes.CUTTING.getType(),
 			AllConfigs.server().recipes.allowStonecuttingOnSaw.get() ? RecipeType.STONECUTTING : null);
 
-		List<Recipe<?>> startedSearch = RecipeFinder.get(cuttingRecipesKey, level, types);
+		List<RecipeHolder<? extends Recipe<?>>> startedSearch = RecipeFinder.get(cuttingRecipesKey, level, types);
 		return startedSearch.stream()
 			.filter(RecipeConditions.outputMatchesFilter(filtering))
 			.filter(RecipeConditions.firstIngredientMatches(inventory.getStackInSlot(0)))
@@ -423,7 +448,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		if (level.isClientSide && !isVirtual())
 			return;
 
-		List<? extends Recipe<?>> recipes = getRecipes();
+		List<RecipeHolder<? extends Recipe<?>>> recipes = getRecipes();
 		boolean valid = !recipes.isEmpty();
 		int time = 50;
 
@@ -440,7 +465,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 				recipeIndex = 0;
 		}
 
-		Recipe<?> recipe = recipes.get(recipeIndex);
+		Recipe<?> recipe = recipes.get(recipeIndex).value();
 		if (recipe instanceof CuttingRecipe) {
 			time = ((CuttingRecipe) recipe).getProcessingDuration();
 		}
@@ -509,7 +534,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		Block block = stateToBreak.getBlock();
 		if (block instanceof BambooStalkBlock)
 			return true;
-		if (block instanceof StemGrownBlock)
+		if (block.equals(Blocks.PUMPKIN) || block.equals(Blocks.MELON))
 			return true;
 		if (block instanceof CactusBlock)
 			return true;

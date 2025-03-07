@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -14,11 +17,13 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllPackets;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.equipment.clipboard.ClipboardOverrides.ClipboardType;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
@@ -29,7 +34,7 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.createmod.catnip.gui.AbstractSimiScreen;
-import net.minecraft.SharedConstants;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
@@ -43,12 +48,12 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
 
 import net.fabricmc.api.EnvType;
@@ -93,9 +98,7 @@ public class ClipboardScreen extends AbstractSimiScreen {
 		if (pages.isEmpty())
 			pages.add(new ArrayList<>());
 		if (clearBtn == null) {
-			currentPage = item.getTag() == null ? 0
-				: item.getTag()
-					.getInt("PreviouslyOpenedPage");
+			currentPage = item.getOrDefault(AllDataComponents.CLIPBOARD_PREVIOUSLY_OPENED_PAGE, 0);
 			currentPage = Mth.clamp(currentPage, 0, pages.size() - 1);
 		}
 		currentEntries = pages.get(currentPage);
@@ -106,8 +109,7 @@ public class ClipboardScreen extends AbstractSimiScreen {
 		editContext = new TextFieldHelper(this::getCurrentEntryText, this::setCurrentEntryText, this::getClipboard,
 			this::setClipboard, this::validateTextForEntry);
 		editingIndex = startEmpty ? 0 : -1;
-		readonly = item.getTag() != null && item.getTag()
-			.getBoolean("Readonly");
+		readonly = item.has(AllDataComponents.CLIPBOARD_READ_ONLY);
 		if (readonly)
 			editingIndex = -1;
 		if (clearBtn != null)
@@ -344,9 +346,11 @@ public class ClipboardScreen extends AbstractSimiScreen {
 		pages.removeIf(List::isEmpty);
 
 		for (int i = 0; i < pages.size(); i++)
-			if (pages.get(i) == currentEntries)
-				item.getOrCreateTag()
-					.putInt("PreviouslyOpenedPage", i);
+			if (pages.get(i) == currentEntries) {
+				item.set(AllDataComponents.CLIPBOARD_PREVIOUSLY_OPENED_PAGE, i);
+				if (i == 0)
+					item.remove(AllDataComponents.CLIPBOARD_PREVIOUSLY_OPENED_PAGE);
+			}
 
 		send();
 
@@ -363,10 +367,16 @@ public class ClipboardScreen extends AbstractSimiScreen {
 	private void send() {
 		ClipboardEntry.saveAll(pages, item);
 		ClipboardOverrides.switchTo(ClipboardType.WRITTEN, item);
-		if (pages.isEmpty())
-			item.setTag(new CompoundTag());
-		AllPackets.getChannel()
-			.sendToServer(new ClipboardEditPacket(targetSlot, item.getOrCreateTag(), targetedBlock));
+
+		if (pages.isEmpty()) {
+			item.remove(AllDataComponents.CLIPBOARD_PAGES);
+			item.remove(AllDataComponents.CLIPBOARD_PREVIOUSLY_OPENED_PAGE);
+			item.remove(AllDataComponents.CLIPBOARD_READ_ONLY);
+			item.remove(AllDataComponents.CLIPBOARD_TYPE);
+			item.remove(AllDataComponents.CLIPBOARD_COPIED_VALUES);
+		}
+
+		CatnipServices.NETWORK.sendToServer(new ClipboardEditPacket(targetSlot, item.getComponentsPatch(), targetedBlock));
 	}
 
 	@Override
@@ -375,8 +385,8 @@ public class ClipboardScreen extends AbstractSimiScreen {
 	}
 
 	@Override
-	public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
-		changePage(pDelta < 0);
+	public boolean mouseScrolled(double pMouseX, double pMouseY, double pScrollX, double pScrollY) {
+		changePage(pScrollY < 0);
 		return true;
 	}
 
@@ -404,7 +414,7 @@ public class ClipboardScreen extends AbstractSimiScreen {
 	public boolean charTyped(char pCodePoint, int pModifiers) {
 		if (super.charTyped(pCodePoint, pModifiers))
 			return true;
-		if (!SharedConstants.isAllowedChatCharacter(pCodePoint))
+		if (!StringUtil.isAllowedChatCharacter(pCodePoint))
 			return false;
 		if (editingIndex == -1)
 			return false;
@@ -547,30 +557,27 @@ public class ClipboardScreen extends AbstractSimiScreen {
 
 	private void renderHighlight(Rect2i[] pSelected) {
 		Tesselator tesselator = Tesselator.getInstance();
-		BufferBuilder bufferbuilder = tesselator.getBuilder();
+		BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 		RenderSystem.setShader(GameRenderer::getPositionShader);
 		RenderSystem.setShaderColor(0.0F, 0.0F, 255.0F, 255.0F);
 //		RenderSystem.disableTexture();
 		RenderSystem.enableColorLogicOp();
 		RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-		bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
 		for (Rect2i rect2i : pSelected) {
 			int i = rect2i.getX();
 			int j = rect2i.getY();
 			int k = i + rect2i.getWidth();
 			int l = j + rect2i.getHeight();
-			bufferbuilder.vertex((double) i, (double) l, 0.0D)
-				.endVertex();
-			bufferbuilder.vertex((double) k, (double) l, 0.0D)
-				.endVertex();
-			bufferbuilder.vertex((double) k, (double) j, 0.0D)
-				.endVertex();
-			bufferbuilder.vertex((double) i, (double) j, 0.0D)
-				.endVertex();
+			bufferbuilder.addVertex(i, l, 0);
+			bufferbuilder.addVertex(k, l, 0);
+			bufferbuilder.addVertex(k, j, 0);
+			bufferbuilder.addVertex(i, j, 0);
 		}
 
-		tesselator.end();
+		@Nullable MeshData meshData = bufferbuilder.build();
+		if (meshData != null)
+			BufferUploader.drawWithShader(meshData);
 		RenderSystem.disableColorLogicOp();
 //		RenderSystem.enableTexture();
 	}

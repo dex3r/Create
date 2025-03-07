@@ -9,7 +9,6 @@ import com.google.common.cache.Cache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllTags.AllItemTags;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortTarget;
@@ -19,12 +18,17 @@ import com.simibubi.create.foundation.utility.TickBasedCache;
 import com.simibubi.create.foundation.utility.fabric.ReachUtil;
 
 import net.createmod.catnip.data.WorldAttached;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
+
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -53,7 +57,7 @@ public class ChainConveyorInteractionHandler {
 		ItemStack mainHandItem = mc.player.getMainHandItem();
 		boolean isWrench = AllItemTags.CHAIN_RIDEABLE.matches(mainHandItem);
 		boolean dismantling = isWrench && mc.player.isShiftKeyDown();
-		double range = ReachUtil.reach(mc.player) + 1;
+		double range = mc.player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE) + 1;
 
 		Vec3 from = RaycastHelper.getTraceOrigin(mc.player);
 		Vec3 to = RaycastHelper.getTraceTarget(mc.player, range, from);
@@ -129,23 +133,21 @@ public class ChainConveyorInteractionHandler {
 				return true;
 			}
 
-			AllPackets.getChannel()
-				.sendToServer(new ChainConveyorConnectionPacket(selectedLift, selectedLift.offset(selectedConnection),
-					mainHandItem, false));
+			CatnipServices.NETWORK.sendToServer(new ChainConveyorConnectionPacket(selectedLift, selectedLift.offset(selectedConnection),
+				mainHandItem, false));
 			return true;
 		}
 
 		if (AllBlocks.PACKAGE_FROGPORT.isIn(mainHandItem)) {
 			PackagePortTargetSelectionHandler.exactPositionOfTarget = selectedBakedPosition;
 			PackagePortTargetSelectionHandler.activePackageTarget =
-				new PackagePortTarget.ChainConveyorFrogportTarget(selectedLift, selectedChainPosition, selectedConnection);
+				new PackagePortTarget.ChainConveyorFrogportTarget(selectedLift, selectedChainPosition, selectedConnection, false);
 			return true;
 		}
 
 		if (PackageItem.isPackage(mainHandItem)) {
-			AllPackets.getChannel()
-				.sendToServer(new ChainPackageInteractionPacket(selectedLift, selectedConnection, selectedChainPosition,
-					mainHandItem));
+			CatnipServices.NETWORK.sendToServer(new ChainPackageInteractionPacket(selectedLift, selectedConnection, selectedChainPosition,
+				mainHandItem));
 			return true;
 		}
 

@@ -7,12 +7,23 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import org.jetbrains.annotations.NotNull;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.item.ItemSlots;
 
 import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
@@ -64,7 +75,7 @@ public class ToolboxInventory extends ItemStackHandler {
 			ItemStack stackInSlot = getStackInSlot(compartment * STACKS_PER_COMPARTMENT + i);
 			totalCount += stackInSlot.getCount();
 			if (!shouldBeEmpty)
-				shouldBeEmpty = stackInSlot.isEmpty() || stackInSlot.getCount() != stackInSlot.getMaxStackSize();
+				shouldBeEmpty = stackInSlot.isEmpty() || stackInSlot.getCount() != stackInSlot.getOrDefault(DataComponents.MAX_STACK_SIZE, 64);
 			else if (!stackInSlot.isEmpty()) {
 				valid = false;
 				sample = stackInSlot;
@@ -91,7 +102,7 @@ public class ToolboxInventory extends ItemStackHandler {
 		} else {
 			for (int i = 0; i < STACKS_PER_COMPARTMENT; i++) {
 				ItemStack copy = totalCount <= 0 ? ItemStack.EMPTY
-					: ItemHandlerHelper.copyStackWithSize(sample, Math.min(totalCount, sample.getMaxStackSize()));
+					: sample.copyWithCount(Math.min(totalCount, sample.getOrDefault(DataComponents.MAX_STACK_SIZE, 64)));
 				setStackInSlot(compartment * STACKS_PER_COMPARTMENT + i, copy);
 				totalCount -= copy.getCount();
 			}
@@ -127,16 +138,16 @@ public class ToolboxInventory extends ItemStackHandler {
 		int compartment = slot / STACKS_PER_COMPARTMENT;
 		if (!stack.isEmpty() && filters.get(compartment)
 				.isEmpty()) {
-			filters.set(compartment, ItemHandlerHelper.copyStackWithSize(stack, 1));
+			filters.set(compartment, stack.copyWithCount(1));
 			if (ctx != null) TransactionCallback.onSuccess(ctx, blockEntity::notifyUpdate);
 			else notifyUpdate();
 		}
 	}
 
 	@Override
-	public CompoundTag serializeNBT() {
-		CompoundTag compound = super.serializeNBT();
-		compound.put("Compartments", NBTHelper.writeItemList(filters));
+	public @NotNull CompoundTag serializeNBT(@NotNull HolderLookup.Provider registries) {
+		CompoundTag compound = super.serializeNBT(registries);
+		compound.put("Compartments", NBTHelper.writeItemList(filters, registries));
 		return compound;
 	}
 
@@ -152,14 +163,14 @@ public class ToolboxInventory extends ItemStackHandler {
 	}
 
 	@Override
-	public void deserializeNBT(CompoundTag nbt) {
-		filters = NBTHelper.readItemList(nbt.getList("Compartments", Tag.TAG_COMPOUND));
+	public void deserializeNBT(@NotNull HolderLookup.Provider registries, CompoundTag nbt) {
+		filters = NBTHelper.readItemList(nbt.getList("Compartments", Tag.TAG_COMPOUND), registries);
 		if (filters.size() != 8) {
 			filters.clear();
 			for (int i = 0; i < 8; i++)
 				filters.add(ItemStack.EMPTY);
 		}
-		super.deserializeNBT(nbt);
+		super.deserializeNBT(registries, nbt);
 	}
 
 	public ItemStack distributeToCompartment(@Nonnull ItemStack stack, int compartment, TransactionContext ctx) {
@@ -205,7 +216,7 @@ public class ToolboxInventory extends ItemStackHandler {
 
 	public static ItemStack cleanItemNBT(ItemStack stack) {
 		if (AllItems.BELT_CONNECTOR.isIn(stack))
-			stack.removeTagKey("FirstPulley");
+			stack.remove(AllDataComponents.BELT_FIRST_SHAFT);
 		return stack;
 	}
 
@@ -214,7 +225,7 @@ public class ToolboxInventory extends ItemStackHandler {
 			return stack1.getItem() == stack2.getItem();
 		if (AllItems.BELT_CONNECTOR.isIn(stack1) && AllItems.BELT_CONNECTOR.isIn(stack2))
 			return true;
-		return ItemHandlerHelper.canItemStacksStack(stack1, stack2);
+		return ItemStack.isSameItemSameComponents(stack1, stack2);
 	}
 
 	private void notifyUpdate() {

@@ -29,6 +29,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -61,7 +62,7 @@ public class TrackBlockOutline {
 
 		result = null;
 
-		double range = ReachUtil.reach(mc.player);
+		double range = player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE);
 		Vec3 target = RaycastHelper.getTraceTarget(player, Math.min(maxRange, range) + 1, origin);
 		Map<BlockPos, TrackBlockEntity> turns = TRACKS_WITH_TURNS.get(mc.level);
 
@@ -229,14 +230,12 @@ public class TrackBlockOutline {
 				g = 0.25f;
 			}
 
-			vb.vertex(transform.pose(), (float) x1, (float) y1, (float) z1)
-				.color(r, g, b, .4f)
-				.normal(transform.normal(), xDiff, yDiff, zDiff)
-				.endVertex();
-			vb.vertex(transform.pose(), (float) x2, (float) y2, (float) z2)
-				.color(r, g, b, .4f)
-				.normal(transform.normal(), xDiff, yDiff, zDiff)
-				.endVertex();
+			vb.addVertex(transform.pose(), (float) x1, (float) y1, (float) z1)
+				.setColor(r, g, b, .4f)
+				.setNormal(transform.copy(), xDiff, yDiff, zDiff);
+			vb.addVertex(transform.pose(), (float) x2, (float) y2, (float) z2)
+				.setColor(r, g, b, .4f)
+				.setNormal(transform.copy(), xDiff, yDiff, zDiff);
 
 		});
 	}
@@ -246,7 +245,7 @@ public class TrackBlockOutline {
 	private static final VoxelShape LONG_ORTHO = TrackVoxelShapes.longOrthogonalZ();
 	private static final VoxelShape LONG_ORTHO_OFFSET = TrackVoxelShapes.longOrthogonalZOffset();
 
-	private static void walkShapes(TrackShape shape, TransformStack msr, Consumer<VoxelShape> renderer) {
+	private static void walkShapes(TrackShape shape, TransformStack<?> msr, Consumer<VoxelShape> renderer) {
 		float angle45 = Mth.PI / 4;
 
 		if (shape == TrackShape.XO || shape == TrackShape.CR_NDX || shape == TrackShape.CR_PDX)

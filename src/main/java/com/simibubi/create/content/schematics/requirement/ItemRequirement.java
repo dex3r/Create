@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+
+import net.minecraft.core.registries.BuiltInRegistries;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.api.schematic.requirement.SchematicRequirementRegistries;
@@ -17,10 +21,8 @@ import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement
 import com.simibubi.create.api.schematic.requirement.SpecialEntityItemRequirement;
 import com.simibubi.create.compat.framedblocks.FramedBlocksInSchematics;
 import com.simibubi.create.foundation.data.recipe.Mods;
-import net.createmod.catnip.nbt.NBTProcessors;
 
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-
+import net.createmod.catnip.components.ComponentProcessors;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -130,7 +132,7 @@ public class ItemRequirement {
 			return new ItemRequirement(new StrictNbtStackRequirement(bannerBE.getItem(), ItemUseType.CONSUME));
 		// Tall grass doesnt exist as a block so use 2 grass blades
 		if (block == Blocks.TALL_GRASS)
-			return new ItemRequirement(ItemUseType.CONSUME, new ItemStack(Items.GRASS, 2));
+			return new ItemRequirement(ItemUseType.CONSUME, new ItemStack(Items.SHORT_GRASS, 2));
 		// Large ferns don't exist as blocks so use 2 ferns instead
 		if (block == Blocks.LARGE_FERN)
 			return new ItemRequirement(ItemUseType.CONSUME, new ItemStack(Items.FERN, 2));
@@ -148,7 +150,7 @@ public class ItemRequirement {
 
 		if (entity instanceof ItemFrame itemFrame) {
 			ItemStack frame = new ItemStack(Items.ITEM_FRAME);
-			ItemStack displayedItem = NBTProcessors.withUnsafeNBTDiscarded(itemFrame.getItem());
+			ItemStack displayedItem = ComponentProcessors.withUnsafeComponentsDiscarded(itemFrame.getItem());
 			if (displayedItem.isEmpty())
 				return new ItemRequirement(ItemUseType.CONSUME, Items.ITEM_FRAME);
 			return new ItemRequirement(List.of(new ItemRequirement.StackRequirement(frame, ItemUseType.CONSUME),
@@ -160,7 +162,7 @@ public class ItemRequirement {
 			requirements.add(new StackRequirement(new ItemStack(Items.ARMOR_STAND), ItemUseType.CONSUME));
 			armorStand.getAllSlots()
 				.forEach(s -> requirements
-					.add(new StrictNbtStackRequirement(NBTProcessors.withUnsafeNBTDiscarded(s), ItemUseType.CONSUME)));
+					.add(new StrictNbtStackRequirement(ComponentProcessors.withUnsafeComponentsDiscarded(s), ItemUseType.CONSUME)));
 			return new ItemRequirement(requirements);
 		}
 
@@ -220,7 +222,7 @@ public class ItemRequirement {
 
 		@Override
 		public boolean matches(ItemStack other) {
-			return ItemStack.isSameItemSameTags(stack, other);
+			return ItemStack.isSameItemSameComponents(stack, other);
 		}
 
 		@Override

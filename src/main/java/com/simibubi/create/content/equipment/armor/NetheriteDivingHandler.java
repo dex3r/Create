@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.AllTags.AllItemTags;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -49,7 +50,7 @@ public final class NetheriteDivingHandler {
 	}
 
 	public static boolean isNetheriteArmor(ItemStack stack) {
-		return stack.getItem() instanceof ArmorItem armorItem && armorItem.isFireResistant();
+		return stack.getItem() instanceof ArmorItem && stack.has(DataComponents.FIRE_RESISTANT);
 	}
 
 	public static void setBit(LivingEntity entity, EquipmentSlot slot) {

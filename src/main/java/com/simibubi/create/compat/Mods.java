@@ -4,7 +4,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.createmod.catnip.lang.Lang;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -18,6 +19,7 @@ import net.fabricmc.loader.api.FabricLoader;
  */
 public enum Mods {
 	AETHER,
+	AETHER_II,
 	BETTEREND,
 	COMPUTERCRAFT,
 	CURIOS,
@@ -35,6 +37,7 @@ public enum Mods {
 	FTBCHUNKS,
 	JOURNEYMAP,
 	FTBLIBRARY,
+	SODIUM,
 	INVENTORYSORTER,
 
 	// fabric mods
@@ -61,7 +64,7 @@ public enum Mods {
 	}
 
 	public ResourceLocation rl(String path) {
-		return new ResourceLocation(id, path);
+		return ResourceLocation.fromNamespaceAndPath(id, path);
 	}
 
 	public Block getBlock(String id) {
@@ -76,7 +79,7 @@ public enum Mods {
 		if (!isLoaded())
 			return false;
 		Item asItem = entry.asItem();
-		return asItem != null && CatnipServices.REGISTRIES.getKeyOrThrow(asItem)
+		return asItem != null && RegisteredObjectsHelper.getKeyOrThrow(asItem)
 			.getNamespace()
 			.equals(id);
 	}

@@ -1,0 +1,34 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "biomesoplenty"
+    }
+  ],
+  "type": "create:milling",
+  "ingredients": [
+    {
+      "type": "neoforge:compound",
+      "ingredients": [
+        {
+          "item": "biomesoplenty:lavender"
+        }
+      ]
+    }
+  ],
+  "processing_time": 50,
+  "results": [
+    {
+      "count": 2,
+      "item": {
+        "id": "minecraft:purple_dye"
+      }
+    },
+    {
+      "chance": 0.05,
+      "item": {
+        "id": "minecraft:green_dye"
+      }
+    }
+  ]
+}

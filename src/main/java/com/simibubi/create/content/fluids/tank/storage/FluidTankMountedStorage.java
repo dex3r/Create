@@ -2,9 +2,13 @@ package com.simibubi.create.content.fluids.tank.storage;
 
 import java.util.Objects;
 
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+
+import net.minecraft.util.ExtraCodecs;
+
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.AllMountedStorageTypes;
 import com.simibubi.create.api.contraption.storage.SyncedMountedStorage;
@@ -15,8 +19,12 @@ import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.fluids.tank.storage.FluidTankMountedStorage.Handler;
 import com.simibubi.create.foundation.utility.CreateCodecs;
 
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,9 +34,9 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
 
 public class FluidTankMountedStorage extends WrapperMountedFluidStorage<Handler> implements SyncedMountedStorage {
-	public static final Codec<FluidTankMountedStorage> CODEC = RecordCodecBuilder.create(i -> i.group(
-		CreateCodecs.NON_NEGATIVE_LONG.fieldOf("capacity").forGetter(FluidTankMountedStorage::getCapacity),
-		CreateCodecs.FLUID_STACK.fieldOf("fluid").forGetter(FluidTankMountedStorage::getFluid)
+	public static final MapCodec<FluidTankMountedStorage> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+		ExtraCodecs.NON_NEGATIVE_INT.fieldOf("capacity").forGetter(FluidTankMountedStorage::getCapacity),
+		FluidStack.OPTIONAL_CODEC.fieldOf("fluid").forGetter(FluidTankMountedStorage::getFluid)
 	).apply(i, FluidTankMountedStorage::new));
 
 	private boolean dirty;
@@ -90,9 +98,9 @@ public class FluidTankMountedStorage extends WrapperMountedFluidStorage<Handler>
 		return new FluidTankMountedStorage(inventory.getCapacity(), inventory.getFluid().copy());
 	}
 
-	public static FluidTankMountedStorage fromLegacy(CompoundTag nbt) {
+	public static FluidTankMountedStorage fromLegacy(HolderLookup.Provider registries, CompoundTag nbt) {
 		int capacity = nbt.getInt("Capacity");
-		FluidStack fluid = FluidStack.loadFluidStackFromNBT(nbt);
+		FluidStack fluid = FluidStack.parseOptional(registries, nbt);
 		return new FluidTankMountedStorage(capacity, fluid);
 	}
 

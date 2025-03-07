@@ -15,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -82,29 +83,26 @@ public abstract class FunnelBlock extends AbstractDirectionalFunnelBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (AdventureUtil.isAdventure(player))
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS;
+		boolean shouldntInsertItem = AllBlocks.MECHANICAL_ARM.isIn(stack) || !canInsertIntoFunnel(state);
 
-		ItemStack heldItem = player.getItemInHand(handIn);
-		boolean shouldntInsertItem = heldItem.isEmpty() || AllBlocks.MECHANICAL_ARM.isIn(heldItem) || !canInsertIntoFunnel(state);
+		if (AllItems.WRENCH.isIn(stack))
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-		if (AllItems.WRENCH.isIn(heldItem))
-			return InteractionResult.PASS;
-
-		if (hit.getDirection() == getFunnelFacing(state) && !shouldntInsertItem) {
-			if (!worldIn.isClientSide)
-				withBlockEntityDo(worldIn, pos, be -> {
-					ItemStack toInsert = heldItem.copy();
-					ItemStack remainder = tryInsert(worldIn, pos, toInsert, false);
-					if (!ItemStack.matches(remainder, toInsert) || remainder.getCount() != heldItem.getCount())
-						player.setItemInHand(handIn, remainder);
+		if (hitResult.getDirection() == getFunnelFacing(state) && !shouldntInsertItem) {
+			if (!level.isClientSide)
+				withBlockEntityDo(level, pos, be -> {
+					ItemStack toInsert = stack.copy();
+					ItemStack remainder = tryInsert(level, pos, toInsert, false);
+					if (!ItemStack.matches(remainder, toInsert) || remainder.getCount() != stack.getCount())
+						player.setItemInHand(hand, remainder);
 				});
-			return InteractionResult.SUCCESS;
+			return ItemInteractionResult.SUCCESS;
 		}
 
-		return InteractionResult.PASS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	@Override

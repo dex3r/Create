@@ -34,7 +34,7 @@ import net.fabricmc.loader.api.FabricLoader;
 public class CreateTestCommand {
 	private static final Path gametests = FabricLoader.getInstance().getGameDir()
 			.getParent()
-			.resolve("src/main/resources/data/create/structures/gametest")
+			.resolve("src/main/resources/data/create/structure/gametest")
 			.toAbsolutePath();
 
 	public static ArgumentBuilder<CommandSourceStack, ?> register() {

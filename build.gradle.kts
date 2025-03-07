@@ -1,15 +1,15 @@
 // versions
 // https://parchmentmc.org/docs/getting-started
-val parchmentVersion = "2023.09.03"
+val parchmentVersion = "2024.11.17"
 // https://fabricmc.net/develop/
-val minecraftVersion = "1.20.1"
-val loaderVersion = "0.16.9"
-val fapiVersion = "0.92.3+1.20.1"
+val minecraftVersion = "1.21.1"
+val loaderVersion = "0.16.10"
+val fapiVersion = "0.115.1+1.21.1"
 
 // in-house dependencies
-val flywheelVersion = "1.0.0-217"
-val ponderVersion = "1.0.36"
-val registrateVersion = "1.3.79-MC1.20.1"
+val flywheelVersion = "1.0.1-11"
+val ponderVersion = "1.0.44"
+val registrateVersion = "1.3.77-MC1.21.1"
 val milkLibVersion = "1.2.60"
 val portLibVersion = "2.3.8+1.20.1"
 val portLibModules = listOf(
@@ -18,39 +18,35 @@ val portLibModules = listOf(
 )
 
 // external dependencies
-val configApiVersion = "8.0.0"
+val configApiVersion = "21.1.3"
 val nightConfigVersion =  "3.6.3"
-// https://maven.jamieswhiteshirt.com/libs-release/com/jamieswhiteshirt/reach-entity-attributes/
-val reaVersion = "2.4.0"
 val jsr305Version = "3.0.2"
 
 // compat
 // https://modrinth.com/mod/cc-tweaked/versions
-val ccVersion = "1.106.1"
+val ccVersion = "1.115.1"
 // for CC - https://modrinth.com/mod/cloth-config/versions
-val clothVersion = "11.1.106+fabric"
+val clothVersion = "15.0.140+fabric"
 // https://modrinth.com/mod/jei/versions
-val jeiVersion = "15.19.0.85"
+val jeiVersion = "19.21.0.247"
 // https://modrinth.com/mod/rei/versions
-val reiVersion = "12.0.626"
+val reiVersion = "16.0.799"
 // https://modrinth.com/mod/emi/versions
-val emiVersion = "1.0.9+1.20.1"
+val emiVersion = "1.1.20+1.21.1"
 // https://modrinth.com/mod/botania
 val botaniaVersion = "1.19.2-436-FABRIC"
 // https://modrinth.com/mod/modmenu/versions
-val modmenuVersion = "7.1.0"
+val modmenuVersion = "11.0.3"
 // https://modrinth.com/mod/sandwichable/versions
 val sandwichableVersion = "1.3.1+1.20.1"
 // https://modrinth.com/mod/sodium
-val sodiumVersion = "mc1.20.1-0.5.8"
-// https://modrinth.com/mod/indium
-val indiumVersion = "1.0.30+mc1.20.4"
+val sodiumVersion = "mc1.21.1-0.6.9-fabric"
 // https://github.com/emilyploszaj/trinkets/releases/
-val trinketsVersion = "3.7.0"
+val trinketsVersion = "3.10.0"
 // for Trinkets - https://modrinth.com/mod/cardinal-components-api/versions
-val ccaVersion = "5.2.1"
+val ccaVersion = "6.1.2"
 // https://modrinth.com/mod/journeymap
-val jmVersion = "1.20.1-5.10.3-fabric"
+val jmVersion = "1.21.1-6.0.0-beta.39+fabric"
 // check the jm jar, it's JiJ
 val jmApiVersion = "1.20-1.9-SNAPSHOT"
 
@@ -59,7 +55,7 @@ val ccRuntime = false
 val recipeViewer = "emi" // jei, rei, or emi
 
 plugins {
-    id("fabric-loom") version "1.9.+"
+    id("fabric-loom") version "1.10.+"
     id("maven-publish")
 }
 
@@ -86,7 +82,7 @@ repositories {
         content { includeGroupAndSubgroups("maven.modrinth") }
     }
     maven("https://maven.terraformersmc.com") // Mod Menu, Trinkets
-    maven("https://squiddev.cc/maven") // CC:T
+    maven("https://maven.squiddev.cc") // CC:T
     maven("https://modmaven.dev") // Botania
     maven("https://maven.jamieswhiteshirt.com/libs-release") { // Reach Entity Attributes
         content { includeGroup("com.jamieswhiteshirt") }
@@ -120,7 +116,6 @@ dependencies {
     modApi(include("com.electronwill.night-config:toml:$nightConfigVersion")!!)
     modApi(include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$configApiVersion")!!)
     modApi(include("dev.engine-room.flywheel:flywheel-fabric-$minecraftVersion:$flywheelVersion")!!)
-    modApi(include("com.jamieswhiteshirt:reach-entity-attributes:$reaVersion")!!)
     modApi(include("io.github.tropheusj:milk-lib:$milkLibVersion")!!)
     api(include("com.google.code.findbugs:jsr305:$jsr305Version")!!)
 
@@ -240,8 +235,7 @@ tasks.named<ProcessResources>("processResources") {
         "loader_version" to loaderVersion,
         "fabric_version" to fapiVersion,
         "forge_config_version" to configApiVersion,
-        "milk_lib_version" to milkLibVersion,
-        "reach_entity_attributes_version" to reaVersion
+        "milk_lib_version" to milkLibVersion
     )
 
     for (module in portLibModules) {

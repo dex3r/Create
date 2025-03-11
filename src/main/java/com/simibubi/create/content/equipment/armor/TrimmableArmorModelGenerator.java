@@ -17,7 +17,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelBuilder;
-import io.github.fabricators_of_create.porting_lib.models.generators.item.ItemModelBuilder;
+import io.github.fabricators_of_create.porting_lib.models.generators.ItemModelBuilder;
 
 public class TrimmableArmorModelGenerator {
 	public static final VarHandle TEXTURES_HANDLE;

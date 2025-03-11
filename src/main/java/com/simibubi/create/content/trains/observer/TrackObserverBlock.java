@@ -15,8 +15,6 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
-import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
-
 public class TrackObserverBlock extends Block implements IBE<TrackObserverBlockEntity>, IWrenchable, ConnectableRedstoneBlock {
 
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;

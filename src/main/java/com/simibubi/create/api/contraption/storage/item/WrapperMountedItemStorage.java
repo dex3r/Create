@@ -84,18 +84,8 @@ public abstract class WrapperMountedItemStorage<T extends SlottedStackStorage> e
 	}
 
 	@Override
-	public boolean isItemValid(int slot, ItemVariant resource, int count) {
-		return this.wrapped.isItemValid(slot, resource, count);
-	}
-
-	@Override
-	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		return this.wrapped.insertSlot(slot, resource, maxAmount, transaction);
-	}
-
-	@Override
-	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		return this.wrapped.extractSlot(slot, resource, maxAmount, transaction);
+	public boolean isItemValid(int slot, ItemStack stack) {
+		return this.wrapped.isItemValid(slot, stack);
 	}
 
 	@Override

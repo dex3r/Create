@@ -1,8 +1,5 @@
 package com.simibubi.create.content.logistics.itemHatch;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
@@ -15,9 +12,9 @@ import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
-import com.simibubi.create.infrastructure.fabric.SecondaryUseBypassingBlock;
+import com.simibubi.create.infrastructure.fabric.block.SecondaryUseBypassingBlock;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 
@@ -29,7 +26,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -40,7 +36,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -138,7 +133,7 @@ public class ItemHatchBlock extends HorizontalDirectionalBlock
 				.isEmpty() && !filter.test(item))
 				continue;
 
-			long inserted = TransferUtil.insertItem(storage, item);
+			long inserted = TransferUtil.insert(storage, item);
 			if (inserted <= 0)
 				continue;
 

@@ -60,7 +60,7 @@ import net.minecraft.world.phys.Vec3;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class Carriage {
 	public static final StreamCodec<RegistryFriendlyByteBuf, Carriage> STREAM_CODEC = StreamCodec.composite(

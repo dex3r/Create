@@ -42,7 +42,7 @@ import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 @GameTestGroup(path = "items")
 public class TestItems {
@@ -369,7 +369,7 @@ public class TestItems {
 		Storage<ItemVariant> chestStorage = helper.itemStorageAt(chest);
 		ItemStack diamondStack = new ItemStack(Items.DIAMOND, 64);
 		for (int i = 0; i < 18; i++) { // insert 18 stacks
-			TransferUtil.insertItem(chestStorage, diamondStack);
+			TransferUtil.insert(chestStorage, diamondStack);
 		}
 		helper.succeedWhen(() -> helper.assertBlockProperty(lamp, RedstoneLampBlock.LIT, true));
 	}

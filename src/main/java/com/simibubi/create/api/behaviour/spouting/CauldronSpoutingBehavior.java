@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 /**
  * {@link BlockSpoutingBehaviour} for empty cauldrons. Mods can register their fluids

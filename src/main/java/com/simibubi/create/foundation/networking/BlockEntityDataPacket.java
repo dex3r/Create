@@ -18,7 +18,7 @@ public abstract class BlockEntityDataPacket<BE extends SyncedBlockEntity> implem
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void handle(LocalPlayer player) {
 		BlockEntity blockEntity = player.clientLevel.getBlockEntity(pos);
 

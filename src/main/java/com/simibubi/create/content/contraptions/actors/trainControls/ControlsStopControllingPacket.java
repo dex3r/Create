@@ -8,8 +8,8 @@ import net.createmod.catnip.net.base.ClientboundPacketPayload;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.codec.StreamCodec;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 public enum ControlsStopControllingPacket implements ClientboundPacketPayload {
 	INSTANCE;
@@ -17,7 +17,7 @@ public enum ControlsStopControllingPacket implements ClientboundPacketPayload {
 	public static final StreamCodec<ByteBuf, ControlsStopControllingPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void handle(LocalPlayer player) {
 		ControlsHandler.stopControlling();
 	}

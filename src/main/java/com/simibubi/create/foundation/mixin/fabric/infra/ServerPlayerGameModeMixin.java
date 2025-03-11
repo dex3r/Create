@@ -4,7 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.simibubi.create.infrastructure.fabric.SecondaryUseBypassingBlock;
+import com.simibubi.create.infrastructure.fabric.block.SecondaryUseBypassingBlock;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;

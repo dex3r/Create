@@ -27,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 
 import io.github.fabricators_of_create.porting_lib.block.CustomLandingEffectsBlock;
 import io.github.fabricators_of_create.porting_lib.block.CustomRunningEffectsBlock;
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.simibubi.create.infrastructure.fabric.block.WeakPowerCheckingBlock;
 
 public class StickerBlock extends WrenchableDirectionalBlock implements IBE<StickerBlockEntity>, CustomRunningEffectsBlock,
 		CustomLandingEffectsBlock, WeakPowerCheckingBlock {

@@ -14,6 +14,8 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
+
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.BBHelper;
 import net.minecraft.core.BlockPos;
@@ -176,7 +178,7 @@ public class FluidFillingBehaviour extends FluidManipulationBehaviour {
 			if (!equivalentTo && !evaporate && canPlaceSources)
 				return false;
 
-			TransactionCallback.onSuccess(ctx, () -> {
+			TransactionSuccessCallback.register(ctx, () -> {
 				playEffect(world, root, fluid, false);
 				if (evaporate) {
 					int i = root.getX();
@@ -271,7 +273,7 @@ public class FluidFillingBehaviour extends FluidManipulationBehaviour {
 		}
 
 		if (success)
-			TransactionCallback.onSuccess(ctx, () -> blockEntity.award(AllAdvancements.HOSE_PULLEY));
+			TransactionSuccessCallback.register(ctx, () -> blockEntity.award(AllAdvancements.HOSE_PULLEY));
 		return success;
 	}
 
@@ -312,7 +314,7 @@ public class FluidFillingBehaviour extends FluidManipulationBehaviour {
 
 	protected void replaceBlock(Level world, BlockPos pos, BlockState state, TransactionContext ctx) {
 		BlockEntity blockEntity = state.hasBlockEntity() ? world.getBlockEntity(pos) : null;
-		TransactionCallback.onSuccess(ctx, () -> {
+		TransactionSuccessCallback.register(ctx, () -> {
 			Block.dropResources(state, world, pos, blockEntity);
 		});
 	}

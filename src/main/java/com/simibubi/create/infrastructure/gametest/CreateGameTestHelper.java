@@ -60,9 +60,9 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 /**
  * A helper class expanding the functionality of {@link GameTestHelper}.
@@ -229,7 +229,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	 */
 	public void spawnItems(BlockPos pos, Item item, int amount) {
 		while (amount > 0) {
-			int toSpawn = Math.min(amount, item.getMaxStackSize(new ItemStack(item)));
+			int toSpawn = Math.min(amount, new ItemStack(item).getMaxStackSize());
 			amount -= toSpawn;
 			ItemStack stack = new ItemStack(item, toSpawn);
 			spawnItem(pos, stack);
@@ -332,7 +332,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	public Object2LongMap<Item> getItemContent(BlockPos pos) {
 		Storage<ItemVariant> storage = itemStorageAt(pos);
 		Object2LongMap<Item> map = new Object2LongArrayMap<>();
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : storage.nonEmptyViews()) {
 				ItemVariant resource = view.getResource();
 				Item item = resource.getItem();
@@ -349,7 +349,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	 */
 	public long getTotalItems(BlockPos pos) {
 		Storage<ItemVariant> storage = itemStorageAt(pos);
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			return TransferUtil.extractAllAsStacks(storage).stream().mapToLong(ItemStack::getCount).sum();
 		}
 	}
@@ -360,7 +360,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	public void assertAnyContained(BlockPos pos, Item... items) {
 		Storage<ItemVariant> storage = itemStorageAt(pos);
 		boolean noneFound = true;
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (Item item : items) {
 				if (storage.extract(ItemVariant.of(item), 1, t) > 0) {
 					noneFound = false;
@@ -378,7 +378,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 	public void assertContentPresent(Object2LongMap<Item> content, BlockPos pos) {
 		Storage<ItemVariant> storage = itemStorageAt(pos);
 		Object2LongMap<Item> missing = new Object2LongArrayMap<>();
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (Entry<Item> entry : content.object2LongEntrySet()) {
 				Item item = entry.getKey();
 				long amount = entry.getLongValue();

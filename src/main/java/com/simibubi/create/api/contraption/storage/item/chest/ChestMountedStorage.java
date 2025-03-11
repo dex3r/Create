@@ -29,8 +29,8 @@ import net.minecraft.world.phys.Vec3;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 /**
  * Mounted storage that handles opening a combined GUI for double chests.

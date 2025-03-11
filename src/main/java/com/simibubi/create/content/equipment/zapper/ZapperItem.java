@@ -60,7 +60,7 @@ public abstract class ZapperItem extends Item implements CustomArmPoseItem, Enti
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
 		if (stack.has(AllDataComponents.SHAPER_BLOCK_USED)) {
 			MutableComponent usedBlock = stack.get(AllDataComponents.SHAPER_BLOCK_USED).getBlock().getName();

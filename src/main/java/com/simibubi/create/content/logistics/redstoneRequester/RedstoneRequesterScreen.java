@@ -29,7 +29,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlotItemHandler;
 
 public class RedstoneRequesterScreen extends AbstractSimiContainerScreen<RedstoneRequesterMenu> {
 

@@ -16,7 +16,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class FluidReactions {
 

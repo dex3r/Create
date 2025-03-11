@@ -53,7 +53,7 @@ import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class ArmBlockEntity extends KineticBlockEntity implements TransformableBlockEntity {
 
@@ -303,7 +303,7 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 		if (scanRange > outputs.size())
 			scanRange = outputs.size();
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (int i = startIndex; i < scanRange; i++) {
 				ArmInteractionPoint armInteractionPoint = outputs.get(i);
 				if (!armInteractionPoint.isValid())
@@ -344,7 +344,7 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 	}
 
 	protected int getDistributableAmount(ArmInteractionPoint armInteractionPoint) {
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			ItemStack stack = armInteractionPoint.extract(t);
 
 			ItemStack remainder = stack.isEmpty() ? stack : simulateInsertion(stack);
@@ -357,7 +357,7 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 	}
 
 	private ItemStack simulateInsertion(ItemStack stack) {
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (ArmInteractionPoint armInteractionPoint : outputs) {
 				if (armInteractionPoint.isValid())
 					stack = armInteractionPoint.insert(stack, t);
@@ -372,7 +372,7 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 		ArmInteractionPoint armInteractionPoint = getTargetedInteractionPoint();
 		if (armInteractionPoint != null && armInteractionPoint.isValid()) {
 			ItemStack toInsert = heldItem.copy();
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				ItemStack remainder = armInteractionPoint.insert(toInsert, t);
 				t.commit();
 				heldItem = remainder;
@@ -395,7 +395,7 @@ public class ArmBlockEntity extends KineticBlockEntity implements TransformableB
 	protected void collectItem() {
 		ArmInteractionPoint armInteractionPoint = getTargetedInteractionPoint();
 		if (armInteractionPoint != null && armInteractionPoint.isValid()) {
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				int amountExtracted = getDistributableAmount(armInteractionPoint);
 				if (amountExtracted == 0)
 					return;

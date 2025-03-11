@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.createmod.catnip.data.LongAttached;
 
@@ -27,15 +27,15 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class CountedItemStackList {
 
 	Map<Item, Set<ItemStackEntry>> items = new HashMap<>();
 
 	public CountedItemStackList(Storage<ItemVariant> inventory, FilteringBehaviour filteringBehaviour) {
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : inventory.nonEmptyViews()) {
 				ItemVariant resource = view.getResource();
 				ItemStack stack = resource.toStack();

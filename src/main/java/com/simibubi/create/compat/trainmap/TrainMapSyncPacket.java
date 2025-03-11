@@ -38,7 +38,7 @@ public class TrainMapSyncPacket implements ClientboundPacketPayload {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void handle(LocalPlayer player) {
 		TrainMapSyncClient.receive(this);
 	}

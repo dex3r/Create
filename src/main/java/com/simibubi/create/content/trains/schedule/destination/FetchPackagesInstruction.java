@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.PatternSyntaxException;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -69,19 +71,8 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
-
-import org.jetbrains.annotations.Nullable;
 
 public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity {
 
@@ -387,7 +378,7 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 		boolean unpacked = toUse.unpack(level, target, targetState, facing, items, orderContext, true);
 
 		if (unpacked) {
-			TransactionCallback.onSuccess(ctx, () -> {
+			TransactionSuccessCallback.register(ctx, () -> {
 				toUse.unpack(level, target, targetState, facing, copy, orderContext, false);
 				previouslyUnwrapped = box;
 				animationInward = true;

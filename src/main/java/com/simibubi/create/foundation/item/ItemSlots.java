@@ -9,14 +9,14 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.codec.CreateCodecs;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 /**
  * Utility class representing non-empty slots in an item inventory.

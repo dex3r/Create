@@ -6,7 +6,7 @@ import com.simibubi.create.content.kinetics.drill.CobbleGenOptimisation.CobbleGe
 import com.simibubi.create.content.logistics.chute.ChuteBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -78,7 +78,7 @@ public class DrillBlockEntity extends BlockBreakingKineticBlockEntity {
 			Storage<ItemVariant> storage = TransferUtil.getItemStorage(blockEntityBelow);
 			if (storage != null) {
 				for (ItemStack stack : Block.getDrops(stateToBreak, sl, breakingPos, null)) {
-					TransferUtil.insertItem(storage, stack);
+					TransferUtil.insert(storage, stack);
 				}
 			}
 		} else if (blockEntityAbove instanceof ChuteBlockEntity chute && chute.getItemMotion() > 0) {

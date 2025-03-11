@@ -39,9 +39,8 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.MutableContainerItemContext;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 
 public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
 
@@ -81,8 +80,8 @@ public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
 						return;
 					FluidStack fluidCopy = fluidStack.copy();
 					fluidCopy.setAmount(FluidConstants.BUCKET);
-					try(Transaction t = TransferUtil.getTransaction()) {
-						fhi.insert(fluidCopy.getType(), fluidCopy.getAmount(), t);
+					try(Transaction t = Transaction.openOuter()) {
+						fhi.insert(fluidCopy.getVariant(), fluidCopy.getAmount(), t);
 						t.commit();
 					}
 						ItemStack container = ctx.getItemVariant().toStack(ItemHelper.truncateLong(ctx.getAmount()));

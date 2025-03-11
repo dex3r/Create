@@ -29,7 +29,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class InvManipulationBehaviour extends CapManipulationBehaviourBase<ItemVariant, InvManipulationBehaviour> {
@@ -97,7 +97,7 @@ public class InvManipulationBehaviour extends CapManipulationBehaviourBase<ItemV
 		Storage<ItemVariant> inventory = hasInventory() ? getInventory() : null;
 		if (inventory == null)
 			return stack;
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			long inserted = inventory.insert(ItemVariant.of(stack), stack.getCount(), t);
 			if (!shouldSimulate) t.commit();
 			long remainder = stack.getCount() - inserted;

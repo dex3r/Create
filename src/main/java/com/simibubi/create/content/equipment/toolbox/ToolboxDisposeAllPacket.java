@@ -1,7 +1,5 @@
 package com.simibubi.create.content.equipment.toolbox;
 
-import net.minecraft.nbt.NbtUtils;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.simibubi.create.AllPackets;
@@ -22,9 +20,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-
-public class ToolboxDisposeAllPacket extends SimplePacketBase {
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public record ToolboxDisposeAllPacket(BlockPos toolboxPos) implements ServerboundPacketPayload {
 	public static final StreamCodec<ByteBuf, com.simibubi.create.content.equipment.toolbox.ToolboxDisposeAllPacket> STREAM_CODEC = BlockPos.STREAM_CODEC.map(
@@ -53,7 +49,7 @@ public record ToolboxDisposeAllPacket(BlockPos toolboxPos) implements Serverboun
 		MutableBoolean sendData = new MutableBoolean(false);
 
 			toolbox.inventory.inLimitedMode(inventory -> {
-				try (Transaction t = TransferUtil.getTransaction()) {
+				try (Transaction t = Transaction.openOuter()) {
 					PlayerInventoryStorage playerInv = PlayerInventoryStorage.of(player);
 					for (int i = 0; i < 36; i++) {
 						String key = String.valueOf(i);

@@ -43,7 +43,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.simibubi.create.infrastructure.fabric.block.WeakPowerCheckingBlock;
 
 public class SequencedGearshiftBlock extends HorizontalAxisKineticBlock implements IBE<SequencedGearshiftBlockEntity>, TransformableBlock, WeakPowerCheckingBlock {
 

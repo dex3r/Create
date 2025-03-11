@@ -28,7 +28,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 /**
  * Processing for structures exported on Forge to allow using the same ones on Forge and Fabric.

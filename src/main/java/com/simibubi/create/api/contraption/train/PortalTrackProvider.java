@@ -13,9 +13,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.portal.PortalInfo;
-
-import io.github.fabricators_of_create.porting_lib.entity.ITeleporter;
 
 /**
  * A provider for portal track connections.

@@ -16,6 +16,8 @@ import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
+
 import net.createmod.catnip.lang.Lang;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
@@ -61,9 +63,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
@@ -134,7 +133,7 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 		}
 
 		if (AdventureUtil.isAdventure(player))
-			return ItemInteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		if (stack.isEmpty() && heat != HeatLevel.NONE)
 			return onBlockEntityUseItemOn(level, pos, bbte -> {
@@ -160,9 +159,9 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 
 		boolean doNotConsume = player.isCreative();
 		boolean forceOverflow = !(player instanceof FakePlayer);
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			InteractionResultHolder<ItemStack> res =
-				tryInsert(state, level, pos, stack, doNotConsume, forceOverflow, false);
+				tryInsert(state, level, pos, stack, doNotConsume, forceOverflow, t);
 			t.commit();
 			ItemStack leftover = res.getObject();
 			if (!level.isClientSide && !doNotConsume && !leftover.isEmpty()) {
@@ -188,7 +187,7 @@ public class BlazeBurnerBlock extends HorizontalDirectionalBlock implements IBE<
 			return InteractionResultHolder.fail(ItemStack.EMPTY);
 
 		if (burnerBE.isCreativeFuel(stack)) {
-			TransactionCallback.onSuccess(ctx, burnerBE::applyCreativeFuel);
+			TransactionSuccessCallback.register(ctx, burnerBE::applyCreativeFuel);
 			return InteractionResultHolder.success(ItemStack.EMPTY);
 		}
 		if (!burnerBE.tryUpdateFuel(stack, forceOverflow, ctx))

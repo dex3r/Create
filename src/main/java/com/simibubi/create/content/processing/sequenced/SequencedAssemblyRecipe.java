@@ -26,6 +26,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -45,9 +46,9 @@ import net.minecraft.world.level.Level;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
-public class SequencedAssemblyRecipe implements Recipe<Container> {
+public class SequencedAssemblyRecipe implements Recipe<RecipeInput> {
 
 	protected SequencedAssemblyRecipeSerializer serializer;
 
@@ -188,12 +189,12 @@ public class SequencedAssemblyRecipe implements Recipe<Container> {
 	}
 
 	@Override
-	public boolean matches(Container inv, Level p_77569_2_) {
+	public boolean matches(RecipeInput inv, Level p_77569_2_) {
 		return false;
 	}
 
 	@Override
-	public ItemStack assemble(Container input, HolderLookup.Provider registries) {
+	public ItemStack assemble(RecipeInput input, HolderLookup.Provider registries) {
 		return ItemStack.EMPTY;
 	}
 

@@ -9,7 +9,7 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 
 import dev.emi.emi.api.widget.WidgetHolder;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class SpoutEmiRecipe extends CreateEmiRecipe<FillingRecipe> {
 

@@ -85,8 +85,8 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
 import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuProvider, CustomRenderBoundingBoxBlockEntity {
@@ -416,7 +416,7 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 		// Find item
 		List<ItemRequirement.StackRequirement> requiredItems = requirement.getRequiredItems();
 		if (!requirement.isEmpty()) {
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				for (ItemRequirement.StackRequirement required : requiredItems) {
 					if (!grabItemsFromAttachedInventories(required, t)) {
 						if (skipMissing) {
@@ -685,7 +685,7 @@ public class SchematicannonBlockEntity extends SmartBlockEntity implements MenuP
 				.shrink(1);
 		else {
 			boolean externalGunpowderFound = false;
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				for (Entry<Direction, StorageProvider<ItemVariant>> entry : storages.entrySet()) {
 					Storage<ItemVariant> storage = entry.getValue().get(entry.getKey().getOpposite());
 					if (storage == null)
@@ -864,7 +864,7 @@ if (printer.isErrored())
 		}
 
 		checklist.gathered.clear();
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (Entry<Direction, StorageProvider<ItemVariant>> entry : storages.entrySet()) {
 				Storage<ItemVariant> storage = entry.getValue().get(entry.getKey().getOpposite());
 				if (storage == null)

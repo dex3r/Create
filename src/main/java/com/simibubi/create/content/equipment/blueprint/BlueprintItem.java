@@ -33,7 +33,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class BlueprintItem extends Item {
 

@@ -49,8 +49,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
 
-import io.github.fabricators_of_create.porting_lib.util.ShapedRecipeUtil;
-
 public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 
 	CONVERSION(ConversionRecipe::new),
@@ -83,7 +81,6 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	private final RecipeSerializer<?> serializerObject;
 	@Nullable
 	private final RecipeType<?> typeObject;
-	private final Supplier<RecipeType<?>> type;
 
 	private boolean isProcessingRecipe;
 
@@ -92,15 +89,12 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	AllRecipeTypes(Supplier<RecipeSerializer<?>> serializerSupplier, Supplier<RecipeType<?>> typeSupplier, boolean registerType) {
 		String name = Lang.asId(name());
 		id = Create.asResource(name);
-		this.serializerSupplier = serializerSupplier;
 		serializerObject = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, id, serializerSupplier.get());
 		if (registerType) {
 			typeObject = typeSupplier.get();
 			Registry.register(BuiltInRegistries.RECIPE_TYPE, id, typeObject);
-			type = typeSupplier;
 		} else {
-			typeObject = null;
-			type = typeSupplier;
+			typeObject = typeSupplier.get();
 		}
 		isProcessingRecipe = false;
 	}
@@ -108,11 +102,8 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	AllRecipeTypes(Supplier<RecipeSerializer<?>> serializerSupplier) {
 		String name = Lang.asId(name());
 		id = Create.asResource(name);
-		this.serializerSupplier = serializerSupplier;
 		serializerObject = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, id, serializerSupplier.get());
-		typeObject = simpleType(id);
-		Registry.register(BuiltInRegistries.RECIPE_TYPE, id, typeObject);
-		type = () -> typeObject;
+		typeObject = Registry.register(BuiltInRegistries.RECIPE_TYPE, id, createType(id));
 		isProcessingRecipe = false;
 	}
 
@@ -141,7 +132,7 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <I extends RecipeInput, R extends Recipe<I>> RecipeType<R> getType() {
-		return (RecipeType<R>) type.get();
+		return (RecipeType<R>) this.typeObject;
 	}
 
 	public <I extends RecipeInput, R extends Recipe<I>> Optional<RecipeHolder<R>> find(I inv, Level world) {
@@ -159,6 +150,16 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	@Override
 	public @NotNull String getSerializedName() {
 		return id.toString();
+	}
+
+	private static <T extends Recipe<?>> RecipeType<T> createType(ResourceLocation id) {
+		String string = id.toString();
+		return new RecipeType<T>() {
+			@Override
+			public String toString() {
+				return string;
+			}
+		};
 	}
 
 	public <T extends ProcessingRecipe<?>> MapCodec<T> processingCodec() {

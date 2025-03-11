@@ -12,8 +12,8 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlotItemHandler;
 
 public class LinkedControllerMenu extends GhostItemMenu<ItemStack> {
 

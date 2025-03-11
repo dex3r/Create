@@ -42,7 +42,7 @@ import net.minecraft.world.level.Level;
 
 import net.fabricmc.api.EnvType;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 

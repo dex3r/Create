@@ -51,7 +51,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 
 import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation, SidedStorageBlockEntity, CustomRenderBoundingBoxBlockEntity {
 
@@ -159,7 +159,7 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		}
 
 		tank.getPrimaryHandler()
-			.setFluid(fluid.isEmpty() ? io.github.fabricators_of_create.porting_lib.fluids.FluidStack.EMPTY : fluid); // fabric: if the FluidStack is empty it should actually be empty
+			.setFluid(fluid.isEmpty() ? com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack.EMPTY : fluid); // fabric: if the FluidStack is empty it should actually be empty
 		sendSplash = true;
 		notifyUpdate();
 		return HOLD;
@@ -240,10 +240,10 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 				customProcess = null;
 				if (fillBlock > 0) {
 					// fabric: if the FluidStack is empty it should actually be empty
-					io.github.fabricators_of_create.porting_lib.fluids.FluidStack newStack = FluidHelper.copyStackWithAmount(currentFluidInTank,
+					FluidStack newStack = FluidHelper.copyStackWithAmount(currentFluidInTank,
 							currentFluidInTank.getAmount() - fillBlock);
 					if (newStack.isEmpty())
-						newStack = io.github.fabricators_of_create.porting_lib.fluids.FluidStack.EMPTY;
+						newStack = com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack.EMPTY;
 					tank.getPrimaryHandler()
 						.setFluid(newStack);
 					sendSplash = true;

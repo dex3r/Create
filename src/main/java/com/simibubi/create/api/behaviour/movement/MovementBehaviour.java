@@ -23,7 +23,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 /**
  * MovementBehaviors, also known as Actors, provide behavior to blocks mounted on contraptions.
@@ -72,7 +72,7 @@ public interface MovementBehaviour {
 	default void dropItem(MovementContext context, ItemStack stack) {
 		ItemStack remainder;
 		if (AllConfigs.server().kinetics.moveItemsToStorage.get()) {
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				long inserted = context.contraption.getStorage().getAllItems().insert(ItemVariant.of(stack), stack.getCount(), t);
 				remainder = stack.copy();
 				remainder.shrink((int) inserted);

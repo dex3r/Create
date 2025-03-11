@@ -1511,7 +1511,7 @@ public class FactoryGaugeScenes {
 	private static void insertItemsIntoCrafter(CreateSceneBuilder scene, BlockPos pos, ItemStack stack) {
 		scene.world()
 			.modifyBlockEntity(pos, MechanicalCrafterBlockEntity.class, be -> be.getInventory()
-				.setItem(0, stack));
+				.setStackInSlot(0, stack));
 	}
 
 	private static void withGaugeDo(SceneBuilder builder, BlockPos gauge, PanelSlot slot,

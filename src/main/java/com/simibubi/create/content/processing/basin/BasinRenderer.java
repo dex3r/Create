@@ -30,8 +30,8 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class BasinRenderer extends SmartBlockEntityRenderer<BasinBlockEntity> {
 

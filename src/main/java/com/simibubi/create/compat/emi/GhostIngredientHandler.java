@@ -19,7 +19,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.client.accessor.AbstractContainerScreenAccessor;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault

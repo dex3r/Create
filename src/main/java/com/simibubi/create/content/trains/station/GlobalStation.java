@@ -17,8 +17,8 @@ import com.simibubi.create.content.trains.graph.DimensionPalette;
 import com.simibubi.create.content.trains.graph.TrackNode;
 import com.simibubi.create.content.trains.signal.SingleBlockEntityEdgePoint;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 import net.createmod.catnip.nbt.NBTHelper;
 
@@ -40,14 +40,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 
 public class GlobalStation extends SingleBlockEntityEdgePoint {
 
@@ -221,7 +213,7 @@ public class GlobalStation extends SingleBlockEntityEdgePoint {
 					if (PackageItem.matchAddress(stack, port.address))
 						continue;
 
-					long inserted = TransferUtil.insertItem(carriageInventory, stack);
+					long inserted = TransferUtil.insert(carriageInventory, stack);
 					if (inserted == 0)
 						continue;
 

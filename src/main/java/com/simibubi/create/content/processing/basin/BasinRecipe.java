@@ -19,6 +19,8 @@ import com.simibubi.create.foundation.fluid.FluidIngredient;
 import com.simibubi.create.foundation.recipe.DummyCraftingContainer;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
@@ -36,9 +38,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class BasinRecipe extends ProcessingRecipe<RecipeInput> {
 
@@ -92,7 +92,7 @@ public class BasinRecipe extends ProcessingRecipe<RecipeInput> {
 
 		NonNullList<ItemStack> consumedItems = NonNullList.create();
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			Ingredients:
 			for (Ingredient ingredient : ingredients) {
 				for (StorageView<ItemVariant> view : availableItems.nonEmptyViews()) {
@@ -120,7 +120,7 @@ public class BasinRecipe extends ProcessingRecipe<RecipeInput> {
 					FluidStack fluidStack = new FluidStack(view);
 					if (!fluidIngredient.test(fluidStack)) continue;
 					long drainedAmount = Math.min(amountRequired, fluidStack.getAmount());
-					if (view.extract(fluidStack.getType(), drainedAmount, t) == drainedAmount) {
+					if (view.extract(fluidStack.getVariant(), drainedAmount, t) == drainedAmount) {
 						fluidsAffected = true;
 						amountRequired -= drainedAmount;
 						if (amountRequired != 0) continue;
@@ -132,7 +132,7 @@ public class BasinRecipe extends ProcessingRecipe<RecipeInput> {
 			}
 
 			if (fluidsAffected) {
-				TransactionCallback.onSuccess(t, () -> {
+				TransactionSuccessCallback.register(t, () -> {
 					basin.getBehaviour(SmartFluidTankBehaviour.INPUT)
 							.forEach(TankSegment::onFluidStackChanged);
 					basin.getBehaviour(SmartFluidTankBehaviour.OUTPUT)
@@ -162,7 +162,7 @@ public class BasinRecipe extends ProcessingRecipe<RecipeInput> {
 							if (!stack.isEmpty())
 								recipeOutputItems.add(stack);
 					}
-				}
+//				}
 			}
 
 			// fabric: bad

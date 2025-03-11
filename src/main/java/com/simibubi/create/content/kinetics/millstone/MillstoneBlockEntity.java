@@ -51,9 +51,9 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.ViewOnlyWrappedStorageView;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerSlot;
 
@@ -164,7 +164,7 @@ public class MillstoneBlockEntity extends KineticBlockEntity implements SidedSto
 			lastRecipe = recipe.get().value();
 		}
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			ItemStackHandlerSlot slot = inputInv.getSlot(0);
 			slot.extract(slot.getResource(), 1, t);
 			lastRecipe.rollResults().forEach(stack -> outputInv.insert(ItemVariant.of(stack), stack.getCount(), t));

@@ -16,6 +16,9 @@ import net.createmod.ponder.api.element.WorldSectionElement;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -26,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class PumpScenes {
 
@@ -184,7 +187,7 @@ public class PumpScenes {
 		Selection megapipe2 = util.select().fromTo(3, 3, 1, 5, 6, 2);
 
 		scene.world().modifyBlock(pumpPos, s -> s.setValue(PumpBlock.FACING, Direction.WEST), false);
-		scene.world().modifyBlockEntity(util.grid().at(0, 1, 2), FluidTankBlockEntity.class, be -> TransferUtil.extractAnyFluid(be.getTankInventory(), FluidConstants.BUCKET * 3));
+		scene.world().modifyBlockEntity(util.grid().at(0, 1, 2), FluidTankBlockEntity.class, be -> TransferUtil.commit(t -> StorageUtil.extractAny(be.getTankInventory(), FluidConstants.BUCKET * 3, t)));
 		scene.world().multiplyKineticSpeed(util.select().everywhere(), 0.125f);
 
 		BlockPos east = pumpPos.east();

@@ -31,7 +31,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.simibubi.create.infrastructure.fabric.block.WeakPowerCheckingBlock;
 
 public class ChainDriveBlock extends RotatedPillarKineticBlock
 	implements IBE<KineticBlockEntity>, TransformableBlock, WeakPowerCheckingBlock {

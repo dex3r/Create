@@ -2,8 +2,6 @@ package com.simibubi.create.content.fluids;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.simibubi.create.AllFluids;
 import com.simibubi.create.api.effect.OpenPipeEffectHandler;
 import com.simibubi.create.content.fluids.pipes.VanillaFluidTargets;
@@ -14,10 +12,7 @@ import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.mixin.accessor.FlowingFluidAccessor;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import io.github.tropheusj.milk.Milk;
 import net.createmod.catnip.math.BlockFace;
@@ -43,16 +38,10 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidTank;
 
 public class OpenEndedPipe extends FlowSource {
 
@@ -139,7 +128,7 @@ public class OpenEndedPipe extends FlowSource {
 		if (!drainBlock.isEmpty()) {
 			if (state.hasProperty(BlockStateProperties.LEVEL_HONEY)
 				&& AllFluids.HONEY.is(drainBlock.getFluid()))
-				TransactionCallback.onSuccess(ctx, () -> AdvancementBehaviour.tryAward(world, pos, AllAdvancements.HONEY_DRAIN));
+				TransactionSuccessCallback.register(ctx, () -> AdvancementBehaviour.tryAward(world, pos, AllAdvancements.HONEY_DRAIN));
 			return drainBlock;
 		}
 
@@ -156,7 +145,7 @@ public class OpenEndedPipe extends FlowSource {
 		world.updateSnapshots(ctx);
 		if (waterlog) {
 			world.setBlock(outputPos, state.setValue(WATERLOGGED, false), 3);
-			TransactionCallback.onSuccess(ctx, () -> world.scheduleTick(outputPos, Fluids.WATER, 1));
+			TransactionSuccessCallback.register(ctx, () -> world.scheduleTick(outputPos, Fluids.WATER, 1));
 		} else {
 			var newState = fluidState.createLegacyBlock()
 				.setValue(LiquidBlock.LEVEL, 14);
@@ -217,7 +206,7 @@ public class OpenEndedPipe extends FlowSource {
 			int i = outputPos.getX();
 			int j = outputPos.getY();
 			int k = outputPos.getZ();
-			TransactionCallback.onSuccess(ctx, () -> world.playSound(null, i, j, k, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F,
+			TransactionSuccessCallback.register(ctx, () -> world.playSound(null, i, j, k, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F,
 					2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F));
 			return true;
 		}
@@ -225,7 +214,7 @@ public class OpenEndedPipe extends FlowSource {
 		world.updateSnapshots(ctx);
 		if (waterlog) {
 			world.setBlock(outputPos, state.setValue(WATERLOGGED, true), 3);
-			TransactionCallback.onSuccess(ctx, () -> world.scheduleTick(outputPos, Fluids.WATER, 1));
+			TransactionSuccessCallback.register(ctx, () -> world.scheduleTick(outputPos, Fluids.WATER, 1));
 			return true;
 		}
 
@@ -319,7 +308,7 @@ public class OpenEndedPipe extends FlowSource {
 			if (remainder > 0) {
 				if (!getFluid().isEmpty() && !FluidStack.isSameFluidSameComponents(getFluid(), drainedFromWorld))
 					setFluid(FluidStack.EMPTY);
-				super.insert(drainedFromWorld.getType(), remainder, transaction);
+				super.insert(drainedFromWorld.getVariant(), remainder, transaction);
 			}
 			return drainedFromWorld.getAmount();
 		}
@@ -333,9 +322,9 @@ public class OpenEndedPipe extends FlowSource {
 		@Override
 		public FluidVariant getResource() {
 			if (!super.isResourceBlank()) return super.getResource();
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				FluidStack stack = removeFluidFromSpace(t);
-				return stack.getType();
+				return stack.getVariant();
 			}
 		}
 

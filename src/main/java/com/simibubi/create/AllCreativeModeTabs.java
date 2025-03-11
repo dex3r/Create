@@ -86,7 +86,7 @@ public class AllCreativeModeTabs {
 		// fabric: just load the class
 	}
 
-	private static class RegistrateDisplayItemsGenerator implements DisplayItemsGenerator {
+	public static class RegistrateDisplayItemsGenerator implements DisplayItemsGenerator {
 		private static final Predicate<Item> IS_ITEM_3D_PREDICATE;
 
 		static {
@@ -114,7 +114,7 @@ public class AllCreativeModeTabs {
 			this.tabFilter = tabFilter;
 		}
 
-		private static Predicate<Item> makeExclusionPredicate() {
+		public static Predicate<Item> makeExclusionPredicate() {
 			Set<Item> exclusions = new ReferenceOpenHashSet<>();
 
 			List<ItemProviderEntry<?, ?>> simpleExclusions = List.of(

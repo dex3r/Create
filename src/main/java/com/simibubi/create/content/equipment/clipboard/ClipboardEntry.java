@@ -18,7 +18,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class ClipboardEntry {
 	public static final Codec<ClipboardEntry> CODEC = RecordCodecBuilder.create(i -> i.group(

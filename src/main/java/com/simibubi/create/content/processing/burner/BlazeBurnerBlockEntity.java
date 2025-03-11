@@ -14,6 +14,8 @@ import com.simibubi.create.content.processing.burner.BlazeBurnerBlock.HeatLevel;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
+
 import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
@@ -42,8 +44,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 public class BlazeBurnerBlockEntity extends SmartBlockEntity {
 
@@ -275,7 +275,7 @@ public class BlazeBurnerBlockEntity extends SmartBlockEntity {
 
 		FuelType finalNewFuel = newFuel;
 		int finalNewBurnTime = newBurnTime;
-		TransactionCallback.onSuccess(ctx, () -> {
+		TransactionSuccessCallback.register(ctx, () -> {
 			activeFuel = finalNewFuel;
 			remainingBurnTime = finalNewBurnTime;
 			if (level.isClientSide) {

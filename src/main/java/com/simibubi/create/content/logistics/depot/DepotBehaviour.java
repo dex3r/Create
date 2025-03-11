@@ -22,8 +22,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
 
 import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.math.VecHelper;
@@ -51,10 +50,10 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class DepotBehaviour extends BlockEntityBehaviour {
 
@@ -358,9 +357,9 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 		if (this.isEmpty()) {
 			if (heldItem.insertedFrom.getAxis()
 				.isHorizontal())
-				TransactionCallback.onSuccess(ctx, () -> AllSoundEvents.DEPOT_SLIDE.playOnServer(getWorld(), getPos()));
+				TransactionSuccessCallback.register(ctx, () -> AllSoundEvents.DEPOT_SLIDE.playOnServer(getWorld(), getPos()));
 			else
-				TransactionCallback.onSuccess(ctx, () -> AllSoundEvents.DEPOT_PLOP.playOnServer(getWorld(), getPos()));
+				TransactionSuccessCallback.register(ctx, () -> AllSoundEvents.DEPOT_PLOP.playOnServer(getWorld(), getPos()));
 		}
 
 		snapshotParticipant.updateSnapshots(ctx);
@@ -412,7 +411,7 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 		transportedStack.insertedFrom = side;
 		transportedStack.prevSideOffset = transportedStack.sideOffset;
 		transportedStack.prevBeltPosition = transportedStack.beltPosition;
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			snapshotParticipant.updateSnapshots(t);
 			ItemStack remainder = insert(transportedStack, t);
 			if (remainder.getCount() != size)
@@ -448,7 +447,7 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 				setCenteredHeldItem(added);
 				continue;
 			}
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				long inserted = processingOutputBuffer.insert(ItemVariant.of(added.stack), added.stack.getCount(), t);
 				t.commit();
 				ItemStack remainder = added.stack.copy();

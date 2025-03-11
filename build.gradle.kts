@@ -101,10 +101,7 @@ dependencies {
     // dependencies
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion")
 
-    modRuntimeOnly(include("com.tterrag.registrate_fabric:Registrate:$registrateVersion")!!)
-    modCompileOnly("com.tterrag.registrate_fabric:Registrate:$registrateVersion") {
-        exclude(group = "io.github.fabricators_of_create.Porting-Lib")
-    }
+    modApi(include("com.tterrag.registrate_fabric:Registrate:$registrateVersion")!!)
 
     modApi(include("com.electronwill.night-config:core:$nightConfigVersion")!!)
     modApi(include("com.electronwill.night-config:toml:$nightConfigVersion")!!)

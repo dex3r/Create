@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.simibubi.create.infrastructure.fabric.item.ItemUtils;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
@@ -49,12 +50,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class FilteringBehaviour extends BlockEntityBehaviour implements ValueSettingsBehaviour {
 
@@ -396,7 +392,7 @@ public class FilteringBehaviour extends BlockEntityBehaviour implements ValueSet
 
 			for (boolean preferStacksWithoutData : Iterate.trueAndFalse) {
 				if (refund.getItem() != filterType && ItemHelper
-					.extract(inv, stack -> stack.getItem() == filterType && preferStacksWithoutData == stack.isComponentsPatchEmpty(),
+					.extract(inv, stack -> stack.getItem() == filterType && preferStacksWithoutData == ItemUtils.isComponentsPatchEmpty(stack),
 						1, false)
 					.isEmpty())
 					continue;

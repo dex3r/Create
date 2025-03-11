@@ -29,6 +29,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.registry.LandPathNodeTypesRegistry;
 
+import net.minecraft.world.level.pathfinder.PathType;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicates;
@@ -101,17 +103,12 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.LevelTickAccess;
-
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.registry.LandPathNodeTypesRegistry;
 
 public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrenchable, ITrackBlock, SpecialBlockItemRequirement, ProperWaterloggedBlock, IHaveBigOutline, ReducedDestroyEffects, MultiPosDestructionHandler {
 
@@ -126,7 +123,7 @@ public class TrackBlock extends Block implements IBE<TrackBlockEntity>, IWrencha
 			.setValue(HAS_BE, false)
 			.setValue(WATERLOGGED, false));
 		this.material = material;
-		LandPathNodeTypesRegistry.register(this, BlockPathTypes.RAIL, null);
+		LandPathNodeTypesRegistry.register(this, PathType.RAIL, null);
 	}
 
 	@Override

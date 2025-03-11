@@ -3,12 +3,22 @@ package com.simibubi.create.content.contraptions.minecart;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import com.google.common.collect.ImmutableMap;
+import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorage;
+import com.simibubi.create.infrastructure.fabric.ProcessingIterator;
+
+import com.simibubi.create.infrastructure.fabric.transfer.ChangeListeningStorageWrapper;
+import com.simibubi.create.infrastructure.fabric.transfer.ChangeListeningViewWrapper;
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
+
+import com.simibubi.create.infrastructure.fabric.util.OneTimeRunnable;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import net.minecraft.core.BlockPos;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -16,18 +26,9 @@ import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorageWrap
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageWrapper;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.MountedStorageManager;
-import com.simibubi.create.foundation.utility.fabric.ListeningStorageView;
-import com.simibubi.create.foundation.utility.fabric.ProcessingIterator;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 public class TrainCargoManager extends MountedStorageManager {
 
@@ -82,6 +83,9 @@ public class TrainCargoManager extends MountedStorageManager {
 		resetIdleCargoTracker();
 	}
 
+	// fabric: direct access to the storage maps of these wrappers bypasses update checking.
+	// this is also the case on forge, and should be fine, since what matters is automation going through Storage
+
 	class CargoInvWrapper extends MountedItemStorageWrapper {
 		CargoInvWrapper(MountedItemStorageWrapper wrapped) {
 			super(wrapped.storages);
@@ -89,23 +93,29 @@ public class TrainCargoManager extends MountedStorageManager {
 
 		@Override
 		public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-			long inserted = super.insert(resource, maxAmount, transaction);
-			if (inserted != 0)
-				TransactionCallback.onSuccess(transaction, TrainCargoManager.this::changeDetected);
-			return inserted;
+			TransactionSuccessCallback.register(transaction, TrainCargoManager.this::changeDetected);
+			return super.insert(resource, maxAmount, transaction);
 		}
 
 		@Override
 		public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-			long extracted = super.extract(resource, maxAmount, transaction);
-			if (extracted != 0)
-				TransactionCallback.onSuccess(transaction, TrainCargoManager.this::changeDetected);
-			return extracted;
+			TransactionSuccessCallback.register(transaction, TrainCargoManager.this::changeDetected);
+			return super.extract(resource, maxAmount, transaction);
 		}
 
 		@Override
 		public Iterator<StorageView<ItemVariant>> iterator() {
-			return new ProcessingIterator<>(super.iterator(), view -> new ListeningStorageView<>(view, TrainCargoManager.this::changeDetected));
+			return ChangeListeningStorageWrapper.wrapIterator(super.iterator(), TrainCargoManager.this::changeDetected);
+		}
+
+		@Override
+		public Iterator<StorageView<ItemVariant>> nonEmptyIterator() {
+			return ChangeListeningStorageWrapper.wrapIterator(super.nonEmptyIterator(), TrainCargoManager.this::changeDetected);
+		}
+
+		@Override
+		public Iterable<StorageView<ItemVariant>> nonEmptyViews() {
+			return this::nonEmptyIterator;
 		}
 	}
 
@@ -116,23 +126,29 @@ public class TrainCargoManager extends MountedStorageManager {
 
 		@Override
 		public long insert(FluidVariant resource, long maxAmount, TransactionContext transaction) {
-			long inserted = super.insert(resource, maxAmount, transaction);
-			if (inserted != 0)
-				TransactionCallback.onSuccess(transaction, TrainCargoManager.this::changeDetected);
-			return inserted;
+			TransactionSuccessCallback.register(transaction, TrainCargoManager.this::changeDetected);
+			return super.insert(resource, maxAmount, transaction);
 		}
 
 		@Override
 		public long extract(FluidVariant resource, long maxAmount, TransactionContext transaction) {
-			long extracted = super.extract(resource, maxAmount, transaction);
-			if (extracted != 0)
-				TransactionCallback.onSuccess(transaction, TrainCargoManager.this::changeDetected);
-			return extracted;
+			TransactionSuccessCallback.register(transaction, TrainCargoManager.this::changeDetected);
+			return super.extract(resource, maxAmount, transaction);
 		}
 
 		@Override
 		public Iterator<StorageView<FluidVariant>> iterator() {
-			return new ProcessingIterator<>(super.iterator(), view -> new ListeningStorageView<>(view, TrainCargoManager.this::changeDetected));
+			return ChangeListeningStorageWrapper.wrapIterator(super.iterator(), TrainCargoManager.this::changeDetected);
+		}
+
+		@Override
+		public Iterator<StorageView<FluidVariant>> nonEmptyIterator() {
+			return ChangeListeningStorageWrapper.wrapIterator(super.nonEmptyIterator(), TrainCargoManager.this::changeDetected);
+		}
+
+		@Override
+		public Iterable<StorageView<FluidVariant>> nonEmptyViews() {
+			return this::nonEmptyIterator;
 		}
 	}
 }

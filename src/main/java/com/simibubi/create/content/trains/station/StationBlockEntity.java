@@ -372,8 +372,7 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 		bogeyAnchor = ProperWaterloggedBlock.withWater(level, bogeyAnchor, pos);
 		level.setBlock(targetPos, bogeyAnchor, 3);
 		player.displayClientMessage(CreateLang.translateDirect("train_assembly.bogey_created"), true);
-		SoundType soundtype = bogeyAnchor.getBlock()
-			.getSoundType(state);
+		SoundType soundtype = bogeyAnchor.getSoundType();
 		level.playSound(null, pos, soundtype.getPlaceSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F,
 			soundtype.getPitch() * 0.8F);
 

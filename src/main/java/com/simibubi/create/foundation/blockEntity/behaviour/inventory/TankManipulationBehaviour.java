@@ -18,8 +18,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class TankManipulationBehaviour extends CapManipulationBehaviourBase<FluidVariant, TankManipulationBehaviour> {
@@ -43,7 +43,7 @@ public class TankManipulationBehaviour extends CapManipulationBehaviourBase<Flui
 		Storage<FluidVariant> inventory = getInventory();
 		Predicate<FluidStack> filterTest = getFilterTest(Predicates.alwaysTrue());
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<FluidVariant> view : inventory) {
 				if (!view.isResourceBlank()) {
 					FluidStack stack = new FluidStack(view);

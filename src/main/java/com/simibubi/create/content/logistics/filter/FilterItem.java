@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
+import com.simibubi.create.infrastructure.fabric.item.ItemUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -43,8 +44,8 @@ import net.minecraft.world.level.Level;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
 
 public class FilterItem extends Item implements MenuProvider, SupportsItemCopying {
@@ -81,7 +82,7 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
 		if (AllKeys.shiftDown())
 			return;
@@ -94,7 +95,7 @@ public class FilterItem extends Item implements MenuProvider, SupportsItemCopyin
 
 	private List<Component> makeSummary(ItemStack filter) {
 		List<Component> list = new ArrayList<>();
-		if (filter.isComponentsPatchEmpty())
+		if (ItemUtils.isComponentsPatchEmpty(filter))
 			return list;
 
 		if (type == FilterType.REGULAR) {

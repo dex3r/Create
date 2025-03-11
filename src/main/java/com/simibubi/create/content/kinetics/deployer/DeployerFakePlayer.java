@@ -69,7 +69,7 @@ public class DeployerFakePlayer extends FakePlayer {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public EntityDimensions getDefaultDimensions(Pose pose) {
 		return super.getDefaultDimensions(pose).withEyeHeight(0);
 	}

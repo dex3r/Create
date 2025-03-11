@@ -17,7 +17,7 @@ import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 @Environment(EnvType.CLIENT)
 public class FluidRenderer extends BasicFluidRenderer {
@@ -29,7 +29,7 @@ public class FluidRenderer extends BasicFluidRenderer {
 
 	public static void renderFluidStream(FluidStack fluidStack, Direction direction, float radius, float progress,
 		boolean inbound, VertexConsumer builder, PoseStack ms, int light) {
-		FluidVariant fluidVariant = fluidStack.getType();
+		FluidVariant fluidVariant = fluidStack.getVariant();
 		TextureAtlasSprite[] sprites = FluidVariantRendering.getSprites(fluidVariant);
 		if (sprites == null) {
 			return;

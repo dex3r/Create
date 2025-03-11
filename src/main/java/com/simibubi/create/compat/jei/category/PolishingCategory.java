@@ -19,7 +19,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 @ParametersAreNonnullByDefault
 public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRecipe> {

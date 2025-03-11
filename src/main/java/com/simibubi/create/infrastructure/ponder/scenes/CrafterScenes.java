@@ -25,8 +25,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class CrafterScenes {
 
@@ -148,7 +148,7 @@ public class CrafterScenes {
 		scene.idle(7);
 		Class<MechanicalCrafterBlockEntity> type = MechanicalCrafterBlockEntity.class;
 		scene.world().modifyBlockEntity(util.grid().at(1, 3, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), planks.copy()));
+				TransferUtil.insert(mct.getInventory(), planks.copy()));
 
 		scene.idle(10);
 		scene.overlay().showText(50)
@@ -165,28 +165,28 @@ public class CrafterScenes {
 		scene.world().setCraftingResult(util.grid().at(1, 1, 2), new ItemStack(Items.PISTON));
 
 		scene.world().modifyBlockEntity(util.grid().at(2, 3, 2), type, mct ->
-			TransferUtil.insertItem(mct.getInventory(), planks.copy()));
+			TransferUtil.insert(mct.getInventory(), planks.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(3, 3, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), planks.copy()));
+			TransferUtil.insert(mct.getInventory(), planks.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(3, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), cobble.copy()));
+			TransferUtil.insert(mct.getInventory(), cobble.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(2, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(1, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), cobble.copy()));
+			TransferUtil.insert(mct.getInventory(), cobble.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(1, 1, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), cobble.copy()));
+			TransferUtil.insert(mct.getInventory(), cobble.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(2, 1, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), redstoneDust.copy()));
+			TransferUtil.insert(mct.getInventory(), redstoneDust.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(3, 1, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), cobble.copy()));
+			TransferUtil.insert(mct.getInventory(), cobble.copy()));
 
 		scene.overlay().showText(80)
 			.attachKeyFrame()
@@ -202,19 +202,19 @@ public class CrafterScenes {
 		scene.world().setCraftingResult(util.grid().at(1, 1, 2), new ItemStack(Items.IRON_PICKAXE));
 
 		scene.world().modifyBlockEntity(util.grid().at(1, 3, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		scene.idle(2);
 		scene.world().modifyBlockEntity(util.grid().at(2, 3, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		scene.idle(2);
 		scene.world().modifyBlockEntity(util.grid().at(3, 3, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		scene.idle(2);
 		scene.world().modifyBlockEntity(util.grid().at(2, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), stick.copy()));
+			TransferUtil.insert(mct.getInventory(), stick.copy()));
 		scene.idle(2);
 		scene.world().modifyBlockEntity(util.grid().at(2, 1, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), stick.copy()));
+			TransferUtil.insert(mct.getInventory(), stick.copy()));
 		scene.world().showSection(redstone, Direction.SOUTH);
 		scene.idle(10);
 
@@ -263,7 +263,7 @@ public class CrafterScenes {
 		scene.idle(22);
 
 		scene.world().modifyBlockEntity(util.grid().at(2, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), planks.copy()));
+			TransferUtil.insert(mct.getInventory(), planks.copy()));
 		scene.world().removeItemsFromBelt(util.grid().at(3, 1, 2));
 		scene.world().flapFunnel(util.grid().at(3, 2, 2), false);
 
@@ -333,7 +333,7 @@ public class CrafterScenes {
 		scene.world().setCraftingResult(util.grid().at(1, 1, 2), new ItemStack(Items.OAK_DOOR, 3));
 		for (BlockPos pos : positions) {
 			scene.world().modifyBlockEntity(pos, type, mct ->
-					TransferUtil.insertItem(mct.getInventory(), planks.copy()));
+				TransferUtil.insert(mct.getInventory(), planks.copy()));
 			scene.idle(1);
 		}
 
@@ -361,13 +361,13 @@ public class CrafterScenes {
 
 		Class<MechanicalCrafterBlockEntity> type = MechanicalCrafterBlockEntity.class;
 		scene.world().modifyBlockEntity(util.grid().at(3, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(2, 1, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		scene.idle(5);
 		scene.world().modifyBlockEntity(util.grid().at(1, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		scene.idle(5);
 
 		Selection emptyCrafter = util.select().position(2, 2, 2);
@@ -428,17 +428,17 @@ public class CrafterScenes {
 		scene.idle(17);
 		scene.world().modifyEntity(ingot, Entity::discard);
 		scene.world().modifyBlockEntity(util.grid().at(3, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		ingot = scene.world().createItemEntity(util.vector().centerOf(4, 4, 2), util.vector().of(0, 0.2, 0), iron);
 		scene.idle(17);
 		scene.world().modifyEntity(ingot, Entity::discard);
 		scene.world().modifyBlockEntity(util.grid().at(2, 1, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 		ingot = scene.world().createItemEntity(util.vector().centerOf(4, 4, 2), util.vector().of(0, 0.2, 0), iron);
 		scene.idle(17);
 		scene.world().modifyEntity(ingot, Entity::discard);
 		scene.world().modifyBlockEntity(util.grid().at(1, 2, 2), type, mct ->
-				TransferUtil.insertItem(mct.getInventory(), iron.copy()));
+			TransferUtil.insert(mct.getInventory(), iron.copy()));
 
 	}
 

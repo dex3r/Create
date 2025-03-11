@@ -18,8 +18,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import io.netty.buffer.ByteBuf;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 public abstract class HonkPacket implements CustomPacketPayload {
 	protected final UUID trainId;
@@ -50,7 +50,7 @@ public abstract class HonkPacket implements CustomPacketPayload {
 		}
 
 		@Override
-		@OnlyIn(Dist.CLIENT)
+		@Environment(EnvType.CLIENT)
 		public void handle(LocalPlayer player) {
 			Train train = Create.RAILWAYS.sided(null).trains.get(trainId);
 			if (train == null)

@@ -39,7 +39,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
 
 public class StockTickerInteractionHandler {
@@ -189,7 +189,7 @@ public class StockTickerInteractionHandler {
 			if (simulate)
 				continue;
 
-			toTransfer.forEach(s -> TransferUtil.insertItem(tickerBE.receivedPayments, s));
+			toTransfer.forEach(s -> TransferUtil.insert(tickerBE.receivedPayments, s));
 		}
 
 		tickerBE.broadcastPackageRequest(RequestType.PLAYER, order, null, ShoppingListItem.getAddress(mainHandItem));

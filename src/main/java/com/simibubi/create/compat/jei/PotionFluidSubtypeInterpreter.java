@@ -2,7 +2,8 @@ package com.simibubi.create.compat.jei;
 
 import java.util.List;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.compat.jei.category.CreateRecipeCategory;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -20,10 +21,9 @@ import net.minecraft.world.item.alchemy.PotionContents;
 public class PotionFluidSubtypeInterpreter implements ISubtypeInterpreter<IJeiFluidIngredient> {
 	@Override
 	public @Nullable Object getSubtypeData(IJeiFluidIngredient jeiIngredient, UidContext context) {
+		FluidStack ingredient = CreateRecipeCategory.fromJei(jeiIngredient);
 		if (ingredient.getComponentsPatch().isEmpty())
 			return null;
-
-		FluidStack ingredient = fromJei(jeiIngredient);
 
 		PotionContents contents = ingredient.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
 		String potionTypeString = ingredient.getDescriptionId();
@@ -46,7 +46,7 @@ public class PotionFluidSubtypeInterpreter implements ISubtypeInterpreter<IJeiFl
 	}
 
 	@Override
-	public String getLegacyStringSubtypeInfo(FluidStack ingredient, UidContext context) {
+	public String getLegacyStringSubtypeInfo(IJeiFluidIngredient ingredient, UidContext context) {
 		return "";
 	}
 }

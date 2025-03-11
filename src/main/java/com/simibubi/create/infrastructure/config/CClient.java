@@ -1,10 +1,10 @@
 package com.simibubi.create.infrastructure.config;
 
 
+import com.simibubi.create.infrastructure.fabric.util.FluidUnit;
+
 import net.createmod.catnip.config.ConfigBase;
 import net.createmod.catnip.config.ui.ConfigAnnotations;
-
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 
 public class CClient extends ConfigBase {
 
@@ -39,8 +39,6 @@ public class CClient extends ConfigBase {
 	// Fabric
 	public final ConfigEnum<FluidUnit> fluidUnitType = e(FluidUnit.MILLIBUCKETS, "fluidUnitType",
 			Comments.fluidUnit);
-	public final ConfigBool simplifyFluidUnit = b(true, "simplifyFluidUnit",
-			Comments.simplifyFluidUnit);
 	public final ConfigInt toolboxHotbarOverlayOffset = i(0, Integer.MIN_VALUE, Integer.MAX_VALUE, "toolboxHotbarOverlayOffset",
 			Comments.toolboxHotbarOverlayOffset);
 
@@ -144,9 +142,6 @@ public class CClient extends ConfigBase {
 		static String[] fluidUnit = new String[]{
 				"The fluid unit that will be displayed when viewing fluids",
 				"Example: 1000 mB or 81000 Droplets"
-		};
-		static String[] simplifyFluidUnit = new String[]{
-				"Determines if the fluid unit should be simplified"
 		};
 		static String toolboxHotbarOverlayOffset = "Vertical offset for the Toolbox Hotbar overlay.";
 		static String sound = "Sound settings";

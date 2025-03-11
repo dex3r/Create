@@ -13,8 +13,8 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 import net.createmod.catnip.data.Iterate;
@@ -45,9 +45,9 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.LiquidBlockAccessor;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
@@ -203,7 +203,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 			}
 
 			Fluid finalFluid = fluid;
-			TransactionCallback.onSuccess(ctx, () -> {
+			TransactionSuccessCallback.register(ctx, () -> {
 				playEffect(world, currentPos, finalFluid, true);
 				blockEntity.award(AllAdvancements.HOSE_PULLEY);
 				if (infinite && FluidHelper.isLava(finalFluid))
@@ -250,7 +250,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 		infinite = false;
 		setValidationTimer();
 		frontier.add(new BlockPosEntry(root, 0));
-		TransactionCallback.onSuccess(ctx, blockEntity::sendData);
+		TransactionSuccessCallback.register(ctx, blockEntity::sendData);
 	}
 
 	protected boolean checkValid(Level world, BlockPos root) {
@@ -410,7 +410,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 		newValidationSet.clear();
 		validationFrontier.clear();
 		validationVisited.clear();
-		if (ctx != null) TransactionCallback.onSuccess(ctx, blockEntity::sendData);
+		if (ctx != null) TransactionSuccessCallback.register(ctx, blockEntity::sendData);
 		else blockEntity.sendData();
 	}
 
@@ -424,7 +424,7 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 	}
 
 	public FluidStack getDrainableFluid(BlockPos rootPos) {
-		try (Transaction t = TransferUtil.getTransaction()) { // simulate pullNext
+		try (Transaction t = Transaction.openOuter()) { // simulate pullNext
 			if (fluid == null || isSearching() || !pullNext(rootPos, t)) {
 				return FluidStack.EMPTY;
 			}

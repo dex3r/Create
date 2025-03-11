@@ -10,15 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.content.contraptions.actors.psi.PortableFluidInterfaceBlockEntity.InterfaceFluidHandler;
 import com.simibubi.create.content.fluids.PipeConnection.Flow;
-import com.simibubi.create.foundation.ICapabilityProvider;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import net.createmod.catnip.math.BlockFace;
@@ -30,10 +27,8 @@ import net.minecraft.world.level.Level;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class FluidNetwork {
 
@@ -187,7 +182,7 @@ public class FluidNetwork {
 		}
 
 		long flowSpeed = transferSpeed;
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 
 			Storage<FluidVariant> handler = source;
 			if (handler == null)
@@ -196,8 +191,8 @@ public class FluidNetwork {
 			FluidStack transfer = FluidStack.EMPTY;
 			long transferredAmount = 0;
 			try (Transaction test = t.openNested()) {
-				long extracted = handler.extract(fluid.getType(), flowSpeed, test);
-				if (extracted > 0) transfer = new FluidStack(fluid.getType(), extracted);
+				long extracted = handler.extract(fluid.getVariant(), flowSpeed, test);
+				if (extracted > 0) transfer = new FluidStack(fluid.getVariant(), extracted);
 
 				if (transfer.isEmpty())
 					return;
@@ -226,7 +221,7 @@ public class FluidNetwork {
 					}
 					FluidStack divided = transfer.copy();
 					divided.setAmount(toTransfer);
-					long fill = targetHandler.insert(divided.getType(), divided.getAmount(), t);
+					long fill = targetHandler.insert(divided.getVariant(), divided.getAmount(), t);
 					transfer.setAmount(transfer.getAmount() - fill);
 					transferredAmount += fill;
 					if (fill < toTransfer)
@@ -236,7 +231,7 @@ public class FluidNetwork {
 			}
 
 			try (Transaction extract = t.openNested()) {
-				handler.extract(fluid.getType(), transferredAmount, extract);
+				handler.extract(fluid.getVariant(), transferredAmount, extract);
 				extract.commit();
 			}
 			t.commit();

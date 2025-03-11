@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.LeverBlock;
 import net.minecraft.world.level.block.RedstoneLampBlock;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 @GameTestGroup(path = "contraptions")
 public class TestContraptions {

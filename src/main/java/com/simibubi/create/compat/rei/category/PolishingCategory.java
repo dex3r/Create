@@ -18,7 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRecipe> {
 

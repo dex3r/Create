@@ -24,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class ContraptionControlsMovement implements MovementBehaviour {
 

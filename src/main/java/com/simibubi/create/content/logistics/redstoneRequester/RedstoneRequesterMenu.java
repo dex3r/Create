@@ -23,8 +23,8 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlotItemHandler;
 
 public class RedstoneRequesterMenu extends GhostItemMenu<RedstoneRequesterBlockEntity> {
 
@@ -55,7 +55,7 @@ public class RedstoneRequesterMenu extends GhostItemMenu<RedstoneRequesterBlockE
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	protected RedstoneRequesterBlockEntity createOnClient(RegistryFriendlyByteBuf extraData) {
 		BlockPos blockPos = extraData.readBlockPos();
 		return AllBlocks.REDSTONE_REQUESTER.get()

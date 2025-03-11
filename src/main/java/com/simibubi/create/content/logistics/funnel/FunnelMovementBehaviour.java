@@ -7,7 +7,7 @@ import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.foundation.item.ItemHelper;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
@@ -23,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class FunnelMovementBehaviour implements MovementBehaviour {
 
@@ -105,14 +105,14 @@ public class FunnelMovementBehaviour implements MovementBehaviour {
 		List<ItemEntity> items = world.getEntitiesOfClass(ItemEntity.class, new AABB(pos));
 		FilterItemStack filter = context.getFilterFromBE();
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (ItemEntity item : items) {
 				if (!item.isAlive())
 					continue;
 				ItemStack toInsert = item.getItem();
 				if (toInsert.isEmpty() || (!filter.test(context.world, toInsert)))
 					continue;
-				long inserted = TransferUtil.insertItem(context.contraption.getStorage().getAllItems(), toInsert);
+				long inserted = TransferUtil.insert(context.contraption.getStorage().getAllItems(), toInsert);
 				if (inserted == 0)
 					continue;
 				if (inserted == toInsert.getCount()) {

@@ -21,7 +21,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class PotionFluid extends VirtualFluid {
 

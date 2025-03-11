@@ -31,7 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 public abstract class MountedItemStorage implements SlottedStackStorage {
 	public static final Codec<MountedItemStorage> CODEC = MountedItemStorageType.CODEC.dispatch(

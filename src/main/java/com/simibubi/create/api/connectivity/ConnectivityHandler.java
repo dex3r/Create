@@ -11,6 +11,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.simibubi.create.content.fluids.tank.CreativeFluidTankBlockEntity;
@@ -24,9 +26,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidTank;
 
 public class ConnectivityHandler {
 
@@ -257,10 +258,10 @@ public class ConnectivityHandler {
 							}
 							if (be instanceof IMultiBlockEntityContainer.Fluid ifluidBE && ifluidBE.hasTank()
 								&& beTank != null) {
-								TransferUtil.insertFluid(beTank, fluidAt);
+								TransferUtil.insert(beTank, fluidAt);
 							}
 						}
-						TransferUtil.clearStorage(tankAt);
+						TransferUtil.clear(tankAt);
 					}
 
 					splitMultiAndInvalidate(part, cache, false);
@@ -347,7 +348,7 @@ public class ConnectivityHandler {
 							copy.setAmount(split);
 							toDistribute.shrink(split);
 							if (tank != null)
-								TransferUtil.insertFluid(tank, copy);
+								TransferUtil.insert(tank, copy);
 						}
 					}
 					if (tryReconnect) {

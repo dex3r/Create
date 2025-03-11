@@ -61,8 +61,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class BlueprintOverlayRenderer {
 
@@ -237,7 +237,7 @@ public class BlueprintOverlayRenderer {
 		List<ItemStack> newlyMissing = new ArrayList<>();
 		boolean invalid = false;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			do {
 				craftingGrid.clear();
 				newlyAdded.clear();

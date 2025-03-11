@@ -133,7 +133,7 @@ public class ScheduleItem extends Item implements MenuProvider, SupportsItemCopy
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
 		Schedule schedule = getSchedule(context.registries(), stack);
 		if (schedule == null || schedule.entries.isEmpty())

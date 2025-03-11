@@ -16,8 +16,8 @@ import net.minecraft.world.item.ItemStack;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class PackageDefragmenter {
 

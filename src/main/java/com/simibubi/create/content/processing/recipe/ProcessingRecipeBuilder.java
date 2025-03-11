@@ -33,7 +33,7 @@ import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
 import net.fabricmc.fabric.api.resource.conditions.v1.DefaultResourceConditions;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class ProcessingRecipeBuilder<T extends ProcessingRecipe<?>> {
 	protected ResourceLocation recipeId;

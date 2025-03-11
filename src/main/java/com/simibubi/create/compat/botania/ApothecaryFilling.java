@@ -13,7 +13,7 @@ import vazkii.botania.api.block.PetalApothecary;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public enum ApothecaryFilling implements BlockSpoutingBehaviour {
 	INSTANCE;
@@ -36,7 +36,7 @@ public enum ApothecaryFilling implements BlockSpoutingBehaviour {
 
 		PetalApothecary.State fluidState;
 
-		Fluid fluid = availableFluid.getType().getFluid();
+		Fluid fluid = availableFluid.getVariant().getFluid();
 		if (fluid == Fluids.WATER) {
 			fluidState = PetalApothecary.State.WATER;
 		} else if (fluid == Fluids.LAVA) {

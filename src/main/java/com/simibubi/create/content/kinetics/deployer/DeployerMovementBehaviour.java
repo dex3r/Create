@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -61,8 +61,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+
 
 public class DeployerMovementBehaviour implements MovementBehaviour {
 
@@ -156,7 +156,7 @@ public class DeployerMovementBehaviour implements MovementBehaviour {
 
 		if (!context.contraption.hasUniversalCreativeCrate) {
 			Storage<ItemVariant> itemHandler = context.contraption.getStorage().getAllItems();
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				for (ItemRequirement.StackRequirement required : requiredItems) {
 					int count = required.stack.getCount();
 					ResourceAmount<ItemVariant> resource = TransferUtil.extractMatching(itemHandler, required::matches, count, t);

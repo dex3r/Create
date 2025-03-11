@@ -9,7 +9,7 @@ import com.simibubi.create.content.fluids.potion.PotionFluid.BottleType;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import net.createmod.catnip.data.Pair;
 
@@ -41,10 +41,7 @@ import net.minecraft.world.level.material.Fluids;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 
 public class PotionFluidHandler {
 	private static final Component NO_EFFECT = Component.translatable("effect.none").withStyle(ChatFormatting.GRAY);
@@ -110,11 +107,11 @@ public class PotionFluidHandler {
 
 	@Environment(EnvType.CLIENT)
 	public static void addPotionTooltip(FluidStack fs, Consumer<Component> tooltipAdder, float durationFactor) {
-		addPotionTooltip(fs.getType(), tooltipAdder, durationFactor);
+		addPotionTooltip(fs.getVariant(), tooltipAdder, durationFactor);
 	}
 
 	// Modified version of PotionContents#addPotionTooltip
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public static void addPotionTooltip(FluidVariant fs, Consumer<Component> tooltipAdder, float durationFactor) {
 		PotionContents contents = fs.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
 		Iterable<MobEffectInstance> effects = contents.getAllEffects();

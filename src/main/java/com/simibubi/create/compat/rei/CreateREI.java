@@ -14,6 +14,8 @@ import java.util.function.Supplier;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllCreativeModeTabs;
+import com.simibubi.create.AllCreativeModeTabs.RegistrateDisplayItemsGenerator;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.Create;
@@ -365,6 +367,7 @@ public class CreateREI implements REIClientPlugin {
 
 	@Override
 	public void registerEntries(EntryRegistry registry) {
+		Predicate<Item> isHidden = RegistrateDisplayItemsGenerator.makeExclusionPredicate();
 		registry.removeEntryIf(entryStack -> {
 			if (entryStack.getType() == VanillaEntryTypes.ITEM) {
 				ItemStack itemStack = entryStack.castValue();
@@ -372,7 +375,7 @@ public class CreateREI implements REIClientPlugin {
 				if (item instanceof TagDependentIngredientItem tagItem) {
 					return tagItem.shouldHide();
 				}
-                return HiddenItems.getHiddenPredicate().test(item);
+                return isHidden.test(item);
 			} else if (entryStack.getType() == VanillaEntryTypes.FLUID) {
 				FluidStack fluidStack = entryStack.castValue();
 				return fluidStack.getFluid() instanceof VirtualFluid;

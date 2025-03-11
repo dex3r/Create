@@ -26,12 +26,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-
 public class ClipboardBlockItem extends BlockItem implements SupportsItemCopying {
 
 	public ClipboardBlockItem(Block pBlock, Properties pProperties) {

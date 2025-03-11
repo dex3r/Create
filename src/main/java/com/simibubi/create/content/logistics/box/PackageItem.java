@@ -16,7 +16,7 @@ import com.simibubi.create.content.logistics.box.PackageStyles.PackageStyle;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.foundation.item.ItemHelper;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
 import net.createmod.catnip.data.Glob;
@@ -58,8 +58,8 @@ import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class PackageItem extends Item {
 
@@ -104,7 +104,7 @@ public class PackageItem extends Item {
 
 	public static ItemStack containing(List<ItemStack> stacks) {
 		ItemStackHandler newInv = new ItemStackHandler(9);
-		stacks.forEach(s -> TransferUtil.insertItem(newInv, s));
+		stacks.forEach(s -> TransferUtil.insert(newInv, s));
 		return containing(newInv);
 	}
 

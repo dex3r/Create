@@ -25,6 +25,9 @@ import net.createmod.ponder.api.element.WorldSectionElement;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -34,6 +37,7 @@ import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -41,8 +45,8 @@ import net.minecraft.world.phys.Vec3;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class PipeScenes {
 
@@ -74,7 +78,7 @@ public class PipeScenes {
 		scene.idle(5);
 		scene.world().showSection(tank2, Direction.DOWN);
 		FluidStack content = new FluidStack(Fluids.LAVA, 10 * FluidConstants.BUCKET);
-		scene.world().modifyBlockEntity(util.grid().at(4, 1, 2), FluidTankBlockEntity.class, be -> TransferUtil.insertFluid(be.getTankInventory(), content));
+		scene.world().modifyBlockEntity(util.grid().at(4, 1, 2), FluidTankBlockEntity.class, be -> TransferUtil.insert(be.getTankInventory(), content));
 		scene.idle(10);
 
 		for (int i = 4; i >= 1; i--) {
@@ -227,8 +231,8 @@ public class PipeScenes {
 		BlockPos drainPos = util.grid().at(1, 1, 2);
 		scene.world().modifyBlockEntity(drainPos, ItemDrainBlockEntity.class,
 			be -> TransferUtil.insert(be.getBehaviour(SmartFluidTankBehaviour.TYPE)
-							.allowInsertion()
-							.getPrimaryHandler(), FluidVariant.of(Fluids.WATER), (long) (FluidConstants.BUCKET * 1.5)));
+				.allowInsertion()
+				.getPrimaryHandler(), new FluidStack(Fluids.WATER, (long) (FluidConstants.BUCKET * 1.5))));
 
 		scene.idle(50);
 		scene.overlay().showOutline(PonderPalette.MEDIUM, new Object(), drain, 40);
@@ -494,8 +498,11 @@ public class PipeScenes {
 		Selection basin = util.select().position(basinPos);
 		BlockPos smartPos = util.grid().at(3, 1, 1);
 
-		scene.world().modifyBlockEntity(basinPos, BasinBlockEntity.class,
-			be -> TransferUtil.insert(be.getFluidStorage(null), FluidVariant.of(Milk.STILL_MILK), FluidConstants.BUCKET));
+		scene.world().modifyBlockEntity(basinPos, BasinBlockEntity.class, be -> {
+			Storage<FluidVariant> ifh = be.getFluidStorage(null);
+			if (ifh != null)
+				TransferUtil.insert(ifh, new FluidStack(Milk.STILL_MILK, FluidConstants.BUCKET));
+		});
 
 		scene.world().setBlock(util.grid().at(3, 1, 3), AllBlocks.FLUID_PIPE.get()
 			.getAxisState(Axis.X), false);
@@ -575,7 +582,7 @@ public class PipeScenes {
 		}
 		scene.idle(15);
 		scene.world().modifyBlockEntity(basinPos, BasinBlockEntity.class,
-			be -> TransferUtil.insertFluid(be.getFluidStorage(null), chocolate));
+			be -> TransferUtil.insert(be.getFluidStorage(null), chocolate));
 		scene.idle(10);
 
 		scene.overlay().showText(80)

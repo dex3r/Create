@@ -122,7 +122,7 @@ public abstract class CopycatBlock extends Block implements IBE<CopycatBlockEnti
 
 	@Override
 	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-								 if (player == null || AdventureUtil.isAdventure(pPlayer)
+								 if (player == null || AdventureUtil.isAdventure(pPlayer))
 			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		Direction face = hitResult.getDirection();

@@ -58,7 +58,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 
-@Mod(value = Create.ID, dist = Dist.CLIENT)
 public class CreateClient implements ClientModInitializer {
 
 	public static final ModelSwapper MODEL_SWAPPER = new ModelSwapper();
@@ -119,7 +118,6 @@ public class CreateClient implements ClientModInitializer {
 		registerOverlays();
 		ClientEvents.register();
 		InputEvents.register();
-		AllPackets.getChannel().initClientListener();
 		RenderTypes.init();
 //		ArmorTextureRegistry.register(AllArmorMaterials.COPPER, CopperArmorItem.TEXTURE);
 		AllFluids.initRendering();

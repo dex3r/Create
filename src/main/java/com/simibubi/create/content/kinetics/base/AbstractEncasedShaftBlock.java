@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.simibubi.create.infrastructure.fabric.block.WeakPowerCheckingBlock;
 
 @MethodsReturnNonnullByDefault
 public abstract class AbstractEncasedShaftBlock extends RotatedPillarKineticBlock implements WeakPowerCheckingBlock {

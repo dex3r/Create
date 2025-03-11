@@ -1,5 +1,7 @@
 package com.simibubi.create.api.behaviour.spouting;
 
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.api.registry.SimpleRegistry;
@@ -11,7 +13,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.fluids.FluidStack;
 
 /**
  * Interface for custom block-filling behavior for spouts.

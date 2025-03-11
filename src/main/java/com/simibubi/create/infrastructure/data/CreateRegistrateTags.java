@@ -16,6 +16,9 @@ import com.simibubi.create.foundation.data.recipe.Mods;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalEntityTypeTags;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+
 import net.minecraft.data.tags.TagsProvider.TagAppender;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -202,7 +205,7 @@ public class CreateRegistrateTags {
 
 		prov.tag(AllItemTags.OBSIDIAN_DUST.tag).add(AllItems.POWDERED_OBSIDIAN.get());
 
-		prov.tag(net.neoforged.neoforge.common.Tags.Items.ENCHANTABLES).addTag(AllItemTags.PRESSURIZED_AIR_SOURCES.tag);
+		prov.tag(ConventionalItemTags.ENCHANTABLES).addTag(AllItemTags.PRESSURIZED_AIR_SOURCES.tag);
 
 		// COMPAT
 
@@ -278,7 +281,7 @@ public class CreateRegistrateTags {
 			.add(EntityType.BLAZE);
 
 		prov.tag(AllEntityTags.IGNORE_SEAT.tag)
-			.addTag(net.neoforged.neoforge.common.Tags.EntityTypes.CAPTURING_NOT_SUPPORTED);
+			.addTag(ConventionalEntityTypeTags.CAPTURING_NOT_SUPPORTED);
 
 		// VALIDATE
 

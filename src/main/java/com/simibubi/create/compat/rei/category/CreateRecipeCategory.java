@@ -17,6 +17,8 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import com.simibubi.create.infrastructure.fabric.util.FluidUnit;
+
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.Renderer;
@@ -31,6 +33,9 @@ import me.shedaniel.rei.api.client.util.ClientEntryStacks;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
+
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -41,9 +46,7 @@ import net.minecraft.world.item.crafting.Recipe;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public abstract class CreateRecipeCategory<T extends Recipe<?>> implements DisplayCategory<CreateDisplay<T>> {
 
@@ -161,7 +164,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements Displ
 	}
 
 	public static dev.architectury.fluid.FluidStack convertToREIFluid(FluidStack stack) {
-		return dev.architectury.fluid.FluidStack.create(stack.getFluid(), stack.getAmount(), stack.getTag());
+		return dev.architectury.fluid.FluidStack.create(stack.getFluid(), stack.getAmount(), stack.getComponentsPatch());
 	}
 
 	public static List<dev.architectury.fluid.FluidStack> convertToREIFluids(List<FluidStack> stacks) {
@@ -195,7 +198,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements Displ
 				FluidStack fluid = new FluidStack(fluidStack.getFluid(), fluidStack.getAmount(), fluidStack.getTag());
 				if (fluid.getFluid()
 						.isSame(AllFluids.POTION.get())) {
-					Component name = fluid.getDisplayName();
+					Component name = FluidVariantAttributes.getName(fluid.getVariant());
 					if (tooltip.entries().isEmpty())
 						tooltip.entries().add(0, Tooltip.entry(name));
 					else
@@ -210,8 +213,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements Displ
 				}
 
 				FluidUnit unit = AllConfigs.client().fluidUnitType.get();
-				String amount = FluidTextUtil.getUnicodeMillibuckets(amounts.get(0), unit, AllConfigs.client().simplifyFluidUnit.get());
-				Component text = Component.literal(String.valueOf(amount)).append(CreateLang.translateDirect(unit.getTranslationKey())).withStyle(ChatFormatting.GOLD);
+				Component text = CreateLang.number(unit.convert(amounts.getFirst())).add(unit.name).component().withStyle(ChatFormatting.GOLD);
 				if (tooltip.entries().isEmpty())
 					tooltip.entries().add(0, Tooltip.entry(text));
 				else {
@@ -231,7 +233,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements Displ
 			FluidStack fluid = new FluidStack(fluidStack.getFluid(), fluidStack.getAmount(), fluidStack.getTag());
 			if (fluid.getFluid()
 					.isSame(AllFluids.POTION.get())) {
-				Component name = fluid.getDisplayName();
+				Component name = FluidVariantAttributes.getName(fluid.getVariant());
 				if (tooltip.entries().isEmpty())
 					tooltip.entries().add(0, Tooltip.entry(name));
 				else
@@ -245,8 +247,7 @@ public abstract class CreateRecipeCategory<T extends Recipe<?>> implements Displ
 			}
 
 			FluidUnit unit = AllConfigs.client().fluidUnitType.get();
-			String amount = FluidTextUtil.getUnicodeMillibuckets(fluid.getAmount(), unit, AllConfigs.client().simplifyFluidUnit.get());
-			Component text = Component.literal(String.valueOf(amount)).append(CreateLang.translateDirect(unit.getTranslationKey())).withStyle(ChatFormatting.GOLD);
+			Component text = CreateLang.number(unit.convert(fluid.getAmount())).add(unit.name).component().withStyle(ChatFormatting.GOLD);
 			if (tooltip.entries().isEmpty())
 				tooltip.entries().add(0, Tooltip.entry(text));
 			else {

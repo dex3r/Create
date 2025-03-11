@@ -20,7 +20,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class FluidParticleData implements ParticleOptions, ICustomParticleData<FluidParticleData> {
 

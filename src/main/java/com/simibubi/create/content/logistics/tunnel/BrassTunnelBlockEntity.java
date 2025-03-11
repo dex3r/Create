@@ -67,8 +67,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+
 
 public class BrassTunnelBlockEntity extends BeltTunnelBlockEntity implements IHaveGoggleInformation, SidedStorageBlockEntity {
 

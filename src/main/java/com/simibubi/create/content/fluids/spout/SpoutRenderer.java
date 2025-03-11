@@ -18,9 +18,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class SpoutRenderer extends SafeBlockEntityRenderer<SpoutBlockEntity> {
 
@@ -44,7 +42,7 @@ public class SpoutRenderer extends SafeBlockEntityRenderer<SpoutBlockEntity> {
 			.getValue(partialTicks);
 
 		if (!fluidStack.isEmpty() && level != 0) {
-			boolean top = FluidVariantAttributes.isLighterThanAir(fluidStack.getType());
+			boolean top = FluidVariantAttributes.isLighterThanAir(fluidStack.getVariant());
 
 			level = Math.max(level, 0.175f);
 			float min = 2.5f / 16f;

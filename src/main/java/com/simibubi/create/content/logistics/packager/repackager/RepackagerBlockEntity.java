@@ -10,7 +10,7 @@ import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagerItemHandler;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -32,7 +32,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 public class RepackagerBlockEntity extends PackagerBlockEntity {
@@ -60,7 +60,7 @@ public class RepackagerBlockEntity extends PackagerBlockEntity {
 		if (!targetIsCreativeCrate && !anySpace)
 			return false;
 
-		TransactionCallback.onSuccess(ctx, () -> {
+		TransactionSuccessCallback.register(ctx, () -> {
 			previouslyUnwrapped = box;
 			animationInward = true;
 			animationTicks = CYCLE;

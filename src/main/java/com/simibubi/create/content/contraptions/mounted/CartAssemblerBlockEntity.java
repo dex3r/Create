@@ -41,7 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class CartAssemblerBlockEntity extends SmartBlockEntity implements IDisplayAssemblyExceptions {
 	private static final int assemblyCooldown = 8;

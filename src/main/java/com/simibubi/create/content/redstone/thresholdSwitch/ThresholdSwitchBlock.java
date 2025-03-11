@@ -39,7 +39,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class ThresholdSwitchBlock extends DirectedDirectionalBlock implements IBE<ThresholdSwitchBlockEntity>, ConnectableRedstoneBlock {
 

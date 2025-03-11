@@ -16,7 +16,7 @@ import net.minecraft.world.inventory.DispenserMenu;
 import net.minecraft.world.inventory.MenuConstructor;
 import net.minecraft.world.inventory.MenuType;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 /**
  * Methods for creating generic menus usable by mounted storages.

@@ -16,6 +16,7 @@ import com.simibubi.create.content.processing.burner.LitBlazeBurnerBlock;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import com.simibubi.create.foundation.ponder.element.BeltItemElement;
 
+import net.createmod.catnip.data.IntAttached;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.data.LongAttached;
 import net.createmod.catnip.nbt.NBTHelper;
@@ -42,7 +43,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class ProcessingScenes {
 
@@ -704,7 +705,6 @@ public class ProcessingScenes {
 		Class<DeployerBlockEntity> teType = DeployerBlockEntity.class;
 		scene.world().modifyBlockEntityNBT(util.select().position(4, 1, 2), teType,
 			nbt -> nbt.put("HeldItem", AllItems.BLAZE_CAKE.asStack().saveOptional(scene.world().getHolderLookupProvider())));
-			nbt -> nbt.put("HeldItem", NBTSerializer.serializeNBT(AllItems.BLAZE_CAKE.asStack())));
 
 		scene.world().showSection(util.select().fromTo(3, 0, 5, 2, 0, 5), Direction.UP);
 		scene.idle(5);

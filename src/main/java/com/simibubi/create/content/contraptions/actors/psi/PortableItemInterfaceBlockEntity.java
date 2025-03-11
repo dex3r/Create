@@ -8,7 +8,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.foundation.item.ItemHandlerWrapper;
 import com.simibubi.create.foundation.utility.fabric.ListeningStorageView;
-import com.simibubi.create.foundation.utility.fabric.ProcessingIterator;
+import com.simibubi.create.infrastructure.fabric.ProcessingIterator;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -22,17 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Iterator;
 
 public class PortableItemInterfaceBlockEntity extends PortableStorageInterfaceBlockEntity implements SidedStorageBlockEntity {
 
@@ -90,7 +80,7 @@ public class PortableItemInterfaceBlockEntity extends PortableStorageInterfaceBl
 				return 0;
 			long extracted = super.extract(resource, maxAmount, transaction);
 			if (extracted != 0) {
-				TransactionCallback.onSuccess(transaction, PortableItemInterfaceBlockEntity.this::onContentTransferred);
+				TransactionSuccessCallback.register(transaction, PortableItemInterfaceBlockEntity.this::onContentTransferred);
 			}
 			return extracted;
 		}
@@ -101,7 +91,7 @@ public class PortableItemInterfaceBlockEntity extends PortableStorageInterfaceBl
 				return 0;
 			long inserted = super.insert(resource, maxAmount, transaction);
 			if (inserted != 0) {
-				TransactionCallback.onSuccess(transaction, PortableItemInterfaceBlockEntity.this::onContentTransferred);
+				TransactionSuccessCallback.register(transaction, PortableItemInterfaceBlockEntity.this::onContentTransferred);
 			}
 			return inserted;
 		}

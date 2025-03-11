@@ -45,7 +45,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlotItemHandler;
 import io.github.fabricators_of_create.porting_lib.util.KeyBindingHelper;
 
 public class StockKeeperCategoryScreen extends AbstractSimiContainerScreen<StockKeeperCategoryMenu>

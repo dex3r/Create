@@ -4,9 +4,10 @@ import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeParams;
 
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.fluids.FluidStack;
 
 public class EmptyingRecipe extends ProcessingRecipe<SingleRecipeInput> {
 

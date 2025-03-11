@@ -32,8 +32,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+
 
 public class CopycatBlockEntity extends SmartBlockEntity
 	implements SpecialBlockEntityItemRequirement, TransformableBlockEntity, PartialSafeNBT, RenderDataBlockEntity {

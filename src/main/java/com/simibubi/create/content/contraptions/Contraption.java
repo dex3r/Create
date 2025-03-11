@@ -22,9 +22,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.HashMapPaletteAccessor;
-import io.github.fabricators_of_create.porting_lib.util.StickinessUtil;
-
 import net.minecraft.core.HolderLookup;
 
 import net.minecraft.core.IdMapper;
@@ -1034,7 +1031,7 @@ public abstract class Contraption {
 		BlockEntity be = entityBlock.newBlockEntity(pos, state);
 		postprocessReadBlockEntity(level, be);
 		if (be != null && nbt != null) {
-			be.load(nbt, level.registryAccess());
+			be.loadWithComponents(nbt, level.registryAccess());
 		}
 
 		return be;

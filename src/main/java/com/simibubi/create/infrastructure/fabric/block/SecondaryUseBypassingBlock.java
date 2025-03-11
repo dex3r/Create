@@ -1,4 +1,4 @@
-package com.simibubi.create.infrastructure.fabric;
+package com.simibubi.create.infrastructure.fabric.block;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;

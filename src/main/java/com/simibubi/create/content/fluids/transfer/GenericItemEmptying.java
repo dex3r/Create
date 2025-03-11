@@ -20,9 +20,9 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.MutableContainerItemContext;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
 
 public class GenericItemEmptying {
@@ -62,7 +62,7 @@ public class GenericItemEmptying {
 		Storage<FluidVariant> tank = FluidStorage.ITEM.find(split, ctx);
 		if (tank == null)
 			return Pair.of(resultingFluid, resultingItem);
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			resultingFluid = TransferUtil.extractAnyFluid(tank, FluidConstants.BUCKET);
 			int amount = ctx.getItemVariant().isBlank() ? 0 : (int) ctx.getAmount(); // GH#1622
 			resultingItem = ctx.getItemVariant().toStack(amount);

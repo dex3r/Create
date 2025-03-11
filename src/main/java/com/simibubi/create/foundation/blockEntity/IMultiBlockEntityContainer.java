@@ -2,7 +2,7 @@ package com.simibubi.create.foundation.blockEntity;
 
 import javax.annotation.Nullable;
 
-import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidTank;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,8 +10,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidTank;
 
 public interface IMultiBlockEntityContainer {
 

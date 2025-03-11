@@ -13,7 +13,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class LinkedControllerBindPacket extends LinkedControllerPacketBase {
 	public static final StreamCodec<ByteBuf, LinkedControllerBindPacket> STREAM_CODEC = StreamCodec.composite(

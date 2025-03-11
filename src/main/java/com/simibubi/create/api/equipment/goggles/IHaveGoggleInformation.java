@@ -5,7 +5,8 @@ import java.util.List;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.createmod.catnip.lang.LangBuilder;
+import com.simibubi.create.infrastructure.fabric.util.FluidUnit;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,9 +15,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 /**
  * Implement this interface on the {@link BlockEntity} that wants to add info to the goggle overlay
@@ -36,8 +35,6 @@ public non-sealed interface IHaveGoggleInformation extends IHaveCustomOverlayIco
 		if (handler == null)
 			return false;
 		FluidUnit unit = AllConfigs.client().fluidUnitType.get();
-		boolean simplify = AllConfigs.client().simplifyFluidUnit.get();
-		LangBuilder mb = CreateLang.translate(unit.getTranslationKey());
 		CreateLang.translate("gui.goggles.fluid_container")
 				.forGoggles(tooltip);
 
@@ -57,14 +54,13 @@ public non-sealed interface IHaveGoggleInformation extends IHaveCustomOverlayIco
 					.style(ChatFormatting.GRAY)
 					.forGoggles(tooltip, 1);
 
-			String amount = FluidTextUtil.getUnicodeMillibuckets(fluidStack.getAmount(), unit, simplify);
 			CreateLang.builder()
-				.add(CreateLang.text(amount)
-					.add(mb)
+				.add(CreateLang.number(unit.convert(fluidStack.getAmount()))
+					.add(unit.name)
 					.style(ChatFormatting.GOLD))
 				.text(ChatFormatting.GRAY, " / ")
-				.add(CreateLang.text(FluidTextUtil.getUnicodeMillibuckets(view.getCapacity(), unit, simplify))
-					.add(mb)
+				.add(CreateLang.number(unit.convert(view.getCapacity()))
+					.add(unit.name)
 					.style(ChatFormatting.DARK_GRAY))
 				.forGoggles(tooltip, 1);
 
@@ -81,11 +77,11 @@ public non-sealed interface IHaveGoggleInformation extends IHaveCustomOverlayIco
 			return true;
 
 		CreateLang.translate("gui.goggles.fluid_container.capacity")
-				.add(CreateLang.text(FluidTextUtil.getUnicodeMillibuckets(firstCapacity, unit, simplify))
-						.add(mb)
-						.style(ChatFormatting.GOLD))
-				.style(ChatFormatting.GRAY)
-				.forGoggles(tooltip, 1);
+			.add(CreateLang.number(unit.convert(firstCapacity))
+				.add(unit.name)
+				.style(ChatFormatting.GOLD))
+			.style(ChatFormatting.GRAY)
+			.forGoggles(tooltip, 1);
 
 		return true;
 	}

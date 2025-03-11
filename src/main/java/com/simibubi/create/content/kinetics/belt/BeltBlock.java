@@ -96,7 +96,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import io.github.fabricators_of_create.porting_lib.tags.Tags;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.TagUtil;
 
 public class BeltBlock extends HorizontalKineticBlock
@@ -222,7 +222,7 @@ public class BeltBlock extends HorizontalKineticBlock
 				if (handler == null)
 					return;
 				ItemStack inEntity = itemEntity.getItem();
-				try (Transaction t = TransferUtil.getTransaction()) {
+				try (Transaction t = Transaction.openOuter()) {
 					long inserted = handler.insert(ItemVariant.of(inEntity), inEntity.getCount(), t);
 					if (inserted == 0)
 						return;
@@ -288,7 +288,7 @@ public class BeltBlock extends HorizontalKineticBlock
 			Storage<ItemVariant> handler = belt.getItemStorage(null);
 			if (handler == null)
 				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-			long inserted = TransferUtil.insertItem(handler, stack);
+			long inserted = TransferUtil.insert(handler, stack);
 			stack.shrink((int) inserted);
 			return ItemInteractionResult.SUCCESS;
 		}

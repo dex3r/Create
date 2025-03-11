@@ -16,7 +16,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.item.TooltipHelper;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
@@ -196,7 +196,7 @@ public class FrogportBlockEntity extends PackagePortBlockEntity implements IHave
 		}
 
 		if (!currentlyDepositing) {
-			long inserted = TransferUtil.insertItem(this.inventory, animatedPackage.copy());
+			long inserted = TransferUtil.insert(this.inventory, animatedPackage.copy());
 			if (inserted <= 0)
 				drop(animatedPackage);
 		}

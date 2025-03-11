@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllTags;
@@ -17,20 +19,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.TagValueAccessor;
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-
 public class TrackMaterialFactory {
 	private final ResourceLocation id;
 	private String langName;
 	private NonNullSupplier<NonNullSupplier<? extends TrackBlock>> trackBlock;
 	private Ingredient sleeperIngredient = Ingredient.EMPTY;
 	private Ingredient railsIngredient = Ingredient.fromValues(Stream.of(
-			TagValueAccessor.createTagValue(Tags.Items.NUGGETS_IRON),
-			TagValueAccessor.createTagValue(AllTags.commonItemTag("nuggets/zinc"))
+			new Ingredient.TagValue(ConventionalItemTags.IRON_NUGGETS),
+			new Ingredient.TagValue(AllTags.commonItemTag("nuggets/zinc"))
 	));
 	private ResourceLocation particle;
 	private TrackMaterial.TrackType trackType = TrackMaterial.TrackType.STANDARD;

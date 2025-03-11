@@ -6,7 +6,7 @@ import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.block.IBE;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
@@ -33,9 +33,9 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEntity>, ICogWheel {
 
@@ -111,7 +111,7 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
 		if (handler == null)
 			return;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			ItemStack inEntity = itemEntity.getItem();
 			long inserted = handler.insert(ItemVariant.of(inEntity), inEntity.getCount(), t);
 			if (inserted == inEntity.getCount())

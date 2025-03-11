@@ -5,7 +5,7 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.content.fluids.potion.PotionFluidHandler;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.MilkBucketItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
@@ -21,15 +20,10 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.MutableContainerItemContext;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 
 public class GenericItemFilling {
 
@@ -95,8 +89,8 @@ public class GenericItemFilling {
 //			return FluidConstants.BUCKET;
 //		}
 
-		try (Transaction t = TransferUtil.getTransaction()) {
-			long filled = tank.insert(availableFluid.getType(), availableFluid.getAmount(), t);
+		try (Transaction t = Transaction.openOuter()) {
+			long filled = tank.insert(availableFluid.getVariant(), availableFluid.getAmount(), t);
 			return filled == 0 ? -1 : filled;
 		}
 	}
@@ -140,8 +134,8 @@ public class GenericItemFilling {
 		Storage<FluidVariant> tank = FluidStorage.ITEM.find(split, ctx);
 		if (tank == null)
 			return ItemStack.EMPTY;
-		try (Transaction t = TransferUtil.getTransaction()) {
-			tank.insert(toFill.getType(), toFill.getAmount(), t);
+		try (Transaction t = Transaction.openOuter()) {
+			tank.insert(toFill.getVariant(), toFill.getAmount(), t);
 			t.commit();
 
 			ItemStack container = ctx.getItemVariant().toStack((int) ctx.getAmount());

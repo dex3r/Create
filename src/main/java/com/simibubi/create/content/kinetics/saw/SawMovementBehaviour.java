@@ -2,7 +2,7 @@ package com.simibubi.create.content.kinetics.saw;
 
 import java.util.Optional;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class SawMovementBehaviour extends BlockBreakingMovementBehaviour {
 
@@ -88,7 +88,7 @@ public class SawMovementBehaviour extends BlockBreakingMovementBehaviour {
 	}
 
 	public void dropItemFromCutTree(MovementContext context, BlockPos pos, ItemStack stack) {
-		long inserted = TransferUtil.insertItem(context.contraption.getStorage().getAllItems(), stack);
+		long inserted = TransferUtil.insert(context.contraption.getStorage().getAllItems(), stack);
 		if (inserted == stack.getCount())
 			return;
 		long remaining = stack.getCount() - inserted;

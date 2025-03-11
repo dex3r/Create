@@ -14,8 +14,8 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public enum SpoutCasting implements BlockSpoutingBehaviour {
 	INSTANCE;
@@ -35,11 +35,11 @@ public enum SpoutCasting implements BlockSpoutingBehaviour {
 
 		// Do not fill if it would only partially fill the table (unless > 1000mb)
 		long amount = availableFluid.getAmount();
-		try (Transaction t = TransferUtil.getTransaction()) {
-			long inserted = handler.insert(availableFluid.getType(), amount, t);
+		try (Transaction t = Transaction.openOuter()) {
+			long inserted = handler.insert(availableFluid.getVariant(), amount, t);
 			if (amount < FluidConstants.BUCKET) {
 				try (Transaction nested = t.openNested()) {
-					if (handler.insert(availableFluid.getType(), 1, nested) == 1)
+					if (handler.insert(availableFluid.getVariant(), 1, nested) == 1)
 						return 0;
 				}
 			}

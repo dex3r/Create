@@ -30,11 +30,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-
 public class TrackMaterial {
 	public static final Map<ResourceLocation, TrackMaterial> ALL = new HashMap<>();
 

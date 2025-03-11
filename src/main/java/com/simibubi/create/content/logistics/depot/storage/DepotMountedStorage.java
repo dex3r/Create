@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class DepotMountedStorage extends WrapperMountedItemStorage<Handler> implements SyncedMountedStorage {
 	public static final MapCodec<DepotMountedStorage> CODEC = ItemStack.OPTIONAL_CODEC.xmap(

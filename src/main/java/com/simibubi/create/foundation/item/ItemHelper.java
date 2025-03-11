@@ -9,9 +9,9 @@ import javax.annotation.Nullable;
 
 import com.simibubi.create.foundation.mixin.accessor.ItemStackHandlerAccessor;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -44,10 +44,10 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 public class ItemHelper {
 
@@ -60,7 +60,7 @@ public class ItemHelper {
 	}
 
 	public static void dropContents(Level world, BlockPos pos, Storage<ItemVariant> inv) {
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : inv.nonEmptyViews()) {
 				ItemStack stack = view.getResource().toStack((int) view.getAmount());
 				Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
@@ -116,7 +116,7 @@ public class ItemHelper {
 		float f = 0.0F;
 		int totalSlots = 0;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : inv) {
 				long slotLimit = view.getCapacity();
 				if (slotLimit == 0) {
@@ -207,7 +207,7 @@ public class ItemHelper {
 		List<ItemVariant> otherTargets = null;
 
 		if (inv.supportsExtraction()) {
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				for (StorageView<ItemVariant> view : inv.nonEmptyViews()) {
 					ItemVariant contained = view.getResource();
 					int maxStackSize = contained.getItem().getMaxStackSize();
@@ -252,7 +252,7 @@ public class ItemHelper {
 					// let's try a different target
 					if (otherTargets != null) {
 						t.abort();
-						try (Transaction nested = TransferUtil.getTransaction()) {
+						try (Transaction nested = Transaction.openOuter()) {
 							for (ItemVariant target : otherTargets) {
 								// try again, but now only match the existing matches we've found
 								ItemStack successfulExtraction = extract(inv, target::matches, mode, amount, simulate);
@@ -274,7 +274,7 @@ public class ItemHelper {
 		ItemStack extracting = ItemStack.EMPTY;
 		int maxExtractionCount = 64;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : inv.nonEmptyViews()) {
 				ItemVariant var = view.getResource();
 				ItemStack stackInSlot = var.toStack();

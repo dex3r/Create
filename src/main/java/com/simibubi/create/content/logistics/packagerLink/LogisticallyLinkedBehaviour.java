@@ -11,8 +11,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import net.neoforged.neoforge.items.ItemStackHandler;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.google.common.cache.Cache;
@@ -36,7 +34,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class LogisticallyLinkedBehaviour extends BlockEntityBehaviour {
 

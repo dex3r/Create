@@ -40,7 +40,7 @@ import net.minecraft.world.phys.Vec3;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.AxeItemAccessor;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault

@@ -53,7 +53,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class MechanicalMixerBlockEntity extends BasinOperatingBlockEntity {
 
@@ -244,7 +244,7 @@ public class MechanicalMixerBlockEntity extends BasinOperatingBlockEntity {
 		if (availableItems == null)
 			return matchingRecipes;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : availableItems.nonEmptyViews()) {
 				List<MixingRecipe> list = PotionMixingRecipes.sortRecipesByItem(level).get(view.getResource().getItem());
 				if (list == null)

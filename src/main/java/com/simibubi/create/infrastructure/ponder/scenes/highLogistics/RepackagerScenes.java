@@ -6,7 +6,7 @@ import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlockEntity
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.PonderPalette;
@@ -391,7 +391,7 @@ public class RepackagerScenes {
 					Storage<ItemVariant> storage = TransferUtil.getItemStorage(be);
 					if (storage == null)
 						return;
-					TransferUtil.insertItem(storage, stack);
+					TransferUtil.insert(storage, stack);
 				});
 	}
 

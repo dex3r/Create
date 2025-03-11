@@ -20,10 +20,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidTank;
 
 public class FluidTankRenderer extends SafeBlockEntityRenderer<FluidTankBlockEntity> {
 
@@ -60,7 +58,7 @@ public class FluidTankRenderer extends SafeBlockEntityRenderer<FluidTankBlockEnt
 		if (fluidStack.isEmpty())
 			return;
 
-		boolean top = FluidVariantAttributes.isLighterThanAir(fluidStack.getType());
+		boolean top = FluidVariantAttributes.isLighterThanAir(fluidStack.getVariant());
 
 		float xMin = tankHullWidth;
 		float xMax = xMin + be.width - 2 * tankHullWidth;

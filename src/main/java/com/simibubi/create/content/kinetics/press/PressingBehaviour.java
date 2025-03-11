@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class PressingBehaviour extends BeltProcessingBehaviour {
 

@@ -22,8 +22,8 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlotItemHandler;
 
 import java.util.Optional;
 
@@ -119,7 +119,7 @@ public class BlueprintMenu extends GhostItemMenu<BlueprintSection> {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	protected BlueprintSection createOnClient(RegistryFriendlyByteBuf extraData) {
 		int entityID = extraData.readVarInt();
 		int section = extraData.readVarInt();

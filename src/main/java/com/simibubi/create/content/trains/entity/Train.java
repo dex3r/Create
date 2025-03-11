@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -22,8 +23,7 @@ import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorageWrap
 
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageWrapper;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -31,15 +31,13 @@ import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedSlottedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import com.simibubi.create.Create;
-import com.simibubi.create.api.contraption.storage.fluid.MountedFluidStorageWrapper;
-import com.simibubi.create.api.contraption.storage.item.MountedItemStorageWrapper;
-import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.trains.bogey.AbstractBogeyBlockEntity;
 import com.simibubi.create.content.trains.entity.Carriage.DimensionalCarriageEntity;
@@ -96,16 +94,7 @@ import net.minecraft.world.level.Level.ExplosionInteraction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
-import net.fabricmc.fabric.api.registry.FuelRegistry;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedSlottedStorage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class Train {
 	public static final StreamCodec<RegistryFriendlyByteBuf, Train> STREAM_CODEC = CatnipLargerStreamCodecs.composite(
@@ -269,7 +258,7 @@ public class Train {
 
 				CombinedSlottedStorage<ItemVariant, ? extends SlottedStorage<ItemVariant>> inv = carriage.storage.getAllItems();
 				MountedFluidStorageWrapper tank = carriage.storage.getFluids();
-				try (Transaction t = TransferUtil.getTransaction()) {
+				try (Transaction t = Transaction.openOuter()) {
 					shouldActivate = StorageUtil.findExtractableResource(inv, variant -> filter.test(level, variant.toStack()), t) != null
 						|| StorageUtil.findExtractableResource(tank, variant -> filter.test(level, new FluidStack(variant, 1)), t) != null;
 				}
@@ -1131,20 +1120,20 @@ public class Train {
 			if (fuelItems == null)
 				continue;
 
-			try (Transaction t = TransferUtil.getTransaction()) {
-				for (StorageView<ItemVariant> view : fuelItems.nonEmptyViews()) {
-					ItemVariant held = view.getResource();
-					Integer burnTime = FuelRegistry.INSTANCE.get(held.getItem());
-					if (burnTime == null || burnTime <= 0)
-						continue;
-					if (view.extract(held, 1, t) != 1)
-						continue;
-					fuelTicks += burnTime;
-					ItemStack containerItem = held.toStack().getRecipeRemainder();
-					if (!containerItem.isEmpty())
-						TransferUtil.insertItem(fuelItems, containerItem);
-					t.commit();
-					return;
+			try (Transaction transaction = Transaction.openOuter()) {
+				ResourceAmount<ItemVariant> extracted = TransferUtil.extractMatching(
+					fuelItems,
+					variant -> FuelRegistry.INSTANCE.get(variant.getItem()) != null,
+					1, transaction
+				);
+
+				if (extracted != null) {
+					ItemVariant resource = extracted.resource();
+					this.fuelTicks += FuelRegistry.INSTANCE.get(resource.getItem());
+					ItemStack containerItem = resource.toStack().getRecipeRemainder();
+					if (!containerItem.isEmpty()) {
+						TransferUtil.insert(fuelItems, containerItem, transaction);
+					}
 				}
 			}
 		}

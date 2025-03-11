@@ -2,7 +2,7 @@ package com.simibubi.create.content.decoration.placard;
 
 import java.util.List;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 import org.joml.Vector3f;
 
@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class PlacardBlockEntity extends SmartBlockEntity {
 

@@ -363,7 +363,7 @@ public class AllArmInteractionPointTypes {
 			if (input.isEmpty()) {
 				return remainder;
 			} else {
-				TransactionCallback.onSuccess(ctx, () ->
+				TransactionSuccessCallback.register(ctx, () ->
 						Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), remainder));
 				return input;
 			}
@@ -493,7 +493,7 @@ public class AllArmInteractionPointTypes {
 			if (insert.getCount() != stack.getCount()) {
 				BlockEntity blockEntity = level.getBlockEntity(pos);
 				if (blockEntity instanceof FunnelBlockEntity funnelBlockEntity) {
-					TransactionCallback.onSuccess(ctx, () -> {
+					TransactionSuccessCallback.register(ctx, () -> {
 						funnelBlockEntity.onTransfer(stack);
 						if (funnelBlockEntity.hasFlap())
 							funnelBlockEntity.flap(true);
@@ -527,7 +527,7 @@ public class AllArmInteractionPointTypes {
 			if (!hasSpace)
 				return stack;
 			ItemStack inserted = stack.copyWithCount(1);
-			TransactionCallback.onSuccess(ctx, () -> campfireBE.placeFood(null, inserted, recipe.get().value().getCookingTime()));
+			TransactionSuccessCallback.register(ctx, () -> campfireBE.placeFood(null, inserted, recipe.get().value().getCookingTime()));
 			ItemStack remainder = stack.copy();
 			remainder.shrink(1);
 			return remainder;
@@ -622,7 +622,7 @@ public class AllArmInteractionPointTypes {
 				return ItemStack.EMPTY;
 			level.updateSnapshots(ctx);
 			level.setBlock(pos, cachedState.setValue(JukeboxBlock.HAS_RECORD, false), 2);
-			TransactionCallback.onSuccess(ctx, () -> {
+			TransactionSuccessCallback.register(ctx, () -> {
 				level.levelEvent(1010, pos, 0);
 				jukeboxBE.clearContent();
 			});
@@ -648,7 +648,7 @@ public class AllArmInteractionPointTypes {
 			if (cachedState.getOptionalValue(RespawnAnchorBlock.CHARGE)
 				.orElse(4) == 4)
 				return stack;
-			TransactionCallback.onSuccess(ctx, () -> RespawnAnchorBlock.charge(null, level, pos, cachedState));
+			TransactionSuccessCallback.register(ctx, () -> RespawnAnchorBlock.charge(null, level, pos, cachedState));
 			ItemStack remainder = stack.copy();
 			remainder.shrink(1);
 			return remainder;

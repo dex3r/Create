@@ -9,6 +9,10 @@ import com.simibubi.create.foundation.item.ItemSlots;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class CreateCodecs {
+	public static final Codec<Long> NON_NEGATIVE_LONG = Codec.LONG.validate(
+		value -> value < 0 ? DataResult.error(() -> "Value is negative: " + value) : DataResult.success(value)
+	);
+
 	public static final Codec<Integer> INT_STR = Codec.STRING.comapFlatMap(
 		string -> {
 			try {

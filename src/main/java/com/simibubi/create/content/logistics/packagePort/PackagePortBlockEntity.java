@@ -35,8 +35,6 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 
-import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
-
 import org.jetbrains.annotations.Nullable;
 
 public abstract class PackagePortBlockEntity extends SmartBlockEntity implements MenuProvider, SidedStorageBlockEntity {

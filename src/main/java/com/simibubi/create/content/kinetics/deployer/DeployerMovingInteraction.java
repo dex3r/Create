@@ -22,7 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class DeployerMovingInteraction extends MovingInteractionBehaviour {
 

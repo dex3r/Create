@@ -15,8 +15,6 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
-
 @ParametersAreNonnullByDefault
 public class SandPaperPolishingRecipe extends ProcessingRecipe<SingleRecipeInput> {
 

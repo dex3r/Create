@@ -44,9 +44,9 @@
     "accessor.StateHolderAccessor",
     "accessor.SystemReportAccessor",
     "accessor.UseOnContextAccessor",
-    "compat.journeymap.MapRendererAccessor",
     "compat.ftbchunks.LargeMapScreenAccessor",
     "compat.ftbchunks.RegionMapPanelAccessor",
+    "compat.journeymap.MapRendererAccessor",
     "datafixer.BlockPosFormatAndRenamesFixMixin",
     "datafixer.ItemStackComponentizationFixMixin",
     "datafixer.V1460Mixin",
@@ -59,7 +59,8 @@
     "fabric.TagAppenderAccessor",
     "fabric.gametest.StructureBlockEntityMixin",
     "fabric.gametest.StructureUtilsMixin",
-    "fabric.infra.ServerPlayerGameModeMixin"
+    "fabric.infra.ServerPlayerGameModeMixin",
+    "fabric.infra.block.SignalGetterMixin"
   ],
   "client": [
     "accessor.AgeableListModelAccessor",
@@ -80,8 +81,8 @@
     "client.HumanoidModelMixin",
     "client.LevelRendererMixin",
     "client.PlayerRendererMixin",
-    "compat.journeymap.JourneyFullscreenMapMixin",
     "compat.JourneyFullscreenMapMixin",
+    "compat.journeymap.JourneyFullscreenMapMixin",
     "fabric.ClientTextTooltipAccessor",
     "fabric.GuiAccessor",
     "fabric.LivingEntityRendererAccessor",

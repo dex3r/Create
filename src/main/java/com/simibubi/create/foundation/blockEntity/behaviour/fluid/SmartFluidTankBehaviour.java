@@ -2,7 +2,7 @@ package com.simibubi.create.foundation.blockEntity.behaviour.fluid;
 
 import java.util.function.Consumer;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -24,12 +24,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 
 public class SmartFluidTankBehaviour extends BlockEntityBehaviour {
 
@@ -215,7 +209,7 @@ public class SmartFluidTankBehaviour extends BlockEntityBehaviour {
 		}
 
 		public long forceFill(FluidStack resource, TransactionContext ctx) {
-			return super.insert(resource.getType(), resource.getAmount(), ctx);
+			return super.insert(resource.getVariant(), resource.getAmount(), ctx);
 		}
 
 		@Override

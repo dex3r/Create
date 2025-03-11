@@ -22,6 +22,9 @@ import net.createmod.ponder.api.element.WorldSectionElement;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -32,8 +35,8 @@ import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class FluidTankScenes {
 
@@ -88,7 +91,7 @@ public class FluidTankScenes {
 		scene.idle(5);
 		FluidStack content = new FluidStack(AllFluids.CHOCOLATE.get()
 			.getSource(), FluidConstants.BUCKET * 16);
-		scene.world().modifyBlockEntity(tankPos, FluidTankBlockEntity.class, be -> TransferUtil.insertFluid(be.getTankInventory(), content));
+		scene.world().modifyBlockEntity(tankPos, FluidTankBlockEntity.class, be -> TransferUtil.insert(be.getTankInventory(), content));
 		scene.idle(25);
 
 		scene.world().moveSection(tankLink, util.vector().of(0, 0, 1), 10);
@@ -105,11 +108,11 @@ public class FluidTankScenes {
 
 		scene.idle(5);
 		scene.world().propagatePipeChange(pumpPos);
-		scene.world().modifyBlockEntity(util.grid().at(2, 0, 5), FluidTankBlockEntity.class, be -> TransferUtil.insertFluid(be.getTankInventory(), content));
+		scene.world().modifyBlockEntity(util.grid().at(2, 0, 5), FluidTankBlockEntity.class, be -> TransferUtil.insert(be.getTankInventory(), content));
 		scene.idle(20);
 
 		for (int i = 0; i < 4; i++) {
-			scene.world().modifyBlockEntity(tankPos, FluidTankBlockEntity.class, be -> TransferUtil.extractAnyFluid(be.getTankInventory(), FluidConstants.BUCKET * 2));
+			scene.world().modifyBlockEntity(tankPos, FluidTankBlockEntity.class, be -> TransferUtil.commit(t -> StorageUtil.extractAny(be.getTankInventory(), FluidConstants.BUCKET * 2, t)));
 			scene.idle(5);
 		}
 
@@ -123,7 +126,7 @@ public class FluidTankScenes {
 		scene.world().modifyBlock(pumpPos, s -> s.setValue(PumpBlock.FACING, Direction.NORTH), true);
 		scene.world().propagatePipeChange(pumpPos);
 		for (int i = 0; i < 4; i++) {
-			scene.world().modifyBlockEntity(tankPos, FluidTankBlockEntity.class, be -> TransferUtil.insert(be.getTankInventory(), content.getType(), FluidConstants.BUCKET * 2));
+			scene.world().modifyBlockEntity(tankPos, FluidTankBlockEntity.class, be -> TransferUtil.insert(be.getTankInventory(), new FluidStack(content.getVariant(), FluidConstants.BUCKET * 2)));
 			scene.idle(5);
 		}
 		scene.idle(40);
@@ -164,7 +167,7 @@ public class FluidTankScenes {
 			.pointAt(util.vector().blockSurface(util.grid().at(2, 2, 2), Direction.WEST));
 		scene.idle(80);
 		scene.world().modifyBlockEntity(util.grid().at(4, 3, 0), SpoutBlockEntity.class,
-			be -> TransferUtil.insertFluid(be.getFluidStorage(null), content));
+				be -> TransferUtil.insert(be.getFluidStorage(null), content));
 
 		scene.world().moveSection(tankLink, util.vector().of(0, 0, 1), 7);
 		scene.world().multiplyKineticSpeed(spoutstuff, -1);

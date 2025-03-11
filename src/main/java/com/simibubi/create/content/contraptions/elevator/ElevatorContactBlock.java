@@ -5,7 +5,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.simibubi.create.infrastructure.fabric.block.WeakPowerCheckingBlock;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -60,7 +60,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.simibubi.create.infrastructure.fabric.block.WeakPowerCheckingBlock;
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 
 public class ElevatorContactBlock extends WrenchableDirectionalBlock

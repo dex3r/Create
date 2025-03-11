@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.foundation.utility.fabric.ListeningStorageView;
-import com.simibubi.create.foundation.utility.fabric.ProcessingIterator;
+import com.simibubi.create.infrastructure.fabric.ProcessingIterator;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -15,9 +15,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class VersionedInventoryWrapper implements Storage<ItemVariant> {
 
@@ -38,7 +35,7 @@ public class VersionedInventoryWrapper implements Storage<ItemVariant> {
 	}
 
 	private void listen(TransactionContext transaction) {
-		TransactionCallback.onSuccess(transaction, this::incrementVersion);
+		TransactionSuccessCallback.register(transaction, this::incrementVersion);
 	}
 
 	public int getId() {

@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
@@ -32,8 +32,8 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerSlot;
 
 public class ToolboxInventory extends ItemStackHandler {
@@ -139,7 +139,7 @@ public class ToolboxInventory extends ItemStackHandler {
 		if (!stack.isEmpty() && filters.get(compartment)
 				.isEmpty()) {
 			filters.set(compartment, stack.copyWithCount(1));
-			if (ctx != null) TransactionCallback.onSuccess(ctx, blockEntity::notifyUpdate);
+			if (ctx != null) TransactionSuccessCallback.register(ctx, blockEntity::notifyUpdate);
 			else notifyUpdate();
 		}
 	}

@@ -20,8 +20,8 @@ import net.minecraft.world.item.ItemStack;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class FluidMovementActorScenes {
 
@@ -50,7 +50,7 @@ public class FluidMovementActorScenes {
 		scene.world().modifyBlock(pumpPos, s -> s.setValue(PumpBlock.FACING, Direction.NORTH), false);
 
 		scene.world().modifyBlockEntity(st, type, be ->
-				TransferUtil.insert(be.getFluidStorage(null), chocolate.getType(), FluidConstants.BUCKET * 10));
+				TransferUtil.insert(be.getFluidStorage(null), chocolate.copyWithAmount(FluidConstants.BUCKET * 10)));
 
 		BlockPos bearing = util.grid().at(5, 1, 2);
 		scene.world().showSection(util.select().position(bearing), Direction.DOWN);
@@ -143,13 +143,13 @@ public class FluidMovementActorScenes {
 								.add(0, 0.5, 0), Pointing.LEFT, 30)
 						.withItem(bucket);
 
-			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.extractAnyFluid(be.getFluidStorage(null), FluidConstants.BUCKET));
-			scene.world().modifyBlockEntity(ct1, type, be -> TransferUtil.insertFluid(be.getFluidStorage(null), chocolate));
+			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.extractAny(be.getFluidStorage(null), FluidConstants.BUCKET));
+			scene.world().modifyBlockEntity(ct1, type, be -> TransferUtil.insert(be.getFluidStorage(null), chocolate));
 			scene.idle(2);
 		}
 		for (int i = 0; i < 8; i++) {
-			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.extractAnyFluid(be.getFluidStorage(null), FluidConstants.BUCKET));
-			scene.world().modifyBlockEntity(ct2, type, be -> TransferUtil.insertFluid(be.getFluidStorage(null), chocolate));
+			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.extractAny(be.getFluidStorage(null), FluidConstants.BUCKET));
+			scene.world().modifyBlockEntity(ct2, type, be -> TransferUtil.insert(be.getFluidStorage(null), chocolate));
 			scene.idle(2);
 		}
 
@@ -164,17 +164,17 @@ public class FluidMovementActorScenes {
 		scene.idle(30);
 
 		for (int i = 0; i < 8; i++) {
-			scene.world().modifyBlockEntity(ct2, type, be -> TransferUtil.extractAnyFluid(be.getFluidStorage(null), FluidConstants.BUCKET));
-			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.insertFluid(be.getFluidStorage(null), chocolate));
+			scene.world().modifyBlockEntity(ct2, type, be -> TransferUtil.extractAny(be.getFluidStorage(null), FluidConstants.BUCKET));
+			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.insert(be.getFluidStorage(null), chocolate));
 			scene.idle(2);
 		}
 		for (int i = 0; i < 16; i++) {
-			scene.world().modifyBlockEntity(ct1, type, be -> TransferUtil.extractAnyFluid(be.getFluidStorage(null), FluidConstants.BUCKET));
-			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.insertFluid(be.getFluidStorage(null), chocolate));
+			scene.world().modifyBlockEntity(ct1, type, be -> TransferUtil.extractAny(be.getFluidStorage(null), FluidConstants.BUCKET));
+			scene.world().modifyBlockEntity(st, type, be -> TransferUtil.insert(be.getFluidStorage(null), chocolate));
 			scene.idle(2);
 		}
 
-		scene.world().modifyBlockEntity(util.grid().at(2, 2, 3), type, be -> TransferUtil.extractAnyFluid(be.getFluidStorage(null), FluidConstants.BUCKET * 8));
+		scene.world().modifyBlockEntity(util.grid().at(2, 2, 3), type, be -> TransferUtil.extractAny(be.getFluidStorage(null), FluidConstants.BUCKET * 8));
 		scene.idle(50);
 
 		scene.overlay().showText(120)

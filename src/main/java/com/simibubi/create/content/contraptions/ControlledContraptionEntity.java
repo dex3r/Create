@@ -151,7 +151,7 @@ public class ControlledContraptionEntity extends AbstractContraptionEntity {
 
 	// Always noop this. Controlled Contraptions are given their position on the client from the BE
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void lerpTo(double pX, double pY, double pZ, float pYRot, float pXRot, int pSteps) {
 	}
 

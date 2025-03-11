@@ -62,8 +62,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -186,7 +186,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 					int amountToReplenish = targetAmount - count;
 
 					if (isOpenInContainer(player)) {
-						try (Transaction t = TransferUtil.getTransaction()) {
+						try (Transaction t = Transaction.openOuter()) {
 							ItemStack extracted = inventory.takeFromCompartment(amountToReplenish, slot, t);
 							if (!extracted.isEmpty()) {
 								ToolboxHandler.unequip(player, hotbarSlot, false);
@@ -196,7 +196,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 						}
 					}
 
-					try (Transaction t = TransferUtil.getTransaction()) {
+					try (Transaction t = Transaction.openOuter()) {
 						ItemStack extracted = inventory.takeFromCompartment(amountToReplenish, slot, t);
 						if (!extracted.isEmpty()) {
 							update = true;
@@ -213,7 +213,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 					ItemStack toDistribute = playerStack.copyWithCount(amountToDeposit);
 
 					if (isOpenInContainer(player)) {
-						try (Transaction t = TransferUtil.getTransaction()) {
+						try (Transaction t = Transaction.openOuter()) {
 							int deposited = amountToDeposit - inventory.distributeToCompartment(toDistribute, slot, t)
 									.getCount();
 							if (deposited > 0) {
@@ -225,7 +225,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 
 					}
 
-					try (Transaction t = TransferUtil.getTransaction()) {
+					try (Transaction t = Transaction.openOuter()) {
 						int deposited = amountToDeposit - inventory.distributeToCompartment(toDistribute, slot, t)
 								.getCount();
 						if (deposited > 0) {
@@ -293,7 +293,7 @@ public class ToolboxBlockEntity extends SmartBlockEntity implements MenuProvider
 		ItemVariant resource = storage.getResource();
 		int amount = (int) storage.getAmount();
 		ItemStack toInsert = ToolboxInventory.cleanItemNBT(resource.toStack(amount));
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			ItemStack remainder = inventory.distributeToCompartment(toInsert, slot, t);
 			int inserted = amount - remainder.getCount();
 			storage.extract(resource, inserted, t);

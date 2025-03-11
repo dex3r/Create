@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 public class StorageInteractionWrapper implements Container {
 	private final SlottedStackStorage storage;

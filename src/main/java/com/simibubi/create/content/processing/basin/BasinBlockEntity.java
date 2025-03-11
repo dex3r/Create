@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.simibubi.create.infrastructure.fabric.util.FluidUnit;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
@@ -76,10 +78,8 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation, SidedStorageBlockEntity {
@@ -110,7 +110,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 
 	public static final int OUTPUT_ANIMATION_TIME = 10;
 	List<LongAttached<ItemStack>> visualizedOutputItems;
-	List<LongAttached<io.github.fabricators_of_create.porting_lib.fluids.FluidStack>> visualizedOutputFluids;
+	List<LongAttached<com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack>> visualizedOutputFluids;
 
 	// fabric: transfer things
 
@@ -129,13 +129,13 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		}
 	};
 
-	record Data(List<ItemStack> spoutputBuffer, List<io.github.fabricators_of_create.porting_lib.fluids.FluidStack> spoutputFluidBuffer) {
+	record Data(List<ItemStack> spoutputBuffer, List<com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack> spoutputFluidBuffer) {
 	}
 
 	public BasinBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		inputInventory = new BasinInventory(9, this);
-		inputInventory.whenContentsChanged(() -> contentsChanged = true);
+		inputInventory.whenContentsChanged($ -> contentsChanged = true);
 		outputInventory = new BasinInventory(9, this).forbidInsertion()
 			.withMaxStackSize(64);
 		areFluidsMoving = false;
@@ -350,7 +350,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			.isVertical())
 			return;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : outputInventory.nonEmptyViews()) {
 				ItemVariant variant = view.getResource();
 				ItemStack stack = variant.toStack(ItemHelper.truncateLong(view.getAmount()));
@@ -360,7 +360,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			}
 			for (StorageView<FluidVariant> view : outputTank.getCapability().nonEmptyViews()) {
 				FluidVariant variant = view.getResource();
-				io.github.fabricators_of_create.porting_lib.fluids.FluidStack stack = new io.github.fabricators_of_create.porting_lib.fluids.FluidStack(view);
+				FluidStack stack = new com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack(view);
 				if (acceptOutputs(ImmutableList.of(), ImmutableList.of(stack), t)) {
 					view.extract(variant, stack.getAmount(), t);
 				}
@@ -433,7 +433,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 
 		boolean update = false;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (Iterator<ItemStack> iterator = spoutputBuffer.iterator(); iterator.hasNext(); ) {
 				ItemStack itemStack = iterator.next();
 				// fabric: cleanup for #599
@@ -481,7 +481,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 				try (Transaction nested = t.openNested()) {
 					long fill = targetTank instanceof SmartFluidTankBehaviour.InternalFluidHandler
 							? ((SmartFluidTankBehaviour.InternalFluidHandler) targetTank).forceFill(fluidStack.copy(), nested)
-							: targetTank.insert(fluidStack.getType(), fluidStack.getAmount(), nested);
+							: targetTank.insert(fluidStack.getVariant(), fluidStack.getAmount(), nested);
 					if (fill != fluidStack.getAmount())
 						break;
 
@@ -556,7 +556,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return spoutputBuffer.isEmpty() && spoutputFluidBuffer.isEmpty();
 	}
 
-	public boolean acceptOutputs(List<ItemStack> outputItems, List<io.github.fabricators_of_create.porting_lib.fluids.FluidStack> outputFluids, TransactionContext ctx) {
+	public boolean acceptOutputs(List<ItemStack> outputItems, List<com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack> outputFluids, TransactionContext ctx) {
 		outputInventory.allowInsertion();
 		outputTank.allowInsertion();
 		boolean acceptOutputsInner = acceptOutputsInner(outputItems, outputFluids, ctx);
@@ -565,7 +565,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return acceptOutputsInner;
 	}
 
-	private boolean acceptOutputsInner(List<ItemStack> outputItems, List<io.github.fabricators_of_create.porting_lib.fluids.FluidStack> outputFluids, TransactionContext ctx) {
+	private boolean acceptOutputsInner(List<ItemStack> outputItems, List<com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack> outputFluids, TransactionContext ctx) {
 		BlockState blockState = getBlockState();
 		if (!(blockState.getBlock() instanceof BasinBlock))
 			return false;
@@ -626,7 +626,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		for (FluidStack fluidStack : outputFluids) {
 			long fill = targetTank instanceof SmartFluidTankBehaviour.InternalFluidHandler
 				? ((SmartFluidTankBehaviour.InternalFluidHandler) targetTank).forceFill(fluidStack.copy(), ctx)
-				: targetTank.insert(fluidStack.getType(), fluidStack.getAmount(), ctx);
+				: targetTank.insert(fluidStack.getVariant(), fluidStack.getAmount(), ctx);
 			if (fill != fluidStack.getAmount())
 				return false;
 		}
@@ -805,19 +805,17 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		}
 
 		FluidUnit unit = AllConfigs.client().fluidUnitType.get();
-		LangBuilder unitSuffix = CreateLang.translate(unit.getTranslationKey());
-		boolean simplify = AllConfigs.client().simplifyFluidUnit.get();
 		for (SmartFluidTankBehaviour behaviour : tanks) {
 			for (TankSegment tank : behaviour.getTanks()) {
-				io.github.fabricators_of_create.porting_lib.fluids.FluidStack fluidStack = tank.getTank().getFluid();
+				FluidStack fluidStack = tank.getTank().getFluid();
 				if (fluidStack.isEmpty())
 					continue;
 				CreateLang.text("")
 						.add(CreateLang.fluidName(fluidStack)
 								.add(CreateLang.text(" "))
 								.style(ChatFormatting.GRAY)
-								.add(CreateLang.text(FluidTextUtil.getUnicodeMillibuckets(fluidStack.getAmount(), unit, simplify))
-										.add(unitSuffix)
+								.add(CreateLang.number(unit.convert(fluidStack.getAmount()))
+										.add(unit.name)
 										.style(ChatFormatting.BLUE)))
 						.forGoggles(tooltip, 1);
 				isEmpty = false;

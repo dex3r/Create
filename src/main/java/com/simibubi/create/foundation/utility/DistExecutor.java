@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.ApiStatus;
 
-import net.neoforged.api.distmarker.Dist;
+import net.fabricmc.api.EnvType;
 import net.neoforged.fml.loading.FMLLoader;
 
 @ApiStatus.Internal

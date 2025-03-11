@@ -39,17 +39,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class ItemDrainBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation, SidedStorageBlockEntity {
 
@@ -275,12 +270,12 @@ public class ItemDrainBlockEntity extends SmartBlockEntity implements IHaveGoggl
 		Pair<FluidStack, ItemStack> emptyItem = GenericItemEmptying.emptyItem(level, heldItem.stack, true);
 		FluidStack fluidFromItem = emptyItem.getFirst();
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			if (processingTicks > 5) {
 				internalTank.allowInsertion();
 				try (Transaction nested = t.openNested()) {
 					if (!fluidFromItem.isEmpty()) {
-						long inserted = internalTank.getPrimaryHandler().insert(fluidFromItem.getType(), fluidFromItem.getAmount(), nested);
+						long inserted = internalTank.getPrimaryHandler().insert(fluidFromItem.getVariant(), fluidFromItem.getAmount(), nested);
 						if (inserted != fluidFromItem.getAmount()) {
 							internalTank.forbidInsertion();
 							processingTicks = FILLING_TIME;
@@ -302,7 +297,7 @@ public class ItemDrainBlockEntity extends SmartBlockEntity implements IHaveGoggl
 			else
 				heldItem = null;
 			internalTank.allowInsertion();
-			TransferUtil.insertFluid(internalTank.getPrimaryHandler(), fluidFromItem);
+			TransferUtil.insert(internalTank.getPrimaryHandler(), fluidFromItem);
 			t.commit();
 			internalTank.forbidInsertion();
 			notifyUpdate();

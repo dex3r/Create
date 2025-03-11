@@ -2,21 +2,17 @@ package com.simibubi.create.foundation.item;
 
 import com.simibubi.create.foundation.blockEntity.SyncedBlockEntity;
 
+import com.simibubi.create.infrastructure.fabric.item.ItemUtils;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import io.github.fabricators_of_create.porting_lib.core.util.INBTSerializable;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
+import java.util.function.Consumer;
 
-public class SmartInventory extends ItemStackHandlerContainer implements INBTSerializable<CompoundTag> {
+public class SmartInventory extends ItemStackHandler {
 
 	protected boolean extractionAllowed;
 	protected boolean insertionAllowed;
@@ -41,7 +37,7 @@ public class SmartInventory extends ItemStackHandlerContainer implements INBTSer
 		return this;
 	}
 
-	public SmartInventory whenContentsChanged(Runnable updateCallback) {
+	public SmartInventory whenContentsChanged(Consumer<Integer> updateCallback) {
 		this.updateCallback = updateCallback;
 		return this;
 	}
@@ -81,8 +77,9 @@ public class SmartInventory extends ItemStackHandlerContainer implements INBTSer
 			try (Transaction t = transaction.openNested()) {
 				long extracted = super.extract(resource, maxAmount, t);
 				t.abort();
-				if (extracted != 0 && resource.getItem().getMaxStackSize() < extracted)
-					maxAmount = resource.getItem().getMaxStackSize();
+				int maxStackSize = ItemUtils.getMaxStackSize(resource);
+				if (extracted != 0 && maxStackSize < extracted)
+					maxAmount = maxStackSize;
 			}
 		}
 		return super.extract(resource, maxAmount, transaction);
@@ -91,23 +88,18 @@ public class SmartInventory extends ItemStackHandlerContainer implements INBTSer
 	// fabric: merge SyncedStackHandler, it exists only to be wrapped, and removing it allows avoiding extending RecipeWrapper
 
 	private SyncedBlockEntity blockEntity;
-	private Runnable updateCallback;
+	private Consumer<Integer> updateCallback;
 
 	@Override
 	protected void onContentsChanged(int slot) {
 		super.onContentsChanged(slot);
 		if (updateCallback != null)
-			updateCallback.run();
+			updateCallback.accept(slot);
 		blockEntity.notifyUpdate();
 	}
 
 	@Override
 	public int getSlotLimit(int slot) {
 		return Math.min(stackNonStackables ? 64 : super.getSlotLimit(slot), stackSize);
-	}
-
-	@Override
-	public int getMaxStackSize() {
-		return Math.min(64, stackSize);
 	}
 }

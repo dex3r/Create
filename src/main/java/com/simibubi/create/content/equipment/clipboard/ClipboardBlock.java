@@ -2,6 +2,8 @@ package com.simibubi.create.content.equipment.clipboard;
 
 import java.util.List;
 
+import com.simibubi.create.infrastructure.fabric.item.ItemUtils;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -76,7 +78,7 @@ public class ClipboardBlock extends FaceAttachedHorizontalDirectionalBlock
 		if (stateForPlacement.getValue(FACE) != AttachFace.WALL)
 			stateForPlacement = stateForPlacement.setValue(FACING, stateForPlacement.getValue(FACING)
 				.getOpposite());
-		return withWater(stateForPlacement, pContext).setValue(WRITTEN, !pContext.getItemInHand().isComponentsPatchEmpty());
+		return withWater(stateForPlacement, pContext).setValue(WRITTEN, !ItemUtils.isComponentsPatchEmpty(pContext.getItemInHand()));
 	}
 
 	@Override

@@ -34,8 +34,8 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 import net.createmod.catnip.animation.LerpedFloat;
@@ -76,8 +76,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 @ParametersAreNonnullByDefault
@@ -394,7 +394,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			if (invVersionTracker.stillWaiting(inv))
 				return false;
 
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				long inserted = inv.insert(ItemVariant.of(item), item.getCount(), t);
 				if (inserted != 0 && !simulate) t.commit();
 				ItemStack held = getItem();
@@ -461,7 +461,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 				if (invVersionTracker.stillWaiting(inv))
 					return false;
 
-				try (Transaction t = TransferUtil.getTransaction()) {
+				try (Transaction t = Transaction.openOuter()) {
 					long inserted = inv.insert(ItemVariant.of(item), item.getCount(), t);
 					if (!simulate) {
 						item = item.copy();

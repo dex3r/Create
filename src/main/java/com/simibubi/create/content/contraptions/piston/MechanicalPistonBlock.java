@@ -9,6 +9,9 @@ import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.createmod.catnip.lang.Lang;
+
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -34,8 +37,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import io.github.fabricators_of_create.porting_lib.tags.Tags.Items;
 
 public class MechanicalPistonBlock extends DirectionalAxisKineticBlock implements IBE<MechanicalPistonBlockEntity> {
 
@@ -69,7 +70,7 @@ public class MechanicalPistonBlock extends DirectionalAxisKineticBlock implement
 			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (player.isShiftKeyDown())
 			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-		if (!stack.is(Tags.Items.SLIMEBALLS)) {
+		if (!stack.is(ConventionalItemTags.SLIME_BALLS)) {
 			if (stack.isEmpty()) {
 				withBlockEntityDo(level, pos, be -> be.assembleNextTick = true);
 				return ItemInteractionResult.SUCCESS;

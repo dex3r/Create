@@ -2,6 +2,8 @@ package com.simibubi.create.content.logistics.packager;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 
+import com.simibubi.create.infrastructure.fabric.transfer.TransactionSuccessCallback;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
@@ -9,13 +11,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
 import net.minecraft.world.item.ItemStack;
-
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 public class PackagerItemHandler implements SingleSlotStorage<ItemVariant> {
 
@@ -34,7 +29,7 @@ public class PackagerItemHandler implements SingleSlotStorage<ItemVariant> {
 			return 0;
 		ItemStack stack = resource.toStack(1);
 		if (blockEntity.unwrapBox(stack, transaction)) {
-			TransactionCallback.onSuccess(transaction, blockEntity::scheduleStockCheck);
+			TransactionSuccessCallback.register(transaction, blockEntity::scheduleStockCheck);
 			return 1;
 		} else {
 			return 0;
@@ -51,7 +46,7 @@ public class PackagerItemHandler implements SingleSlotStorage<ItemVariant> {
 			return 0;
 
 		blockEntity.heldBox = ItemStack.EMPTY;
-		TransactionCallback.onSuccess(transaction, blockEntity::notifyUpdate);
+		TransactionSuccessCallback.register(transaction, blockEntity::notifyUpdate);
 		return box.getCount();
 	}
 

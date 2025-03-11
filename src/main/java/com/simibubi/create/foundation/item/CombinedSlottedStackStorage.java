@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedSlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 public class CombinedSlottedStackStorage<S extends SlottedStackStorage> extends CombinedSlottedStorage<ItemVariant, S> implements SlottedStackStorage {
 	public CombinedSlottedStackStorage(List<S> parts) {

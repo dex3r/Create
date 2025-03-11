@@ -3,6 +3,8 @@ package com.simibubi.create.content.equipment.toolbox;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 
+import com.simibubi.create.infrastructure.fabric.item.ItemUtils;
+
 import io.github.fabricators_of_create.porting_lib.util.TagUtil;
 
 import net.minecraft.core.HolderLookup;
@@ -73,7 +75,7 @@ public class ToolboxDyeingRecipe extends CustomRecipe {
 
 		ItemStack dyedToolbox = AllBlocks.TOOLBOXES.get(color)
 			.asStack();
-		if (!toolbox.isComponentsPatchEmpty()) {
+		if (!ItemUtils.isComponentsPatchEmpty(toolbox)) {
 			dyedToolbox.applyComponents(toolbox.getComponentsPatch());
 		}
 

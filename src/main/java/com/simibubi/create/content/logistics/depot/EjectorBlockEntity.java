@@ -83,9 +83,9 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+
 
 public class EjectorBlockEntity extends KineticBlockEntity implements SidedStorageBlockEntity {
 
@@ -289,7 +289,7 @@ public class EjectorBlockEntity extends KineticBlockEntity implements SidedStora
 		depotBehaviour.incoming.clear();
 
 		ItemStackHandler outputs = depotBehaviour.processingOutputBuffer;
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<ItemVariant> view : outputs.nonEmptyViews()) {
 				ItemVariant var = view.getResource();
 				long extracted = view.extract(view.getResource(), 64, t);

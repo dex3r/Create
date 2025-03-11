@@ -167,7 +167,7 @@ public class PotatoCannonItem extends ProjectileWeaponItem implements CustomArmP
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) {

@@ -1,5 +1,6 @@
 package com.simibubi.create.content.fluids.tank;
 
+import java.util.OptionalLong;
 import java.util.function.Consumer;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -18,6 +19,10 @@ import net.createmod.catnip.lang.Lang;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -58,13 +63,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
 import io.github.fabricators_of_create.porting_lib.block.CustomSoundTypeBlock;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankBlockEntity>, CustomSoundTypeBlock {
 
@@ -179,12 +182,14 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 		if (be == null)
 			return ItemInteractionResult.FAIL;
 
-		Direction direction = ray.getDirection();
-		Storage<FluidVariant> fluidTank = be.getFluidStorage(direction);
-		if (fluidTank == null)
+		Direction direction = hitResult.getDirection();
+		Storage<FluidVariant> tankCapability = be.getFluidStorage(direction);
+		if (tankCapability == null)
 			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-		io.github.fabricators_of_create.porting_lib.fluids.FluidStack prevFluidInTank = TransferUtil.firstCopyOrEmpty(fluidTank);
+		FluidStack prevFluidInTank = TransferUtil.simulate(
+			t -> FluidStack.of(StorageUtil.extractAny(tankCapability, Long.MAX_VALUE, t))
+		);
 
 		if (FluidHelper.tryEmptyItemIntoBE(level, player, hand, stack, be, direction))
 			exchange = FluidExchange.ITEM_TO_TANK;
@@ -200,7 +205,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 
 		SoundEvent soundevent = null;
 		BlockState fluidState = null;
-		io.github.fabricators_of_create.porting_lib.fluids.FluidStack fluidInTank = TransferUtil.firstOrEmpty(fluidTank);
+		FluidStack fluidInTank = prevFluidInTank.copy();
 
 		if (exchange == FluidExchange.ITEM_TO_TANK) {
 			if (creative && !onClient) {
@@ -224,7 +229,7 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 			Fluid fluid = prevFluidInTank.getFluid();
 			fluidState = fluid.defaultFluidState()
 				.createLegacyBlock();
-			soundevent = FluidVariantAttributes.getFillSound(FluidVariant.of(fluid));
+			soundevent = FluidVariantAttributes.getFillSound(prevFluidInTank.getVariant());
 		}
 
 		if (soundevent != null && !onClient) {
@@ -243,9 +248,10 @@ public class FluidTankBlock extends Block implements IWrenchable, IBE<FluidTankB
 					if (fluidState != null && onClient) {
 						BlockParticleOption blockParticleData =
 							new BlockParticleOption(ParticleTypes.BLOCK, fluidState);
-						float fluidLevel = (float) fluidInTank.getAmount() / TransferUtil.firstCapacity(fluidTank);
+						long capacity = TransferUtil.firstCapacity(tankCapability).orElseThrow();
+						float fluidLevel = (float) fluidInTank.getAmount() / capacity;
 
-						boolean reversed = FluidVariantAttributes.isLighterThanAir(fluidInTank.getType());
+						boolean reversed = FluidVariantAttributes.isLighterThanAir(fluidInTank.getVariant());
 						if (reversed)
 							fluidLevel = 1 - fluidLevel;
 

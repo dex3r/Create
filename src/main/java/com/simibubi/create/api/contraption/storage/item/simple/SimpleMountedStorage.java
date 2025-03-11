@@ -2,6 +2,10 @@ package com.simibubi.create.api.contraption.storage.item.simple;
 
 import java.util.function.Function;
 
+import com.mojang.serialization.MapCodec;
+
+import com.simibubi.create.foundation.codec.CreateCodecs;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
@@ -9,7 +13,6 @@ import com.simibubi.create.AllMountedStorageTypes;
 import com.simibubi.create.AllTags;
 import com.simibubi.create.api.contraption.storage.item.MountedItemStorageType;
 import com.simibubi.create.api.contraption.storage.item.WrapperMountedItemStorage;
-import com.simibubi.create.foundation.utility.CreateCodecs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +27,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 /**
  * Widely-applicable mounted storage implementation.
@@ -82,7 +85,7 @@ public class SimpleMountedStorage extends WrapperMountedItemStorage<ItemStackHan
 		return this.getSlotCount() == storage.getSlotCount();
 	}
 
-	public static <T extends SimpleMountedStorage> Codec<T> codec(Function<ItemStackHandler, T> factory) {
+	public static <T extends SimpleMountedStorage> MapCodec<T> codec(Function<ItemStackHandler, T> factory) {
 		return CreateCodecs.ITEM_STACK_HANDLER.xmap(factory, storage -> storage.wrapped).fieldOf("value");
 	}
 }

@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class ArmScenes {
 
@@ -355,7 +355,7 @@ public class ArmScenes {
 			scene.world().flapFunnel(funnelPos, false);
 			scene.world().instructArm(armPos, Phase.SEARCH_INPUTS, i == 3 ? ItemStack.EMPTY : sand, -1);
 			scene.world().modifyBlockEntity(funnelPos.north(), MechanicalCrafterBlockEntity.class, mct ->
-					TransferUtil.insert(mct.getInventory(), ItemVariant.of(sand), sand.getCount()));
+					TransferUtil.insert(mct.getInventory(), sand));
 			scene.idle(10);
 		}
 
@@ -375,7 +375,7 @@ public class ArmScenes {
 			scene.world().flapFunnel(funnelPos, false);
 			scene.world().instructArm(armPos, Phase.SEARCH_INPUTS, i == 4 ? ItemStack.EMPTY : sulphur, -1);
 			scene.world().modifyBlockEntity(funnelPos.north(), MechanicalCrafterBlockEntity.class, mct ->
-					TransferUtil.insert(mct.getInventory(), ItemVariant.of(sulphur), sulphur.getCount()));
+					TransferUtil.insert(mct.getInventory(), sulphur));
 			scene.idle(10);
 		}
 

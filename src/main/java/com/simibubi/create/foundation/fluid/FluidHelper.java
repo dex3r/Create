@@ -1,13 +1,15 @@
 package com.simibubi.create.foundation.fluid;
 
-import javax.annotation.Nullable;
-
 import com.simibubi.create.content.fluids.tank.CreativeFluidTankBlockEntity;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.fluids.transfer.GenericItemFilling;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 
 import net.createmod.catnip.data.Pair;
+
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -25,8 +27,8 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class FluidHelper {
 
@@ -64,11 +66,11 @@ public class FluidHelper {
 	}
 
 	public static SoundEvent getFillSound(FluidStack fluid) {
-		return FluidVariantAttributes.getFillSound(fluid.getType());
+		return FluidVariantAttributes.getFillSound(fluid.getVariant());
 	}
 
 	public static SoundEvent getEmptySound(FluidStack fluid) {
-		return FluidVariantAttributes.getEmptySound(fluid.getType());
+		return FluidVariantAttributes.getEmptySound(fluid.getVariant());
 	}
 
 	public static boolean hasBlockState(Fluid fluid) {
@@ -119,8 +121,8 @@ public class FluidHelper {
 		if (worldIn.isClientSide)
 			return true;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
-			long inserted = tank.insert(fluidStack.getType(), fluidStack.getAmount(), t);
+		try (Transaction t = Transaction.openOuter()) {
+			long inserted = tank.insert(fluidStack.getVariant(), fluidStack.getAmount(), t);
 			if (inserted != fluidStack.getAmount())
 				return false;
 
@@ -147,36 +149,34 @@ public class FluidHelper {
 
 		Storage<FluidVariant> tank = FluidStorage.SIDED.find(world, be.getBlockPos(), null, be, side);
 
-		if (capability == null)
+		if (tank == null)
 			return false;
 
-		try (Transaction t = TransferUtil.getTransaction()) {
-			for (FluidStack fluid : TransferUtil.getAllFluids(tank)) {
-				if (fluid.isEmpty())
-					continue;
-				long requiredAmountForItem = GenericItemFilling.getRequiredAmountForItem(world, heldItem, fluid.copy());
-				if (requiredAmountForItem == -1)
-					continue;
-				if (requiredAmountForItem > fluid.getAmount())
-					continue;
+		for (StorageView<FluidVariant> view : tank.nonEmptyViews()) {
+			FluidStack fluid = new FluidStack(view);
+			long requiredAmountForItem = GenericItemFilling.getRequiredAmountForItem(world, heldItem, fluid.copy());
+			if (requiredAmountForItem == -1)
+				continue;
+			if (requiredAmountForItem > fluid.getAmount())
+				continue;
 
-				if (world.isClientSide)
-					return true;
-
-				if (player.isCreative() || be instanceof CreativeFluidTankBlockEntity)
-					heldItem = heldItem.copy();
-				ItemStack out = GenericItemFilling.fillItem(world, requiredAmountForItem, heldItem, fluid.copy());
-
-				FluidStack copy = fluid.copy();
-				copy.setAmount(requiredAmountForItem);
-				capability.extract(copy.getType(), copy.getAmount(), t);
-				t.commit();
-
-				if (!player.isCreative())
-					player.getInventory().placeItemBackInInventory(out);
-				be.notifyUpdate();
+			if (world.isClientSide)
 				return true;
+
+			if (player.isCreative() || be instanceof CreativeFluidTankBlockEntity)
+				heldItem = heldItem.copy();
+			ItemStack out = GenericItemFilling.fillItem(world, requiredAmountForItem, heldItem, fluid.copy());
+
+			try (Transaction t = Transaction.openOuter()) {
+				tank.extract(fluid.getVariant(), requiredAmountForItem, t);
+				t.commit();
 			}
+
+			if (!player.isCreative())
+				player.getInventory()
+					.placeItemBackInInventory(out);
+			be.notifyUpdate();
+			return true;
 		}
 
 		return false;

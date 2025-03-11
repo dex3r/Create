@@ -33,7 +33,7 @@ public interface ISyncPersistentData {
 		}
 
 		@Override
-		@OnlyIn(Dist.CLIENT)
+		@Environment(EnvType.CLIENT)
 		public void handle(LocalPlayer player) {
 			Entity entityByID = player.clientLevel.getEntity(entityId);
 			CompoundTag data = entityByID.getPersistentData();

@@ -109,12 +109,6 @@ public class InputEvents {
 				: InteractionResult.PASS;
 	}
 
-		CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> {
-			if (ChainPackageInteractionHandler.onUse())
-				event.setCanceled(true);
-		});
-	}
-
 public static boolean onPick(Minecraft mc, HitResult hit) {
 	if (mc.screen != null)
 		return false;

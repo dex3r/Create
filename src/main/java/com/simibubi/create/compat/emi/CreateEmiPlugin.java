@@ -6,8 +6,11 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllCreativeModeTabs;
+import com.simibubi.create.AllCreativeModeTabs.RegistrateDisplayItemsGenerator;
 import com.simibubi.create.AllFluids;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllMenuTypes;
@@ -107,9 +110,9 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 import io.github.fabricators_of_create.porting_lib.transfer.MutableContainerItemContext;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class CreateEmiPlugin implements EmiPlugin {
 	public static final Map<ResourceLocation, EmiRecipeCategory> ALL = new LinkedHashMap<>();
@@ -143,12 +146,13 @@ public class CreateEmiPlugin implements EmiPlugin {
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
 	public void register(EmiRegistry registry) {
+		Predicate<Item> isHidden = RegistrateDisplayItemsGenerator.makeExclusionPredicate();
 		registry.removeEmiStacks(s -> {
 			Object key = s.getKey();
 			Item item = s.getItemStack().getItem();
 			if (key instanceof TagDependentIngredientItem tagDependent && tagDependent.shouldHide())
 				return true;
-			if (HiddenItems.getHiddenPredicate().test(item))
+			if (isHidden.test(item))
 				return true;
 			return key instanceof VirtualFluid;
 		});
@@ -377,8 +381,8 @@ public class CreateEmiPlugin implements EmiPlugin {
 					Storage<FluidVariant> storage = ctx.find(FluidStorage.ITEM);
 					if (storage != null && GenericItemFilling.isFluidHandlerValid(copy, storage)) {
 						long inserted = 0;
-						try (Transaction t = TransferUtil.getTransaction()) {
-							inserted = storage.insert(fs.getType(), fs.getAmount(), t);
+						try (Transaction t = Transaction.openOuter()) {
+							inserted = storage.insert(fs.getVariant(), fs.getAmount(), t);
 							t.commit();
 						}
 						fs.setAmount(inserted);

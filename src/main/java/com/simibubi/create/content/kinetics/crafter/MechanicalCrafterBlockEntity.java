@@ -85,7 +85,7 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 				return 0;
 			long inserted = super.insert(resource, maxAmount, transaction);
 			if (inserted != 0)
-				TransactionCallback.onSuccess(transaction, () -> blockEntity.getLevel()
+				TransactionSuccessCallback.register(transaction, () -> blockEntity.getLevel()
 						.playSound(null, blockEntity.getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, .25f,
 								.5f));
 			return inserted;

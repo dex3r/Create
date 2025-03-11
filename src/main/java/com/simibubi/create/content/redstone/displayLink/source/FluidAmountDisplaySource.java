@@ -9,8 +9,8 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.foundation.utility.FluidFormatter;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 
@@ -33,8 +33,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 
 public class FluidAmountDisplaySource extends SingleLineDisplaySource {
@@ -53,7 +53,7 @@ public class FluidAmountDisplaySource extends SingleLineDisplaySource {
 			return EMPTY_LINE;
 
 		long collected = 0;
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<FluidVariant> view : handler.nonEmptyViews()) {
 				FluidStack stack = new FluidStack(view);
 				if (!filteringBehaviour.test(stack))

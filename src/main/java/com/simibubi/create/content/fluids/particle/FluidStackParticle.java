@@ -20,11 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 
-import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRenderHandler;
-import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 public class FluidStackParticle extends TextureSheetParticle {
 	private final float uo;
@@ -46,13 +42,13 @@ public class FluidStackParticle extends TextureSheetParticle {
 
 		this.fluid = fluid;
 		FluidVariantRenderHandler handler = FluidVariantRendering.getHandlerOrDefault(fluid.getFluid());
-		this.setSprite(handler.getSprites(fluid.getType())[0]);
+		this.setSprite(handler.getSprites(fluid.getVariant())[0]);
 
 		this.gravity = 1.0F;
 		this.rCol = 0.8F;
 		this.gCol = 0.8F;
 		this.bCol = 0.8F;
-		int color = handler.getColor(fluid.getType(), world, BlockPos.containing(x, y, z));
+		int color = handler.getColor(fluid.getVariant(), world, BlockPos.containing(x, y, z));
 		multiplyColor(color);
 
 		this.xd = vx;
@@ -69,7 +65,7 @@ public class FluidStackParticle extends TextureSheetParticle {
 		int brightnessForRender = super.getLightColor(p_189214_1_);
 		int skyLight = brightnessForRender >> 20;
 		int blockLight = (brightnessForRender >> 4) & 0xf;
-		blockLight = Math.max(blockLight, FluidVariantAttributes.getLuminance(fluid.getType()));
+		blockLight = Math.max(blockLight, FluidVariantAttributes.getLuminance(fluid.getVariant()));
 		return (skyLight << 20) | (blockLight << 4);
 	}
 

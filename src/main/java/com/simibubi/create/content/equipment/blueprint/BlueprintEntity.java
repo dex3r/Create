@@ -19,6 +19,10 @@ import com.simibubi.create.foundation.utility.IInteractionChecker;
 
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.math.VecHelper;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -66,8 +70,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class BlueprintEntity extends HangingEntity
 	implements IEntityWithComplexSpawn, SpecialEntityItemRequirement, ISyncPersistentData, IInteractionChecker {
@@ -320,7 +323,7 @@ public class BlueprintEntity extends HangingEntity
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public void lerpTo(double pX, double pY, double pZ, float pYRot, float pXRot, int pSteps) {
 		BlockPos blockpos =
 				this.pos.offset(BlockPos.containing(pX - this.getX(), pY - this.getY(), pZ - this.getZ()));
@@ -361,7 +364,7 @@ public class BlueprintEntity extends HangingEntity
 			Optional<RecipeHolder<CraftingRecipe>> recipe = Optional.empty();
 
 			do {
-				try (Transaction t = TransferUtil.getTransaction()) {
+				try (Transaction t = Transaction.openOuter()) {
 					Map<Integer, ItemStack> craftingGrid = new HashMap<>();
 					boolean success = true;
 

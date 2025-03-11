@@ -1,6 +1,6 @@
 package com.simibubi.create.content.logistics.stockTicker;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -22,9 +22,9 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlotItemHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlottedStackStorage;
 
 public class StockKeeperCategoryMenu extends MenuBase<StockTickerBlockEntity> {
 

@@ -15,8 +15,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.SlotItemHandler;
 
 public class FactoryPanelSetItemMenu extends GhostItemMenu<FactoryPanelBehaviour> {
 
@@ -43,7 +43,7 @@ public class FactoryPanelSetItemMenu extends GhostItemMenu<FactoryPanelBehaviour
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	protected FactoryPanelBehaviour createOnClient(RegistryFriendlyByteBuf extraData) {
 		FactoryPanelPosition pos = FactoryPanelPosition.STREAM_CODEC.decode(extraData);
 		return FactoryPanelBehaviour.at(Minecraft.getInstance().level, pos);

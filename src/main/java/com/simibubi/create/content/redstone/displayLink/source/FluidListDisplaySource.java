@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 
@@ -39,17 +38,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 
 public class FluidListDisplaySource extends ValueListDisplaySource {
 
@@ -70,7 +59,7 @@ public class FluidListDisplaySource extends ValueListDisplaySource {
 		Map<Fluid, Long> fluids = new HashMap<>();
 		Map<Fluid, FluidStack> fluidNames = new HashMap<>();
 
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			for (StorageView<FluidVariant> view : handler.nonEmptyViews()) {
 				FluidStack stack = new FluidStack(view);
 				if (!filteringBehaviour.test(stack))
@@ -87,7 +76,7 @@ public class FluidListDisplaySource extends ValueListDisplaySource {
 				.limit(maxRows)
 				.map(entry -> LongAttached.with(
 						entry.getValue(),
-						FluidVariantAttributes.getName(fluidNames.get(entry.getKey()).getType()).copy()
+						FluidVariantAttributes.getName(fluidNames.get(entry.getKey()).getVariant()).copy()
 				));
 	}
 

@@ -57,7 +57,7 @@ public interface ItemAttribute {
 
 	ItemAttributeType getType();
 
-	@OnlyIn(value = Dist.CLIENT)
+	@Environment(value = EnvType.CLIENT)
 	default MutableComponent format(boolean inverted) {
 		return CreateLang.translateDirect("item_attributes." + getTranslationKey() + (inverted ? ".inverted" : ""),
 			getTranslationParameters());

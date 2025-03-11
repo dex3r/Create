@@ -43,8 +43,8 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 @GameTestGroup(path = "fluids")
 public class TestFluids {
@@ -223,7 +223,7 @@ public class TestFluids {
 		List<BlockPos> chests = List.of(new BlockPos(6, 4, 2), new BlockPos(6, 4, 3));
 		List<BlockPos> deployers = chests.stream().map(pos -> pos.below(2)).toList();
 		helper.runAfterDelay(3, () -> chests.forEach(chest ->
-				planks.forEach(plank -> TransferUtil.insertItem(helper.itemStorageAt(chest), new ItemStack(plank)))
+				planks.forEach(plank -> TransferUtil.insert(helper.itemStorageAt(chest), new ItemStack(plank)))
 		));
 
 		BlockPos smallWheel = new BlockPos(4, 2, 2);
@@ -247,7 +247,7 @@ public class TestFluids {
 
 			// next item
 			planks.remove(0);
-			deployers.forEach(pos -> TransferUtil.clearStorage(helper.itemStorageAt(pos)));
+			deployers.forEach(pos -> TransferUtil.clear(helper.itemStorageAt(pos)));
 			if (!planks.isEmpty())
 				helper.fail("Not all planks have been consumed");
 		});

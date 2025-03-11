@@ -27,11 +27,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-
 public class BogeyStyle {
 	public final ResourceLocation id;
 	public final ResourceLocation cycleGroup;

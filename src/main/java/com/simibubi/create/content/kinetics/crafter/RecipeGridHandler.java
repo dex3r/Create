@@ -35,7 +35,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+
 
 public class RecipeGridHandler {
 

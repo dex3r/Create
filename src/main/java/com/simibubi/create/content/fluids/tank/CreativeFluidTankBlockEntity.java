@@ -6,19 +6,13 @@ import java.util.function.Consumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.AllBlockEntityTypes;
+import com.simibubi.create.foundation.codec.CreateCodecs;
 import com.simibubi.create.foundation.fluid.SmartFluidTank;
-import com.simibubi.create.foundation.utility.CreateCodecs;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
-import net.minecraft.util.ExtraCodecs;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -28,8 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidStack;
+import com.simibubi.create.infrastructure.fabric.transfer.fluid.FluidTank;
 
 public class CreativeFluidTankBlockEntity extends FluidTankBlockEntity {
 
@@ -81,7 +75,7 @@ public class CreativeFluidTankBlockEntity extends FluidTankBlockEntity {
 		public void setContainedFluid(FluidStack fluidStack) {
 			FluidStack fluid = fluidStack.copy();
 			if (!fluidStack.isEmpty())
-				fluid.setAmount(getCapacity(fluid.getType()));
+				fluid.setAmount(getCapacity());
 			setFluid(fluid);
 			onContentsChanged();
 		}

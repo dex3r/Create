@@ -1,4 +1,4 @@
-package com.simibubi.create.foundation.utility.fabric;
+package com.simibubi.create.infrastructure.fabric;
 
 import java.util.Iterator;
 import java.util.function.Consumer;

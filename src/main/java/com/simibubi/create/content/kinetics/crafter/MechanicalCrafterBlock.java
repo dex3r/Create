@@ -41,8 +41,8 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class MechanicalCrafterBlock extends HorizontalKineticBlock
 	implements IBE<MechanicalCrafterBlockEntity>, ICogWheel {
@@ -197,7 +197,7 @@ public class MechanicalCrafterBlock extends HorizontalKineticBlock
 				Storage<ItemVariant> capability = crafter.getItemStorage(null);
 				if (capability == null)
 					return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-				try (Transaction t = TransferUtil.getTransaction()) {
+				try (Transaction t = Transaction.openOuter()) {
 					long inserted = capability.insert(ItemVariant.of(heldItem), heldItem.getCount(), t);
 					if (inserted <= 0)
 						return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;

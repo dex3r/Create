@@ -2,6 +2,8 @@ package com.simibubi.create.content.processing.basin;
 
 import com.simibubi.create.foundation.item.SmartInventory;
 
+import com.simibubi.create.infrastructure.fabric.item.ItemUtils;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -32,7 +34,7 @@ public class BasinInventory extends SmartInventory {
 			long contained = this.extract(resource, Long.MAX_VALUE, test);
 			if (contained != 0) {
 				// already have this item. can we stack?
-				long maxStackSize = Math.min(stackSize, resource.getItem().getMaxStackSize());
+				long maxStackSize = Math.min(stackSize, ItemUtils.getMaxStackSize(resource));
 				long space = Math.max(0, maxStackSize - contained);
 				if (space <= 0) {
 					// nope.

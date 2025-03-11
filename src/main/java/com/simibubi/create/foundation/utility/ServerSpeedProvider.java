@@ -55,7 +55,7 @@ public class ServerSpeedProvider {
 		public static final StreamCodec<ByteBuf, Packet> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
 		@Override
-		@OnlyIn(Dist.CLIENT)
+		@Environment(EnvType.CLIENT)
 		public void handle(LocalPlayer player) {
 			if (!initialized) {
 				initialized = true;

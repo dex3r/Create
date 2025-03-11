@@ -16,7 +16,7 @@ import com.simibubi.create.AllKeys;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 import net.createmod.catnip.gui.ScreenOpener;
 import net.createmod.catnip.nbt.NBTHelper;
@@ -52,7 +52,7 @@ import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 import net.fabricmc.fabric.api.entity.EntityPickInteractionAware;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class ToolboxHandlerClient {
 
@@ -105,7 +105,7 @@ public class ToolboxHandlerClient {
 
 		for (ToolboxBlockEntity toolboxBlockEntity : toolboxes) {
 			ToolboxInventory inventory = toolboxBlockEntity.inventory;
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				for (int comp = 0; comp < 8; comp++) {
 					ItemStack inSlot = inventory.takeFromCompartment(1, comp, t);
 					if (inSlot.isEmpty())
@@ -115,9 +115,10 @@ public class ToolboxHandlerClient {
 					if (!ItemStack.matches(inSlot, result))
 						continue;
 
-				CatnipServices.NETWORK.sendToServer(
-					new ToolboxEquipPacket(toolboxBlockEntity.getBlockPos(), comp, player.getInventory().selected));
-				return true;
+					CatnipServices.NETWORK.sendToServer(
+						new ToolboxEquipPacket(toolboxBlockEntity.getBlockPos(), comp, player.getInventory().selected));
+					return true;
+				}
 			}
 		}
 

@@ -38,7 +38,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import io.github.fabricators_of_create.porting_lib.item.UseFirstBehaviorItem;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
 
 public class LinkedControllerItem extends Item implements MenuProvider, UseFirstBehaviorItem {

@@ -49,7 +49,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import com.simibubi.create.infrastructure.fabric.transfer.TransferUtil;
 
 public class BasinBlock extends Block implements IBE<BasinBlockEntity>, IWrenchable {
 
@@ -134,7 +134,7 @@ public class BasinBlock extends Block implements IBE<BasinBlockEntity>, IWrencha
 			// Tossed items bypass the quarter-stack limit
 			be.inputInventory.withMaxStackSize(64);
 			ItemStack stack = itemEntity.getItem().copy();
-			try (Transaction t = TransferUtil.getTransaction()) {
+			try (Transaction t = Transaction.openOuter()) {
 				long inserted = be.inputInventory.insert(ItemVariant.of(stack), stack.getCount(), t);
 				t.commit();
 

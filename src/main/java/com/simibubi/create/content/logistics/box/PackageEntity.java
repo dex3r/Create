@@ -53,7 +53,7 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import io.github.fabricators_of_create.porting_lib.entity.IEntityAdditionalSpawnData;
 import io.github.fabricators_of_create.porting_lib.entity.PortingLibEntity;
 import io.github.fabricators_of_create.porting_lib.entity.events.LivingAttackEvent;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import com.simibubi.create.infrastructure.fabric.transfer.item.ItemStackHandler;
 
 public class PackageEntity extends LivingEntity implements IEntityWithComplexSpawn {
 

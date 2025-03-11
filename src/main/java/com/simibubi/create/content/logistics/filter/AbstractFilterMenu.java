@@ -34,7 +34,7 @@ public abstract class AbstractFilterMenu extends GhostItemMenu<ItemStack> {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	protected ItemStack createOnClient(RegistryFriendlyByteBuf extraData) {
 		return ItemStack.STREAM_CODEC.decode(extraData);
 	}

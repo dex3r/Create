@@ -55,8 +55,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
+import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
 
 public class AllFanProcessingTypes {
 	public static final BlastingType BLASTING = register("blasting", new BlastingType());

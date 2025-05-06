@@ -9,7 +9,7 @@ import com.simibubi.create.AllEntityTypes;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.box.PackageStyles.PackageStyle;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 
 import net.createmod.catnip.data.Glob;
 import net.createmod.catnip.math.VecHelper;
@@ -41,8 +41,11 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 
 public class PackageItem extends Item {
 

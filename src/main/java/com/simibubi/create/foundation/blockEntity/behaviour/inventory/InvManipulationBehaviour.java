@@ -2,18 +2,28 @@ package com.simibubi.create.foundation.blockEntity.behaviour.inventory;
 
 import java.util.function.Predicate;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.base.Predicates;
+import com.simibubi.create.api.packager.InventoryIdentifier;
+import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.item.ItemHelper.ExtractionCountMode;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraft.world.level.Level;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class InvManipulationBehaviour extends CapManipulationBehaviourBase<ItemVariant, InvManipulationBehaviour> {
 
@@ -44,7 +54,7 @@ public class InvManipulationBehaviour extends CapManipulationBehaviourBase<ItemV
 
 	@Nullable
 	public IdentifiedInventory getIdentifiedInventory() {
-		IItemHandler inventory = this.getInventory();
+		Storage<ItemVariant> inventory = this.getInventory();
 		if (inventory == null)
 			return null;
 

@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.simibubi.create.api.unpacking.UnpackingHandler;
+import com.simibubi.create.api.packager.unpacking.UnpackingHandler;
 import com.simibubi.create.content.kinetics.crafter.ConnectedInputHandler.ConnectedInput;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlockEntity;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlockEntity.Inventory;
 import com.simibubi.create.content.logistics.BigItemStack;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,7 +18,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 
 public enum CrafterUnpackingHandler implements UnpackingHandler {
 	INSTANCE;

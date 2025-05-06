@@ -2,9 +2,9 @@ package com.simibubi.create.content.logistics.packager.repackager;
 
 import java.util.List;
 
+import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.crate.BottomlessItemHandler;
-import com.simibubi.create.content.logistics.packager.PackageDefragmenter;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagerItemHandler;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
@@ -13,8 +13,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 public class RepackagerBlockEntity extends PackagerBlockEntity {
 

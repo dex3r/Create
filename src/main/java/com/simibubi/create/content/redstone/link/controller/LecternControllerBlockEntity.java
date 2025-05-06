@@ -7,6 +7,7 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.utility.fabric.ReachUtil;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -23,10 +24,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.fml.DistExecutor;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 
 public class LecternControllerBlockEntity extends SmartBlockEntity {
 

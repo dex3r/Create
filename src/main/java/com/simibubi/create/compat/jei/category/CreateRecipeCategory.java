@@ -1,6 +1,6 @@
 package com.simibubi.create.compat.jei.category;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -9,19 +9,17 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.simibubi.create.AllFluids;
-import com.simibubi.create.content.fluids.potion.PotionFluidHandler;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import mezz.jei.api.forge.ForgeTypes;
+import mezz.jei.api.fabric.constants.FabricTypes;
+import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotRichTooltipCallback;
-import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
@@ -32,11 +30,13 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.material.Fluid;
 
-import net.minecraftforge.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault

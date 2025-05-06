@@ -15,10 +15,11 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.google.common.cache.Cache;
 import com.simibubi.create.Create;
+import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -31,8 +32,8 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 
 public class LogisticallyLinkedBehaviour extends BlockEntityBehaviour {
 
@@ -182,7 +183,7 @@ public class LogisticallyLinkedBehaviour extends BlockEntityBehaviour {
 
 	public InventorySummary getSummary(@Nullable IdentifiedInventory ignoredHandler) {
 		if (blockEntity instanceof PackagerLinkBlockEntity plbe)
-			return plbe.fetchSummaryFromPackager(identifier);
+			return plbe.fetchSummaryFromPackager(ignoredHandler);
 		return InventorySummary.EMPTY;
 	}
 

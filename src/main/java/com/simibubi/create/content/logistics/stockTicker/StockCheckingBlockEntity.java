@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
@@ -14,7 +15,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.IItemHandler;
 
 public abstract class StockCheckingBlockEntity extends SmartBlockEntity {
 

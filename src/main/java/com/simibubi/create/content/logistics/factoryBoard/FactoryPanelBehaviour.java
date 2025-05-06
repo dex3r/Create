@@ -37,6 +37,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -46,11 +47,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
-
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkHooks;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
@@ -77,6 +74,12 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
 
 public class FactoryPanelBehaviour extends FilteringBehaviour implements MenuProvider {
 

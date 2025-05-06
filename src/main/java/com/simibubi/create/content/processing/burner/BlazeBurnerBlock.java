@@ -1,7 +1,5 @@
 package com.simibubi.create.content.processing.burner;
 
-import java.util.Random;
-
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -14,6 +12,7 @@ import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
 import com.simibubi.create.content.logistics.stockTicker.StockTickerInteractionHandler;
 import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.utility.AdventureUtil;
 
 import net.createmod.catnip.lang.Lang;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -21,6 +20,7 @@ import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -52,9 +52,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.FakePlayer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault

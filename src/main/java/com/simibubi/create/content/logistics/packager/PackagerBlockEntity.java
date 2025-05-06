@@ -7,10 +7,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
-import com.simibubi.create.api.unpacking.UnpackingHandler;
+import com.simibubi.create.api.packager.unpacking.UnpackingHandler;
 import com.simibubi.create.content.contraptions.actors.psi.PortableStorageInterfaceBlockEntity;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
@@ -24,7 +26,7 @@ import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
 import com.simibubi.create.content.logistics.packagerLink.WiFiEffectPacket;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -35,10 +37,8 @@ import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedI
 import com.simibubi.create.foundation.item.ItemHelper;
 
 import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.math.BlockFace;
 import net.createmod.catnip.nbt.NBTHelper;
-
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -55,12 +55,17 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity {
 

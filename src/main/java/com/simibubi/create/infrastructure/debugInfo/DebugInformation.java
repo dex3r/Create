@@ -11,16 +11,10 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.simibubi.create.Create;
-import com.simibubi.create.CreateBuildInfo;
 import com.simibubi.create.foundation.mixin.accessor.SystemReportAccessor;
 import com.simibubi.create.infrastructure.debugInfo.element.DebugInfoSection;
 import com.simibubi.create.infrastructure.debugInfo.element.InfoElement;
 import com.simibubi.create.infrastructure.debugInfo.element.InfoEntry;
-
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.forgespi.language.IModInfo;
 
 import dev.engine_room.flywheel.api.Flywheel;
 import dev.engine_room.flywheel.api.backend.Backend;
@@ -30,7 +24,12 @@ import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
-import oshi.SystemInfo;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.metadata.ModMetadata;
+
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 
 /**
  * Allows for providing easily accessible debugging information.

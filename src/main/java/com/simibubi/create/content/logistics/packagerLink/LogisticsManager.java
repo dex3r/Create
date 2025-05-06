@@ -17,16 +17,16 @@ import com.google.common.cache.Cache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.BigItemStack;
+import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.utility.TickBasedCache;
 
 import net.createmod.catnip.data.Pair;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
 
 public class LogisticsManager {
 
@@ -57,7 +57,7 @@ public class LogisticsManager {
 	public static int getStockOf(UUID freqId, ItemStack stack, @Nullable IdentifiedInventory ignoredHandler) {
 		int sum = 0;
 		for (LogisticallyLinkedBehaviour link : LogisticallyLinkedBehaviour.getAllPresent(freqId, false))
-			sum += link.getSummary(identifier)
+			sum += link.getSummary(ignoredHandler)
 				.getCountOf(stack);
 		return sum;
 	}

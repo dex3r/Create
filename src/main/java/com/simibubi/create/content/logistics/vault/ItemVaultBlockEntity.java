@@ -1,9 +1,14 @@
 package com.simibubi.create.content.logistics.vault;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
+import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.foundation.blockEntity.IMultiBlockEntityContainer;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -20,12 +25,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 
 public class ItemVaultBlockEntity extends SmartBlockEntity implements IMultiBlockEntityContainer.Inventory, SidedStorageBlockEntity {
 
@@ -57,11 +64,6 @@ public class ItemVaultBlockEntity extends SmartBlockEntity implements IMultiBloc
 		itemCapability = null;
 		radius = 1;
 		length = 1;
-	}
-
-	public InventoryIdentifier getInvId() {
-		this.initCapability();
-		return this.invId;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.simibubi.create.foundation.events;
 
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllTags.AllItemTags;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.contraptions.elevator.ElevatorControlsHandler;
 import com.simibubi.create.content.contraptions.wrench.RadialWrenchHandler;
@@ -14,13 +16,17 @@ import com.simibubi.create.content.trains.TrainHUD;
 import com.simibubi.create.content.trains.entity.TrainRelocator;
 import com.simibubi.create.content.trains.track.CurvedTrackInteraction;
 
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.HitResult;
+
+import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents;
+import io.github.fabricators_of_create.porting_lib.event.client.KeyInputCallback;
+import io.github.fabricators_of_create.porting_lib.event.client.MouseInputEvents;
+import io.github.fabricators_of_create.porting_lib.event.client.MouseInputEvents.Action;
 
 public class InputEvents {
 

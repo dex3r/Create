@@ -1,10 +1,9 @@
 package com.simibubi.create.content.processing.burner;
 
-import java.util.Random;
+import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.Create;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 
 import net.createmod.catnip.lang.Lang;
@@ -13,6 +12,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,9 +30,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.ToolAction;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.block.BlockPickInteractionAware;
 
 public class LitBlazeBurnerBlock extends Block implements IWrenchable, BlockPickInteractionAware {
 

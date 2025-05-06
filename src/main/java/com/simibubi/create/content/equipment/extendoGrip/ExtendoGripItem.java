@@ -1,22 +1,20 @@
 package com.simibubi.create.content.equipment.extendoGrip;
 
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
-import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.createmod.catnip.animation.AnimationTickHolder;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -24,33 +22,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult.Type;
-import net.minecraft.world.phys.Vec3;
-
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
-import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.level.BlockEvent.BreakEvent;
-import net.minecraftforge.event.level.BlockEvent.EntityPlaceEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class ExtendoGripItem extends Item {
 	public static final int MAX_DAMAGE = 200;

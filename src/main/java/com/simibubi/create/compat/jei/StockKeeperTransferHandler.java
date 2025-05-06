@@ -37,10 +37,12 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
+
+import net.fabricmc.api.EnvType;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault

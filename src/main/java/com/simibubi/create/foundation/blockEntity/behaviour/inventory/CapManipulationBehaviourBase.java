@@ -2,8 +2,6 @@ package com.simibubi.create.foundation.blockEntity.behaviour.inventory;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
@@ -11,12 +9,15 @@ import com.simibubi.create.foundation.item.ItemHelper.ExtractionCountMode;
 
 import net.createmod.catnip.math.BlockFace;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
+
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
+import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 
 public abstract class CapManipulationBehaviourBase<T, S extends CapManipulationBehaviourBase<?, ?>>
 	extends BlockEntityBehaviour {
@@ -47,10 +48,6 @@ public abstract class CapManipulationBehaviourBase<T, S extends CapManipulationB
 	public void initialize() {
 		super.initialize();
 		findNewNextTick = true;
-	}
-
-	public BlockFace getTarget() {
-		return this.target.getTarget(getWorld(), blockEntity.getBlockPos(), blockEntity.getBlockState());
 	}
 
 	@Override
@@ -90,11 +87,6 @@ public abstract class CapManipulationBehaviourBase<T, S extends CapManipulationB
 			return null;
 		Storage<T> storage = targetStorageProvider.get(side);
 		return this.filter.test(storage, this.targetStorageProvider) ? storage : null;
-	}
-
-	@Nullable
-	public InventoryIdentifier getIdentifier() {
-		return !this.hasInventory() ? null : InventoryIdentifier.get(getWorld(), blockEntity.getBlockPos(), side);
 	}
 
 	/**

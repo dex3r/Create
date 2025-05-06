@@ -28,9 +28,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.material.Fluid;
 
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
 
 public class GlassPipeVisual extends AbstractBlockEntityVisual<StraightPipeBlockEntity> implements SimpleDynamicVisual {
 

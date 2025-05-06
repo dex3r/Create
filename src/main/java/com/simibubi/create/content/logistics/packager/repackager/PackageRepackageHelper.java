@@ -8,12 +8,18 @@ import java.util.Map;
 import com.google.common.collect.Lists;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.packager.InventorySummary;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts.CraftingEntry;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
+
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 
 public class PackageRepackageHelper {
 
@@ -196,7 +202,7 @@ public class PackageRepackageHelper {
 
 			ItemStackHandler target = new ItemStackHandler(PackageItem.SLOTS);
 			List<BigItemStack> stacks = craftingEntry.pattern().stacks();
-			for (int currentSlot = 0; currentSlot < Math.min(stacks.size(), target.getSlots()); currentSlot++)
+			for (int currentSlot = 0; currentSlot < Math.min(stacks.size(), target.getSlotCount()); currentSlot++)
 				target.setStackInSlot(currentSlot, stacks.get(currentSlot).stack.copyWithCount(1));
 
 			ItemStack box = PackageItem.containing(target);

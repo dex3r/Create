@@ -7,8 +7,6 @@ import com.simibubi.create.content.trains.CameraDistanceModifier;
 import com.simibubi.create.foundation.utility.CameraAngleAnimationService;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import net.minecraftforge.common.ForgeConfig;
-
 import net.createmod.catnip.gui.ScreenOpener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;

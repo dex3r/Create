@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -19,6 +18,7 @@ import com.simibubi.create.content.contraptions.actors.seat.SeatEntity;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
 import com.simibubi.create.content.logistics.packagerLink.WiFiParticle;
@@ -46,11 +46,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 
 public class StockTickerBlockEntity extends StockCheckingBlockEntity implements IHaveHoveringInformation, SidedStorageBlockEntity {
 

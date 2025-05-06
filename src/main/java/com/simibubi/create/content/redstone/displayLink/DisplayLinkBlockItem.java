@@ -12,7 +12,7 @@ import net.minecraft.world.phys.AABB;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-public class DisplayLinkBlockItem extends ClickToLinkBlockItem /* FIXME - Used to implement BlockUseBypassingItem, check if still neeed */ {
+public class DisplayLinkBlockItem extends ClickToLinkBlockItem {
 
 	public DisplayLinkBlockItem(Block pBlock, Properties pProperties) {
 		super(pBlock, pProperties);

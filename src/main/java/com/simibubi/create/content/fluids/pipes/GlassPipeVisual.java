@@ -21,15 +21,15 @@ import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
 import dev.engine_room.flywheel.lib.visual.util.SmartRecycler;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Iterate;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.material.Fluid;
+
+import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
 
 public class GlassPipeVisual extends AbstractBlockEntityVisual<StraightPipeBlockEntity> implements SimpleDynamicVisual {
 
@@ -90,16 +90,19 @@ public class GlassPipeVisual extends AbstractBlockEntityVisual<StraightPipeBlock
 				}
 			}
 
-			Fluid fluid = fluidStack.getFluid();
-			IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(fluid);
-			FluidType fluidAttributes = fluid.getFluidType();
-			var atlas = Minecraft.getInstance()
-				.getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
-			TextureAtlasSprite flowTexture = atlas.apply(clientFluid.getFlowingTexture(fluidStack));
+			FluidVariant variant = fluidStack.getType();
+			@Nullable TextureAtlasSprite[] sprites = FluidVariantRendering.getSprites(variant);
+			if (sprites == null) {
+				stream.discardExtra();
+				surface.discardExtra();
+				return;
+			}
 
-			int color = clientFluid.getTintColor(fluidStack);
+			TextureAtlasSprite flowTexture = sprites[1];
+
+			int color = FluidVariantRendering.getColor(fluidStack.getType());
 			int blockLightIn = (light >> 4) & 0xF;
-			int luminosity = Math.max(blockLightIn, fluidAttributes.getLightLevel(fluidStack));
+			int luminosity = Math.max(blockLightIn, FluidVariantAttributes.getLuminance(variant));
 			int light = (this.light & 0xF00000) | luminosity << 4;
 
 			if (inbound)
@@ -127,7 +130,7 @@ public class GlassPipeVisual extends AbstractBlockEntityVisual<StraightPipeBlock
 			fluidInstance.setChanged();
 
 			if (progress != 1) {
-				TextureAtlasSprite stillTexture = atlas.apply(clientFluid.getStillTexture(fluidStack));
+				TextureAtlasSprite stillTexture = sprites[1];
 				surface.get(stillTexture)
 					.setIdentityTransform()
 					.translate(getVisualPosition())

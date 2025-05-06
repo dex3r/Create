@@ -91,7 +91,6 @@ import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 
 import io.github.fabricators_of_create.porting_lib.tags.Tags;
@@ -261,12 +260,6 @@ public class AllItems {
 
 	public static final ItemEntry<GogglesItem> GOGGLES = REGISTRATE.item("goggles", GogglesItem::new)
 		.properties(p -> p.stacksTo(1))
-		.properties(p -> {
-			if (p instanceof FabricItemSettings fp) {
-				fp.equipmentSlot(GogglesItem::getEquipmentSlot);
-			}
-			return p;
-		})
 		.onRegister(CreateRegistrate.itemModel(() -> GogglesModel::new))
 		.lang("Engineer's Goggles")
 		.register();

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.compat.Mods;
 import com.simibubi.create.compat.ftb.FTBIntegration;
+import com.simibubi.create.compat.pojav.PojavChecker;
 import com.simibubi.create.compat.sodium.SodiumCompat;
 import com.simibubi.create.compat.trinkets.Trinkets;
 import com.simibubi.create.content.contraptions.glue.SuperGlueSelectionHandler;
@@ -30,9 +31,9 @@ import com.simibubi.create.content.trains.TrainHUD;
 import com.simibubi.create.content.trains.track.TrackPlacementOverlay;
 import com.simibubi.create.foundation.ClientResourceReloadListener;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsClient;
-import com.simibubi.create.foundation.model.ModelSwapper;
 import com.simibubi.create.foundation.events.ClientEvents;
 import com.simibubi.create.foundation.events.InputEvents;
+import com.simibubi.create.foundation.model.ModelSwapper;
 import com.simibubi.create.foundation.ponder.CreatePonderPlugin;
 import com.simibubi.create.foundation.render.AllInstanceTypes;
 import com.simibubi.create.foundation.render.RenderTypes;
@@ -84,6 +85,9 @@ public class CreateClient implements ClientModInitializer {
 
 		ZAPPER_RENDER_HANDLER.registerListeners();
 		POTATO_CANNON_RENDER_HANDLER.registerListeners();
+
+		Mods.FTBLIBRARY.executeIfInstalled(() -> () -> FTBIntegration.init());
+		PojavChecker.init();
 
 		// clientInit start
 

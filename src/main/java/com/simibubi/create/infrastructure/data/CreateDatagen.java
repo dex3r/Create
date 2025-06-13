@@ -12,16 +12,15 @@ import com.simibubi.create.compat.archEx.ArchExCompat;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.data.DamageTypeTagGen;
 import com.simibubi.create.foundation.data.TagLangGen;
-import com.simibubi.create.foundation.data.recipe.MechanicalCraftingRecipeGen;
-import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
-import com.simibubi.create.foundation.data.recipe.SequencedAssemblyRecipeGen;
-import com.simibubi.create.foundation.data.recipe.StandardRecipeGen;
+import com.simibubi.create.foundation.data.recipe.CreateMechanicalCraftingRecipeGen;
+import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
+import com.simibubi.create.foundation.data.recipe.CreateSequencedAssemblyRecipeGen;
+import com.simibubi.create.foundation.data.recipe.CreateStandardRecipeGen;
 import com.simibubi.create.foundation.ponder.CreatePonderPlugin;
 import com.simibubi.create.foundation.utility.FilesHelper;
 import com.tterrag.registrate.providers.ProviderType;
 
 import net.createmod.ponder.foundation.PonderIndex;
-import net.minecraft.core.RegistrySetBuilder;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
@@ -54,16 +53,11 @@ public class CreateDatagen implements DataGeneratorEntrypoint {
 		pack.addProvider(CreateMountedItemStorageTypeTagsProvider::new);
 		pack.addProvider(DamageTypeTagGen::new);
 		pack.addProvider(AllAdvancements::new);
-		pack.addProvider(StandardRecipeGen::new);
-		pack.addProvider(MechanicalCraftingRecipeGen::new);
-		pack.addProvider(SequencedAssemblyRecipeGen::new);
+		pack.addProvider(CreateStandardRecipeGen::new);
+		pack.addProvider(CreateMechanicalCraftingRecipeGen::new);
+		pack.addProvider(CreateSequencedAssemblyRecipeGen::new);
 		pack.addProvider(VanillaHatOffsetGenerator::new);
-		pack.addProvider(ProcessingRecipeGen::registerAll);
-	}
-
-	@Override
-	public void buildRegistry(RegistrySetBuilder registryBuilder) {
-		GeneratedEntriesProvider.addBootstraps(registryBuilder);
+		pack.addProvider(CreateRecipeProvider::registerAllProcessing);
 	}
 
 	private static void addExtraRegistrateData() {

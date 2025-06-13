@@ -7,7 +7,9 @@
   "plugin": "com.simibubi.create.foundation.mixin.CreateMixinPlugin",
   "mixins": [
     "ArmorTrimMixin",
+    "BeehiveBlockMixin",
     "BlockItemMixin",
+    "BlockMixin",
     "BuiltInRegistriesMixin",
     "ClientboundMapItemDataPacketMixin",
     "CustomItemUseEffectsMixin",
@@ -22,7 +24,10 @@
     "TestCommandMixin",
     "WaterWheelFluidSpreadMixin",
     "accessor.AbstractProjectileDispenseBehaviorAccessor",
+    "accessor.BlockLootSubProviderAccessor",
     "accessor.BuiltInRegistriesAccessor",
+    "accessor.ConcretePowderBlockAccessor",
+    "accessor.CropBlockAccessor",
     "accessor.DispenserBlockAccessor",
     "accessor.FallingBlockEntityAccessor",
     "accessor.FlowingFluidAccessor",
@@ -54,6 +59,7 @@
   "client": [
     "accessor.AgeableListModelAccessor",
     "accessor.FontAccessor",
+    "accessor.GuiAccessor",
     "accessor.HumanoidArmorLayerAccessor",
     "accessor.LevelRendererAccessor",
     "accessor.MouseHandlerAccessor",

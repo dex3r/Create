@@ -29,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+
 import net.minecraft.world.phys.BlockHitResult;
 
 public class ManualApplicationRecipe extends ItemApplicationRecipe {
@@ -62,7 +63,6 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 
 //		event.setCancellationResult(InteractionResult.SUCCESS);
 //		event.setCanceled(true);
-
 		if (level.isClientSide())
 			return InteractionResult.SUCCESS;
 
@@ -76,11 +76,9 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 			.forEach(stack -> Block.popResource(level, pos, stack));
 
 		boolean creative = player != null && player.isCreative();
-		boolean unbreakable = heldItem.hasTag() && heldItem.getTag()
-			.getBoolean("Unbreakable");
 		boolean keepHeld = recipe.shouldKeepHeldItem() || creative;
 
-		if (!unbreakable && !keepHeld) {
+		if (!keepHeld) {
 			if (heldItem.isDamageableItem())
 				heldItem.hurtAndBreak(1, player, s -> s.broadcastBreakEvent(InteractionHand.MAIN_HAND));
 			else
@@ -117,8 +115,8 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 		ProcessingRecipeBuilder<DeployerApplicationRecipe> builder =
 			new ProcessingRecipeBuilder<>(DeployerApplicationRecipe::new,
 				new ResourceLocation(mar.id.getNamespace(), mar.id.getPath() + "_using_deployer"))
-					.require(mar.ingredients.get(0))
-					.require(mar.ingredients.get(1));
+				.require(mar.ingredients.get(0))
+				.require(mar.ingredients.get(1));
 		for (ProcessingOutput output : mar.results)
 			builder.output(output);
 		if (mar.shouldKeepHeldItem())

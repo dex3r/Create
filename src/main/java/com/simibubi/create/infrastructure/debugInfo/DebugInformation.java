@@ -3,6 +3,7 @@ package com.simibubi.create.infrastructure.debugInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -11,6 +12,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.simibubi.create.Create;
+import com.simibubi.create.compat.pojav.PojavChecker;
 import com.simibubi.create.foundation.mixin.accessor.SystemReportAccessor;
 import com.simibubi.create.infrastructure.debugInfo.element.DebugInfoSection;
 import com.simibubi.create.infrastructure.debugInfo.element.InfoElement;
@@ -23,7 +25,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.I18n;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -87,7 +88,8 @@ public class DebugInformation {
 				.put("Flywheel Backend", () -> Backend.REGISTRY.getIdOrThrow(BackendManager.currentBackend()).toString())
 				.put("OpenGL Renderer", GlUtil::getRenderer)
 				.put("OpenGL Version", GlUtil::getOpenGLVersion)
-				.put("Graphics Mode", () -> I18n.get(Minecraft.getInstance().options.graphicsMode().get().getKey()))
+				.put("Graphics Mode", () -> Minecraft.getInstance().options.graphicsMode().get().name().toLowerCase(Locale.ROOT))
+				.put("PojavLauncher Detected", () -> String.valueOf(PojavChecker.IS_PRESENT))
 				.buildTo(DebugInformation::registerClientInfo);
 		});
 

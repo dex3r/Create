@@ -8,6 +8,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
@@ -30,6 +35,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
@@ -99,16 +105,6 @@ public class AllCreativeModeTabs {
 				});
 			});
 			IS_ITEM_3D_PREDICATE = isItem3d.getValue();
-		}
-
-		@Environment(EnvType.CLIENT)
-		private static Predicate<Item> makeClient3dItemPredicate() {
-			return item -> {
-				ItemRenderer itemRenderer = Minecraft.getInstance()
-					.getItemRenderer();
-				BakedModel model = itemRenderer.getModel(new ItemStack(item), null, null, 0);
-				return model.isGui3d();
-			};
 		}
 
 		private final boolean addItems;
@@ -199,7 +195,8 @@ public class AllCreativeModeTabs {
 			});
 
 			PackageStyles.STANDARD_BOXES.forEach(item -> {
-				orderings.add(ItemOrdering.after(item, AllBlocks.PACKAGER.asItem()));
+				if (CatnipServices.REGISTRIES.getKeyOrThrow(item).getNamespace().equals(Create.ID))
+					orderings.add(ItemOrdering.after(item, AllBlocks.PACKAGER.asItem()));
 			});
 
 			return orderings;

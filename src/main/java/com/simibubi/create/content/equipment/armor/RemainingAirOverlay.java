@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -30,7 +29,7 @@ public class RemainingAirOverlay {
 		if (!player.getCustomData()
 			.contains("VisualBacktankAir"))
 			return;
-		if (!player.isEyeInFluid(FluidTags.WATER) && !player.isInLava())
+		if (!player.canDrownInFluidType(player.getEyeInFluidType()) && !player.isInLava())
 			return;
 
 		int timeLeft = player.getCustomData()

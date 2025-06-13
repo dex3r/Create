@@ -73,8 +73,7 @@ public class BeltInventory {
 			toInsert.clear();
 			items.removeAll(toRemove);
 			toRemove.clear();
-			belt.setChanged();
-			belt.sendData();
+			belt.notifyUpdate();
 		}
 
 		if (belt.getSpeed() == 0)
@@ -84,8 +83,7 @@ public class BeltInventory {
 		if (beltMovementPositive != belt.getDirectionAwareBeltMovementSpeed() > 0) {
 			beltMovementPositive = !beltMovementPositive;
 			Collections.reverse(items);
-			belt.setChanged();
-			belt.sendData();
+			belt.notifyUpdate();
 		}
 
 		// Assuming the first entry is furthest on the belt
@@ -159,11 +157,11 @@ public class BeltInventory {
 				ItemStack item = currentItem.stack;
 				if (handleBeltProcessingAndCheckIfRemoved(currentItem, nextOffset, noMovement)) {
 					iterator.remove();
-					belt.sendData();
+					belt.notifyUpdate();
 					continue;
 				}
 				if (item != currentItem.stack)
-					belt.sendData();
+					belt.notifyUpdate();
 				if (currentItem.locked)
 					continue;
 			}
@@ -226,7 +224,7 @@ public class BeltInventory {
 					currentItem.stack = remainder;
 
 				flapTunnel(this, lastOffset, movementFacing, false);
-				belt.sendData();
+				belt.notifyUpdate();
 				continue;
 			}
 
@@ -237,7 +235,7 @@ public class BeltInventory {
 				eject(currentItem);
 				iterator.remove();
 				flapTunnel(this, lastOffset, movementFacing, false);
-				belt.sendData();
+				belt.notifyUpdate();
 				continue;
 			}
 		}
@@ -257,7 +255,7 @@ public class BeltInventory {
 				return false;
 			if (processingBehaviour == null) {
 				currentItem.locked = false;
-				belt.sendData();
+				belt.notifyUpdate();
 				return false;
 			}
 
@@ -270,7 +268,7 @@ public class BeltInventory {
 				return false;
 
 			currentItem.locked = false;
-			belt.sendData();
+			belt.notifyUpdate();
 			return false;
 		}
 
@@ -303,7 +301,7 @@ public class BeltInventory {
 				if (result == ProcessingResult.HOLD) {
 					currentItem.beltPosition = segment + .5f + (beltMovementPositive ? 1 / 512f : -1 / 512f);
 					currentItem.locked = true;
-					belt.sendData();
+					belt.notifyUpdate();
 					return false;
 				}
 			}
@@ -485,8 +483,7 @@ public class BeltInventory {
 			toRemove.add(transported);
 		}
 		if (dirty) {
-			belt.setChanged();
-			belt.sendData();
+			belt.notifyUpdate();
 		}
 	}
 

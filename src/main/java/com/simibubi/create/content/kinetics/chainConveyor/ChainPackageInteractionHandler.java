@@ -46,7 +46,7 @@ public class ChainPackageInteractionHandler {
 					if (pckg.netId == i) {
 						AllPackets.getChannel()
 							.sendToServer(
-								new ChainPackageInteractionPacket(ccbe.getBlockPos(), null, pckg.chainPosition, null));
+								new ChainPackageInteractionPacket(ccbe.getBlockPos(), null, pckg.chainPosition, true));
 						success.setTrue();
 						return;
 					}
@@ -60,7 +60,7 @@ public class ChainPackageInteractionHandler {
 						if (pckg.netId == i) {
 							AllPackets.getChannel()
 								.sendToServer(new ChainPackageInteractionPacket(ccbe.getBlockPos(), connection,
-									pckg.chainPosition, null));
+									pckg.chainPosition, true));
 							success.setTrue();
 							return;
 						}

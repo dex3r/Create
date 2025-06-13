@@ -10,13 +10,13 @@ import com.simibubi.create.foundation.networking.SimplePacketBase;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.gameevent.GameEvent;
 
 public class HonkPacket extends SimplePacketBase {
 
 	UUID trainId;
 	boolean isHonk;
-
-	public HonkPacket() {}
 
 	public HonkPacket(Train train, boolean isHonk) {
 		trainId = train.id;
@@ -51,6 +51,11 @@ public class HonkPacket extends SimplePacketBase {
 			} else {
 				AllAdvancements.TRAIN_WHISTLE.awardTo(sender);
 				AllPackets.getChannel().sendToClientsInCurrentServer(new HonkPacket(train, isHonk));
+
+				Entity entity = train.carriages.get(0).anyAvailableEntity();
+				if (entity == null) entity = sender;
+
+				sender.level().gameEvent(entity, GameEvent.RESONATE_15, sender.position());
 			}
 
 		});

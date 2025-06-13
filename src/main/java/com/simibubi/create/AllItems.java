@@ -79,6 +79,10 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
+
+import net.fabricmc.fabric.api.registry.FuelRegistry;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -113,7 +117,7 @@ public class AllItems {
 		TRANSMITTER = ingredient("transmitter"), PULP = ingredient("pulp");
 
 	public static final ItemEntry<CombustibleItem> CARDBOARD = REGISTRATE.item("cardboard", CombustibleItem::new)
-		.tag(forgeItemTag("plates/cardboard"))
+		.tag(forgeItemTag("plates/cardboard"), PLATES.tag)
 		.onRegister(i -> i.setBurnTime(1000))
 		.register();
 

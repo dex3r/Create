@@ -40,7 +40,7 @@ public class AnimatedItemDrain extends AnimatedKinetics {
 			.getBuilder());
 		UIRenderHelper.flipForGuiRender(matrixStack);
 		matrixStack.scale(scale, scale, scale);
-		float from = 2/16f;
+		float from = 2 / 16f;
 		float to = 1f - from;
 		FabricCatnipServices.FLUID_RENDERER.renderFluidBox(fluid, from, from, from, to, 3/4f, to, buffer, matrixStack, LightTexture.FULL_BRIGHT, false, true);
 		buffer.endBatch();

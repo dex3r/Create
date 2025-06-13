@@ -7,7 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 
 /**
  * Mobile devices have low quality graphics drivers that cause visual issues.
@@ -57,11 +60,11 @@ public class PojavChecker {
 		if (!IS_PRESENT)
 			return;
 
-		MinecraftForge.EVENT_BUS.addListener(PojavChecker::onScreenInit);
+		ScreenEvents.AFTER_INIT.register(PojavChecker::onScreenInit);
 	}
 
-	public static void onScreenInit(ScreenEvent.Init.Post event) {
-		if (!screenShown && event.getScreen() instanceof TitleScreen titleScreen) {
+	public static void onScreenInit(Minecraft client, Screen screen, int scaledWidth, int scaledHeight) {
+		if (!screenShown && screen instanceof TitleScreen titleScreen) {
 			Minecraft.getInstance().setScreen(new PojavWarningScreen(titleScreen));
 			screenShown = true;
 		}

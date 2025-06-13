@@ -1,11 +1,8 @@
 package com.simibubi.create.api.data.recipe;
 
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.AllTags;
-import com.tterrag.registrate.util.entry.ItemEntry;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.world.item.Item;
 
 /**
  * The base class for Milling recipe generation.
@@ -15,14 +12,6 @@ import net.minecraft.world.item.Item;
  * Needs to be added to a registered recipe provider to do anything, see {@link com.simibubi.create.foundation.data.recipe.CreateRecipeProvider}
  */
 public abstract class MillingRecipeGen extends ProcessingRecipeGen {
-
-	protected GeneratedRecipe metalOre(String name, ItemEntry<? extends Item> crushed, int duration) {
-		return create(name + "_ore", b -> b.duration(duration)
-			.withCondition(new NotCondition(new TagEmptyCondition("forge", "ores/" + name)))
-			.require(AllTags.forgeItemTag("ores/" + name))
-			.output(crushed.get()));
-	}
-
 	public MillingRecipeGen(PackOutput output, String defaultNamespace) {
 		super(output, defaultNamespace);
 	}
@@ -31,5 +20,4 @@ public abstract class MillingRecipeGen extends ProcessingRecipeGen {
 	protected AllRecipeTypes getRecipeType() {
 		return AllRecipeTypes.MILLING;
 	}
-
 }

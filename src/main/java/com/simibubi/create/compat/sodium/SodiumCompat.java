@@ -5,7 +5,7 @@ import java.util.function.Function;
 import com.simibubi.create.Create;
 import com.simibubi.create.compat.Mods;
 
-import me.jellysquid.mods.sodium.client.render.texture.SpriteUtil;
+import net.caffeinemc.mods.sodium.api.texture.SpriteUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -40,7 +40,7 @@ public class SodiumCompat {
 		WorldRenderEvents.START.register(ctx -> {
 			Function<ResourceLocation, TextureAtlasSprite> atlas = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
 			TextureAtlasSprite sawSprite = atlas.apply(SAW_TEXTURE);
-			SpriteUtil.markSpriteActive(sawSprite);
+			SpriteUtil.INSTANCE.markSpriteActive(sawSprite);
 		});
 	}
 

@@ -1,10 +1,12 @@
 package com.simibubi.create.foundation.utility;
 
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
-
 import java.util.List;
 
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+
+// TODO - Fix
 /**
  * Specialized combined inventory wrapper with faster slot -> inv lookup
  * for the case when all inventories are the same size.
@@ -16,12 +18,12 @@ import java.util.List;
  *
  * <p>Throw in some sanity checks and fallbacks so this isn't obscenely fragile.
  */
-public class SameSizeCombinedInvWrapper<T, S extends Storage<T>> extends CombinedStorage<T, S> {
+public final class SameSizeCombinedInvWrapper<T, S extends Storage<T>> extends CombinedStorage<T, S> {
 
-	private final int numSlotsPerInv;
-	private final int numCombinedSlots;
+	private final long numSlotsPerInv;
+	private final long numCombinedSlots;
 
-	private SameSizeCombinedInvWrapper(int numSlotsPerInv, List<S> parts) {
+	private SameSizeCombinedInvWrapper(long numSlotsPerInv, List<S> parts) {
 		super(parts);
 
 		this.numSlotsPerInv = numSlotsPerInv;
@@ -40,24 +42,19 @@ public class SameSizeCombinedInvWrapper<T, S extends Storage<T>> extends Combine
 		}
 
 		// If any inventories have different slot counts, fall back to the default impl.
-		int firstInvNumSlots = parts.get(0).getSlots();
-		for (int i = 1; i < itemHandler.length; i++) {
-			if (firstInvNumSlots != itemHandler[i].getSlots()) {
-				return new CombinedInvWrapper(itemHandler);
+		Long firstInvNumSlots = null;
+		for (StorageView<T> storageView : parts.get(0)) {
+			if (firstInvNumSlots == null)
+				firstInvNumSlots = storageView.getCapacity();
+
+			if (firstInvNumSlots != storageView.getCapacity()) {
+				return new CombinedStorage<>(parts);
 			}
 		}
 
-		return new SameSizeCombinedInvWrapper(firstInvNumSlots, itemHandler);
-	}
+		if (firstInvNumSlots == null)
+			firstInvNumSlots = 0L;
 
-	@Override
-	protected int getIndexForSlot(int slot) {
-		// The parent class agrees than -1 means invalid input.
-		if (slot < 0 || slot >= numCombinedSlots) {
-			return -1;
-		}
-
-		// Floor div go brr.
-		return slot / numSlotsPerInv;
+		return new SameSizeCombinedInvWrapper<>(firstInvNumSlots, parts);
 	}
 }

@@ -12,9 +12,9 @@ import org.jetbrains.annotations.Nullable;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.packager.unpacking.UnpackingHandler;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
-import com.simibubi.create.api.packager.unpacking.UnpackingHandler;
 import com.simibubi.create.content.contraptions.actors.psi.PortableStorageInterfaceBlockEntity;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
@@ -371,16 +371,11 @@ public class PackagerBlockEntity extends SmartBlockEntity implements SidedStorag
 
 			UnpackingHandler handler = UnpackingHandler.REGISTRY.get(targetState);
 		UnpackingHandler toUse = handler != null ? handler : UnpackingHandler.DEFAULT;
-
-		// fabric: copy the items to actually unpack later
-		List<ItemStack> copy = items.stream().map(ItemStack::copy).toList();
-
 		// note: handler may modify the passed items
-		boolean unpacked = toUse.unpack(level, target, targetState, facing, items, orderContext, true);
+		boolean unpacked = toUse.unpack(level, target, targetState, facing, items, orderContext, ctx);
 
 		if (unpacked) {
 			TransactionCallback.onSuccess(ctx, () -> {
-				toUse.unpack(level, target, targetState, facing, copy, orderContext, false);
 				previouslyUnwrapped = box;
 				animationInward = true;
 				animationTicks = CYCLE;

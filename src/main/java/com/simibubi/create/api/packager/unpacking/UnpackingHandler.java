@@ -16,6 +16,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+
 /**
  * Interface for custom handling of box unpacking into storage.
  * <p>
@@ -36,8 +38,7 @@ public interface UnpackingHandler {
 	 *
 	 * @param items    the list of non-empty item stacks to unpack. May be freely modified
 	 * @param orderContext    the order context, if present
-	 * @param simulate true if the unpacking should only be simulated
 	 * @return true if all items have been unpacked successfully
 	 */
-	boolean unpack(Level level, BlockPos pos, BlockState state, Direction side, List<ItemStack> items, @Nullable PackageOrderWithCrafts orderContext, boolean simulate);
+	boolean unpack(Level level, BlockPos pos, BlockState state, Direction side, List<ItemStack> items, @Nullable PackageOrderWithCrafts orderContext, TransactionContext context);
 }

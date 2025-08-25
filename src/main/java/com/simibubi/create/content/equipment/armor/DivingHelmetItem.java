@@ -1,10 +1,11 @@
 package com.simibubi.create.content.equipment.armor;
 
+import java.util.List;
+import java.util.Map;
+
 import com.simibubi.create.AllTags.AllFluidTags;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
-import io.github.fabricators_of_create.porting_lib.enchant.CustomEnchantingBehaviorItem;
-import io.github.fabricators_of_create.porting_lib.item.CustomEnchantmentLevelItem;
-import io.github.fabricators_of_create.porting_lib.item.CustomEnchantmentsItem;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -16,36 +17,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.util.List;
-import java.util.Map;
+import io.github.fabricators_of_create.porting_lib.enchant.CustomEnchantingBehaviorItem;
+import io.github.fabricators_of_create.porting_lib.item.CustomEnchantmentLevelItem;
+import io.github.fabricators_of_create.porting_lib.item.CustomEnchantmentsItem;
 
 public class DivingHelmetItem extends BaseArmorItem implements CustomEnchantingBehaviorItem, CustomEnchantmentLevelItem, CustomEnchantmentsItem {
 	public static final EquipmentSlot SLOT = EquipmentSlot.HEAD;
 	public static final ArmorItem.Type TYPE = ArmorItem.Type.HELMET;
-
-	// TODO - 1.21.1 - Remove
-	@Nullable
-	private static final MethodHandle setCanRefillAirHandle;
-
-	// TODO - 1.21.1 - Remove
-	static {
-		MethodHandle handle = null;
-
-		MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-		MethodType type = MethodType.methodType(void.class, boolean.class);
-		try {
-			// handle = lookup.findVirtual(LivingBreatheEvent.class, "setCanRefillAir", type);
-		} catch (Exception ignored) {
-		}
-
-		setCanRefillAirHandle = handle;
-	}
 
 	public DivingHelmetItem(ArmorMaterial material, Properties properties, ResourceLocation textureLoc) {
 		super(material, TYPE, properties, textureLoc);
@@ -87,29 +66,27 @@ public class DivingHelmetItem extends BaseArmorItem implements CustomEnchantingB
 		return stack;
 	}
 
-	public static void breatheUnderwater(LivingEntity entity) {
-//		LivingEntity entity = event.getEntityLiving();
+	// fabric: return a boolean to indicate whether breathing is allowed
+	public static boolean breatheUnderwater(LivingEntity entity) {
 		Level world = entity.level();
-		boolean second = world.getGameTime() % 20 == 0;
-		boolean drowning = entity.getAirSupply() == 0;
 
 		if (world.isClientSide)
 			entity.getCustomData().remove("VisualBacktankAir");
 
 		ItemStack helmet = getWornItem(entity);
 		if (helmet.isEmpty())
-			return;
+			return false;
 
 		boolean lavaDiving = entity.isInLava();
 		if (!helmet.getItem().isFireResistant() && lavaDiving)
-			return;
+			return false;
 
 		if (canBreathe(entity) && !lavaDiving)
-			return;
+			return false;
 
 		List<ItemStack> backtanks = BacktankUtil.getAllWithAir(entity);
 		if (backtanks.isEmpty())
-			return;
+			return false;
 
 		if (lavaDiving) {
 			if (entity instanceof ServerPlayer sp)
@@ -117,7 +94,7 @@ public class DivingHelmetItem extends BaseArmorItem implements CustomEnchantingB
 			if (backtanks.stream()
 				.noneMatch(backtank -> backtank.getItem()
 					.isFireResistant()))
-				return;
+				return false;
 		}
 
 		float visualBacktankAir = 0f;
@@ -132,19 +109,12 @@ public class DivingHelmetItem extends BaseArmorItem implements CustomEnchantingB
 			BacktankUtil.consumeAir(entity, backtanks.get(0), 1);
 
 		if (lavaDiving)
-			return;
+			return false;
 
 		if (entity instanceof ServerPlayer sp)
 			AllAdvancements.DIVING_SUIT.awardTo(sp);
 
-		// event.setCanBreathe(true);
-
-		// TODO - 1.21.1 - Remove
-		try {
-			// if (setCanRefillAirHandle != null)
-				// setCanRefillAirHandle.invokeExact(event, true);
-		} catch (Throwable ignored) {
-		}
+		return true;
 	}
 
 	// fabric: move this behavior to a method that can be checked both here and in RemainingAirOverlay

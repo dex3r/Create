@@ -35,7 +35,7 @@ public class RemainingAirOverlay {
 			return;
 
 		boolean isAir = !player.isEyeInFluid(FluidTags.WATER) || player.level().getBlockState(BlockPos.containing(player.getX(), player.getEyeY(), player.getZ())).is(Blocks.BUBBLE_COLUMN);
-		boolean canBreathe = !DivingHelmetItem.canBreathe(player) || MobEffectUtil.hasWaterBreathing(player) || player.getAbilities().invulnerable;
+		boolean canBreathe = DivingHelmetItem.canBreathe(player) || MobEffectUtil.hasWaterBreathing(player) || player.getAbilities().invulnerable;
 		if ((isAir || canBreathe) && !player.isInLava())
 			return;
 

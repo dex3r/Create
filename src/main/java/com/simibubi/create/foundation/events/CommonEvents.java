@@ -19,7 +19,6 @@ import com.simibubi.create.content.contraptions.minecart.capability.CapabilityMi
 import com.simibubi.create.content.contraptions.mounted.MinecartContraptionItem;
 import com.simibubi.create.content.equipment.armor.CardboardArmorHandler;
 import com.simibubi.create.content.equipment.armor.DivingBootsItem;
-import com.simibubi.create.content.equipment.armor.DivingHelmetItem;
 import com.simibubi.create.content.equipment.armor.NetheriteDivingHandler;
 import com.simibubi.create.content.equipment.bell.HauntedBellPulser;
 import com.simibubi.create.content.equipment.clipboard.ClipboardValueSettingsHandler;
@@ -274,7 +273,6 @@ public class CommonEvents {
 		LivingEntityEvents.KNOCKBACK_STRENGTH.register(ExtendoGripItem::attacksByExtendoGripHaveMoreKnockback);
 		LivingEntityEvents.TICK.register(ExtendoGripItem::holdingExtendoGripIncreasesRange);
 		LivingEntityEvents.TICK.register(DivingBootsItem::accellerateDescentUnderwater);
-		LivingEntityEvents.TICK.register(DivingHelmetItem::breatheUnderwater);
 		LivingEntityEvents.DROPS.register(CrushingWheelBlockEntity::handleCrushedMobDrops);
 		LivingEntityEvents.LOOTING_LEVEL.register(CrushingWheelBlockEntity::crushingIsFortunate);
 		LivingEntityEvents.DROPS.register(DeployerFakePlayer::deployerCollectsDropsFromKilledEntities);

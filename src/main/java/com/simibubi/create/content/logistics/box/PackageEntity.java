@@ -19,7 +19,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -65,7 +64,7 @@ public class PackageEntity extends LivingEntity implements IEntityAdditionalSpaw
 
 	public int insertionDelay;
 
-	public Vec3 clientPosition, vec2 = Vec3.ZERO, vec3 = Vec3.ZERO;
+	// fabric: clientPosition, vec2, and vec3 are unused and removed
 
 	public WeakReference<Player> tossedBy = new WeakReference<>(null);
 
@@ -204,12 +203,6 @@ public class PackageEntity extends LivingEntity implements IEntityAdditionalSpaw
 		if (box == null)
 			return super.getDimensions(pPose);
 		return new EntityDimensions(PackageItem.getWidth(box), PackageItem.getHeight(box), true);
-	}
-
-	@Override
-	public void recreateFromPacket(ClientboundAddEntityPacket packet) {
-		this.setDeltaMovement(packet.getXa(), packet.getYa(), packet.getZa());
-		this.clientPosition = this.position();
 	}
 
 	public ItemStack getBox() {

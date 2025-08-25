@@ -1,0 +1,147 @@
+[versions]
+# when updating, be sure to update all dependencies too. some have the MC version hardcoded in the module name.
+minecraft = "1.20.1"
+# https://parchmentmc.org/docs/getting-started
+parchment = "2023.09.03"
+
+# https://fabricmc.net/develop/
+loom = "1.11.+"
+fabric_loader = "0.17.2"
+fabric_api = "0.92.6+1.20.1"
+
+# in-house dependencies
+flywheel = "1.0.0-217"
+ponder = "1.0.78"
+registrate = "1.3.79-MC1.20.1"
+milk_lib = "1.2.60"
+porting_lib = "2.3.8+1.20.1"
+
+# external dependencies
+forge_config = "8.0.0"
+night_config = "3.6.3"
+# https://maven.jamieswhiteshirt.com/libs-release/com/jamieswhiteshirt/reach-entity-attributes/
+rea = "2.4.0"
+jsr305 = "3.0.2"
+
+# compat
+# https://modrinth.com/mod/cc-tweaked/versions
+cc = "1.115.1"
+# for CC - https://modrinth.com/mod/cloth-config/versions
+cloth = "11.1.136+fabric"
+
+# https://modrinth.com/mod/jei/versions
+jei = "15.20.0.106"
+# https://modrinth.com/mod/rei/versions
+rei = "12.1.785"
+# https://modrinth.com/mod/emi/versions
+emi = "1.1.22+1.20.1"
+
+# https://modrinth.com/mod/botania
+botania = "1.20.1-448-FABRIC"
+# https://modrinth.com/mod/modmenu/versions
+modmenu = "7.2.2"
+# https://modrinth.com/mod/sandwichable/versions
+sandwichable = "1.3.1+1.20.1"
+
+# https://modrinth.com/mod/sodium
+sodium = "mc1.20.1-0.5.13-fabric"
+# https://modrinth.com/mod/indium
+indium = "1.0.36+mc1.20.1"
+
+# https://github.com/emilyploszaj/trinkets/releases/
+trinkets = "3.7.1"
+# for Trinkets - https://modrinth.com/mod/cardinal-components-api/versions
+cca = "5.2.3"
+
+architectury = "9.1.12"
+ftb_chunks = "2001.3.1"
+ftb_teams = "2001.3.0"
+ftb_library = "2001.2.4"
+
+# https://modrinth.com/mod/journeymap
+journeymap = "1.20.1-5.10.3-fabric"
+# check the jm jar, it's JiJ
+journeymap_api = "1.20-1.9-SNAPSHOT"
+
+[libraries]
+# core
+parchment = { module = "org.parchmentmc.data:parchment-1.20.1", version.ref = "parchment" }
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+fabric_loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric_loader" }
+fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric_api" }
+fabric_api_deprecated = { module = "net.fabricmc.fabric-api:fabric-api-deprecated", version.ref = "fabric_api" }
+
+# in-house
+flywheel = { module = "dev.engine-room.flywheel:flywheel-fabric-1.20.1", version.ref = "flywheel" }
+ponder = { module = "net.createmod.ponder:Ponder-Fabric-1.20.1", version.ref = "ponder" }
+registrate = { module = "com.tterrag.registrate_fabric:Registrate", version.ref = "registrate" }
+milk = { module = "io.github.tropheusj:milk-lib", version.ref = "milk_lib" }
+
+porting_lib_accessors = { module = "io.github.fabricators_of_create.Porting-Lib:accessors", version.ref = "porting_lib" }
+porting_lib_base = { module = "io.github.fabricators_of_create.Porting-Lib:base", version.ref = "porting_lib" }
+porting_lib_entity = { module = "io.github.fabricators_of_create.Porting-Lib:entity", version.ref = "porting_lib" }
+porting_lib_extensions = { module = "io.github.fabricators_of_create.Porting-Lib:extensions", version.ref = "porting_lib" }
+porting_lib_networking = { module = "io.github.fabricators_of_create.Porting-Lib:networking", version.ref = "porting_lib" }
+porting_lib_obj_loader = { module = "io.github.fabricators_of_create.Porting-Lib:obj_loader", version.ref = "porting_lib" }
+porting_lib_tags = { module = "io.github.fabricators_of_create.Porting-Lib:tags", version.ref = "porting_lib" }
+porting_lib_transfer = { module = "io.github.fabricators_of_create.Porting-Lib:transfer", version.ref = "porting_lib" }
+porting_lib_models = { module = "io.github.fabricators_of_create.Porting-Lib:models", version.ref = "porting_lib" }
+porting_lib_model_generators = { module = "io.github.fabricators_of_create.Porting-Lib:model_generators", version.ref = "porting_lib" }
+porting_lib_tool_actions = { module = "io.github.fabricators_of_create.Porting-Lib:tool_actions", version.ref = "porting_lib" }
+porting_lib_client_events = { module = "io.github.fabricators_of_create.Porting-Lib:client_events", version.ref = "porting_lib" }
+porting_lib_brewing = { module = "io.github.fabricators_of_create.Porting-Lib:brewing", version.ref = "porting_lib" }
+
+# other
+forge_config = { module = "fuzs.forgeconfigapiport:forgeconfigapiport-fabric", version.ref = "forge_config" }
+night_config_core = { module = "com.electronwill.night-config:core", version.ref = "night_config" }
+night_config_toml = { module = "com.electronwill.night-config:toml", version.ref = "night_config" }
+rea = { module = "com.jamieswhiteshirt:reach-entity-attributes", version.ref = "rea" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
+
+# compat
+cc_api = { module = "cc.tweaked:cc-tweaked-1.20.1-fabric-api", version.ref = "cc" }
+cc_runtime = { module = "cc.tweaked:cc-tweaked-1.20.1-fabric", version.ref = "cc" }
+cloth_config = { module = "maven.modrinth:cloth-config", version.ref = "cloth" }
+botania = { module = "vazkii.botania:Botania", version.ref = "botania" }
+modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
+sandwichable = { module = "maven.modrinth:sandwichable", version.ref = "sandwichable" }
+trinkets = { module = "dev.emi:trinkets", version.ref = "trinkets" }
+cca_base = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-base", version.ref = "cca" }
+cca_entity = { module = "dev.onyxstudios.cardinal-components-api:cardinal-components-entity", version.ref = "cca" }
+
+architectury = { module = "dev.architectury:architectury-fabric", version.ref = "architectury" }
+ftb_chunks = { module = "dev.ftb.mods:ftb-chunks-fabric", version.ref = "ftb_chunks" }
+ftb_teams = { module = "dev.ftb.mods:ftb-teams-fabric", version.ref = "ftb_teams" }
+ftb_library = { module = "dev.ftb.mods:ftb-library-fabric", version.ref = "ftb_library" }
+
+journeymap = { module = "maven.modrinth:journeymap", version.ref = "journeymap" }
+journeymap_api = { module = "info.journeymap:journeymap-api", version.ref = "journeymap_api" }
+
+# use 'api' classifier variant for compile
+emi = { module = "dev.emi:emi-fabric", version.ref = "emi" }
+
+jei = { module = "mezz.jei:jei-1.20.1-fabric", version.ref = "jei" }
+
+rei_api = { module = "me.shedaniel:RoughlyEnoughItems-api-fabric", version.ref = "rei" }
+rei_default = { module = "me.shedaniel:RoughlyEnoughItems-default-plugin-fabric", version.ref = "rei" }
+rei_runtime = { module = "me.shedaniel:RoughlyEnoughItems-fabric", version.ref = "rei" }
+
+sodium = { module = "maven.modrinth:sodium", version.ref = "sodium" }
+indium = { module = "maven.modrinth:indium", version.ref = "indium" }
+
+[bundles]
+fabric = [ "fabric_loader", "fabric_api" ]
+porting_lib = [
+    "porting_lib_accessors", "porting_lib_base", "porting_lib_entity", "porting_lib_extensions",
+    "porting_lib_networking", "porting_lib_obj_loader", "porting_lib_tags", "porting_lib_transfer",
+    "porting_lib_models", "porting_lib_model_generators", "porting_lib_tool_actions", "porting_lib_client_events", "porting_lib_brewing"
+]
+trinkets = [ "trinkets", "cca_base", "cca_entity" ]
+ftb = [ "architectury", "ftb_chunks", "ftb_teams", "ftb_library" ]
+journeymap = [ "journeymap", "journeymap_api"]
+rei = [ "rei_api", "rei_default" ]
+config = [ "forge_config", "night_config_core", "night_config_toml" ]
+
+[plugins]
+loom = { id = "fabric-loom", version.ref = "loom" }
+maven_publish = { id = "maven-publish" }

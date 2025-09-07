@@ -1,10 +1,10 @@
 // versions
 // https://parchmentmc.org/docs/getting-started
-val parchmentVersion = "2024.11.17"
+val parchmentVersion = "2025.03.23"
 // https://fabricmc.net/develop/
-val minecraftVersion = "1.21.1"
-val loaderVersion = "0.16.10"
-val fapiVersion = "0.115.1+1.21.1"
+val minecraftVersion = "1.21.4"
+val loaderVersion = "0.16.14"
+val fapiVersion = "0.128.2+1.21.5"
 
 // in-house dependencies
 val flywheelVersion = "1.0.1-11"

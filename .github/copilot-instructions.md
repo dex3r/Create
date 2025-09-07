@@ -7,8 +7,8 @@ Create is a Minecraft mod for Fabric and Quilt that offers tools and blocks for 
 ## Working Effectively
 
 ### Prerequisites and Setup
-- Install Java 17 (OpenJDK 17 recommended): `apt-get update && apt-get install -y openjdk-17-jdk`
-- Verify Java version: `java -version` (should show Java 17)
+- Install Java 21 (OpenJDK 21 recommended): `apt-get update && apt-get install -y openjdk-21-jdk`
+- Verify Java version: `java -version` (should show Java 21)
 - Ensure network access to maven.fabricmc.net (may be blocked in some environments)
 
 ### Building the Project
@@ -60,7 +60,7 @@ The project uses these key dependencies (versions in `build.gradle.kts`):
 - Minecraft 1.21.4
 - Fabric Loader 0.16.14  
 - Fabric API 0.128.2+1.21.5
-- Java 17 (required)
+- Java 21 (required)
 - Gradle 8.12.1 (via wrapper)
 
 ### Key Project Structure

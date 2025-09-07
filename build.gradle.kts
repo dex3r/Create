@@ -239,6 +239,9 @@ tasks.named<ProcessResources>("processResources") {
 }
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
     withSourcesJar()
 }
 

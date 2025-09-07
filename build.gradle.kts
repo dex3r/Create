@@ -128,8 +128,8 @@ java {
 
 tasks.named<JavaCompile>("compileJava") {
     javaCompiler = javaToolchains.compilerFor {
-        // 1.20.1 uses java 17
-        languageVersion = JavaLanguageVersion.of(17)
+        // Updated to use Java 21
+        languageVersion = JavaLanguageVersion.of(21)
     }
 
     // this makes it possible to actually count errors after a big merge, since by default only 100 are shown

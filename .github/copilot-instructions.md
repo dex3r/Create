@@ -61,9 +61,9 @@ The goal of this fork is to port Create from Minecraft 1.20.1 to 1.21.8.
 
 ### Development Dependencies
 The project uses these key dependencies (versions in `build.gradle.kts`):
-- Minecraft 1.21.4
+- Minecraft 1.21.8
 - Fabric Loader 0.16.14  
-- Fabric API 0.128.2+1.21.5
+- Fabric API 0.129.0+1.21.8
 - Java 21 (required)
 - Gradle 8.12.1 (via wrapper)
 

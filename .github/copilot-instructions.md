@@ -4,6 +4,10 @@ Create is a Minecraft mod for Fabric and Quilt that offers tools and blocks for 
 
 **Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.**
 
+## Goal of this fork
+
+The goal of this fork is to port Create from Minecraft 1.20.1 to 1.21.8.
+
 ## Working Effectively
 
 ### Prerequisites and Setup
